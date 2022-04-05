@@ -27,7 +27,7 @@ import 'app/screens/onboard/otp.screen.dart';
 import 'app/screens/onboard/qr.screen.dart';
 import 'app/screens/splash.screen.dart';
 import 'app/screens/unknown.screen.dart';
-import 'core/development/dev_err_scrren.dart';
+import 'core/development/dev_err_screen.dart';
 import 'core/services/app.service.dart';
 import 'core/services/passman.env.dart';
 import 'meta/extensions/logger.ext.dart';
