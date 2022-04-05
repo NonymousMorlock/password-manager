@@ -79,12 +79,12 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
               Column(
                 children: <Widget>[
                   Image.memory(
-                    context.read<NewUser>().atSignWithImgData['img'],
+                    context.read<NewUser>().newUserData['img'],
                     height: 100,
                   ),
                   Center(
                     child: Text(
-                      context.read<NewUser>().atSignWithImgData['atSign'],
+                      context.read<NewUser>().newUserData['atSign'],
                       style: const TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.w600,
@@ -97,7 +97,7 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                       'We sent code to ' +
                           context
                               .read<NewUser>()
-                              .atSignWithImgData['email']
+                              .newUserData['email']
                               .toString()
                               .substring(0, 4) +
                           '****',
@@ -126,10 +126,8 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                   onResend: () async {
                     bool mailSent =
                         await AppServices.registerWithMail(<String, String?>{
-                      'email':
-                          context.read<NewUser>().atSignWithImgData['email'],
-                      'atsign':
-                          context.read<NewUser>().atSignWithImgData['atSign']
+                      'email': context.read<NewUser>().newUserData['email'],
+                      'atsign': context.read<NewUser>().newUserData['atSign']
                     });
                     if (mailSent) {
                       setState(() {
@@ -146,14 +144,13 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                   },
                   onSubmit: () async {
                     String? _cram = await AppServices.getCRAM(<String, dynamic>{
-                      'email':
-                          context.read<NewUser>().atSignWithImgData['email'],
+                      'email': context.read<NewUser>().newUserData['email'],
                       'atsign': context
                           .read<NewUser>()
-                          .atSignWithImgData['atSign']
+                          .newUserData['atSign']
                           .toString()
                           .replaceFirst('@', ''),
-                      'otp': context.read<NewUser>().atSignWithImgData['otp'],
+                      'otp': context.read<NewUser>().newUserData['otp'],
                       'confirmation': true,
                     });
                     if (_cram != null) {

@@ -1,6 +1,5 @@
 // 🐦 Flutter imports:
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 // 📦 Package imports:
 import 'package:provider/provider.dart';
@@ -133,12 +132,11 @@ class _GetAtSignScreenState extends State<GetAtSignScreen> {
                 : () async {
                     if (_atSignWithImgData.isEmpty) return;
                     context.read<NewUser>()
-                      ..atSignWithImgData['atSign'] =
+                      ..newUserData['atSign'] =
                           '@' + _atSignWithImgData['atSign']!
-                      ..atSignWithImgData['img'] =
-                          (await rootBundle.load(_atSignWithImgData['img']!))
-                              .buffer
-                              .asUint8List();
+                      ..newUserData['img'] =
+                          await AppServices.readLocalfilesAsBytes(
+                              _atSignWithImgData['img']!);
                     if (_emailController.text.isEmpty) {
                       setState(() => _processing = true);
                       await emailDialog(context);
@@ -149,15 +147,13 @@ class _GetAtSignScreenState extends State<GetAtSignScreen> {
                         bool mailSent = await AppServices.registerWithMail(<
                             String, String?>{
                           'email': _email,
-                          'atsign': context
-                              .read<NewUser>()
-                              .atSignWithImgData['atSign']
+                          'atsign':
+                              context.read<NewUser>().newUserData['atSign']
                         });
                         if (mailSent) {
                           Navigator.of(context).pop();
                           showToast(context, 'Mail sent successfully');
-                          context.read<NewUser>().atSignWithImgData['email'] =
-                              _email;
+                          context.read<NewUser>().newUserData['email'] = _email;
                         } else {
                           Navigator.of(context).pop();
                           showToast(context,

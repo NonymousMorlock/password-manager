@@ -22,4 +22,9 @@ class Constants {
   /// @sign regex pattern
   static const String atSignPattern =
       '[a-zA-Z0-9_]|\u00a9|\u00af|[\u2155-\u2900]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]';
+
+  static Map<String, String> apiHeaders = <String, String>{
+    'Authorization': PassmanEnv.appApiKey,
+    'Content-Type': 'application/json',
+  };
 }

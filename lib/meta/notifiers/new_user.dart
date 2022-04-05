@@ -1,18 +1,26 @@
+// 🎯 Dart imports:
+import 'dart:convert';
+
 // 🐦 Flutter imports:
 import 'package:flutter/material.dart';
 
 // 🌎 Project imports:
+import '../extensions/logger.ext.dart';
 import '../models/qr.model.dart';
 
 class NewUser extends ChangeNotifier {
-  Map<String, dynamic> _atSignWithImgData = <String, dynamic>{};
+  final AppLogger _logger = AppLogger('NewUser');
 
-  /// getter for atSignWithImgData
-  Map<String, dynamic> get atSignWithImgData => _atSignWithImgData;
+  /// New user data as a map
+  Map<String, dynamic> _newUserData = <String, dynamic>{};
 
-  /// setter for atSignWithImgData
-  set atSignWithImgData(Map<String, dynamic> value) {
-    _atSignWithImgData = value;
+  /// Get new user data as a map
+  Map<String, dynamic> get newUserData => _newUserData;
+
+  /// Set new user data as a map
+  set newUserData(Map<String, dynamic> value) {
+    _logger.finer('Updating new user data with ${json.encode(value)}');
+    _newUserData = value;
     notifyListeners();
   }
 
@@ -27,6 +35,7 @@ class NewUser extends ChangeNotifier {
 
   /// Setter for the [QrModel].
   set setQrData(QrModel value) {
+    _logger.finer('Setting QrCode model for ${value.atSign}');
     _qrAtSign = value.atSign;
     _cramSecret = value.cramSecret;
     notifyListeners();

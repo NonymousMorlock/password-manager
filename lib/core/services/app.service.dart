@@ -1,6 +1,7 @@
 // 🎯 Dart imports:
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 // 🐦 Flutter imports:
 import 'package:flutter/material.dart';
@@ -20,17 +21,20 @@ import 'package:zxing2/qrcode.dart';
 // 🌎 Project imports:
 import '../../app/constants/assets.dart';
 import '../../app/constants/constants.dart';
+import '../../app/constants/enum.dart';
 import '../../meta/components/toast.dart';
 import '../../meta/extensions/logger.ext.dart';
 import '../../meta/extensions/string.ext.dart';
 import '../../meta/models/qr.model.dart';
 import '../../meta/notifiers/new_user.dart';
 import '../../meta/notifiers/user_data.dart';
-import 'passman.env.dart';
 import 'sdk.services.dart';
 
 class AppServices {
+  /// Returns the [UserData] instance.
   static late final UserData _userData;
+
+  /// Logger instance
   static final AppLogger _logger = AppLogger('AppServices');
 
   /// [SdkServices] instance
@@ -42,21 +46,18 @@ class AppServices {
   static final OnboardingService onboardingService =
       OnboardingService.getInstance();
 
+  static Future<String> readLocalfilesAsString(String filePath) async =>
+      rootBundle.loadString(filePath);
+
+  static Future<Uint8List> readLocalfilesAsBytes(String filePath) async =>
+      (await rootBundle.load(filePath)).buffer.asUint8List();
+
   /// This function will get you a new @sign from the server
   static Future<Map<String, String>> getNewAtSign() async {
     Map<String, String> atSignWithImg = <String, String>{};
     late http.Response response;
     try {
-      response = await http.get(
-        Uri.https(
-          Constants.domain,
-          Constants.apiPath + Constants.getFreeAtSign,
-        ),
-        headers: <String, String>{
-          'Authorization': PassmanEnv.appApiKey!,
-          'Content-Type': 'application/json',
-        },
-      );
+      response = await _apiRequest(Constants.getFreeAtSign);
     } on Exception catch (e) {
       _logger.severe('Error while fetching new @sign: $e');
       return atSignWithImg;
@@ -65,9 +66,7 @@ class AppServices {
       atSignWithImg['atSign'] = json.decode(response.body)['data']['atsign'];
       atSignWithImg['img'] = Assets.getRandomAvatar();
     } else {
-      atSignWithImg['message'] = PassmanEnv.appApiKey == null
-          ? 'API key is missing'
-          : json.decode(response.body)['message'];
+      atSignWithImg['message'] = json.decode(response.body)['message'];
       atSignWithImg['img'] = Assets.error;
     }
     return atSignWithImg;
@@ -76,16 +75,9 @@ class AppServices {
   /// Use email to register a new @sign
   static Future<bool> registerWithMail(Map<String, String?> requestBody) async {
     late http.Response response;
-    String path = Constants.apiPath + Constants.registerUser;
     try {
-      response = await http.post(
-        Uri.https(Constants.domain, path),
-        body: json.encode(requestBody),
-        headers: <String, String>{
-          'Authorization': PassmanEnv.appApiKey!,
-          'Content-Type': 'application/json',
-        },
-      );
+      response = await _apiRequest(
+          Constants.registerUser, requestBody, ApiRequest.post);
     } on Exception catch (e) {
       _logger.severe('Error while fetching new @sign: $e');
     }
@@ -95,16 +87,9 @@ class AppServices {
   /// Validate otp to register your @sign
   static Future<String?> getCRAM(Map<String, dynamic> requestBody) async {
     late http.Response response;
-    String path = Constants.apiPath + Constants.validateOTP;
     try {
-      response = await http.post(
-        Uri.https(Constants.domain, path),
-        body: json.encode(requestBody),
-        headers: <String, String>{
-          'Authorization': PassmanEnv.appApiKey!,
-          'Content-Type': 'application/json',
-        },
-      );
+      response = await _apiRequest(
+          Constants.validateOTP, requestBody, ApiRequest.post);
     } on Exception catch (e) {
       _logger.severe('Error while fetching new @sign: $e');
     }
@@ -117,14 +102,31 @@ class AppServices {
     }
   }
 
+  /// General api requests
+  static Future<http.Response> _apiRequest(String endPoint,
+          [Map<String, dynamic>? requestBody,
+          ApiRequest request = ApiRequest.get]) async =>
+      request.name == 'get'
+          ? http.get(
+              Uri.https(Constants.domain, Constants.apiPath + endPoint),
+              headers: Constants.apiHeaders,
+            )
+          : http.post(
+              Uri.https(Constants.domain, endPoint),
+              body: json.encode(requestBody),
+              headers: Constants.apiHeaders,
+            );
+
   /// Uploads the file to the device.
-  /// This function will return the
+  /// This function will return the list of files.
   static Future<List<PlatformFile>> uploadFile(
-          [FileType? fileType, bool? allowMultipleFiles]) async =>
+          [FileType? fileType,
+          bool? allowMultipleFiles,
+          List<String>? extensions]) async =>
       (await FilePicker.platform.pickFiles(
-        type: fileType ?? FileType.any,
-        allowMultiple: allowMultipleFiles ?? false,
-      ))
+              type: fileType ?? FileType.any,
+              allowMultiple: allowMultipleFiles ?? false,
+              allowedExtensions: extensions))
           ?.files ??
       <PlatformFile>[];
 
@@ -169,9 +171,9 @@ class AppServices {
         cramSecret: _qrData.split(':')[1],
       );
       context.read<NewUser>()
-        ..atSignWithImgData['atSign'] = _qrData.split(':')[0]
-        ..atSignWithImgData['img'] =
-            (await rootBundle.load(Assets.getRandomAvatar()))
+        ..newUserData['atSign'] = _qrData.split(':')[0]
+        ..newUserData['img'] =
+            (await AppServices.readLocalfilesAsBytes(Assets.getRandomAvatar()))
                 .buffer
                 .asUint8List();
       showToast(context, 'QR code decoded successfully');
@@ -212,15 +214,17 @@ class AppServices {
     }
   }
 
-  static void refresh() {
+  /// Sync the data to the server
+  static void syncData() {
     _userData.setSyncStatus = SyncStatus.started;
     sdkServices.atClientManager.syncService.setOnDone(_onSuccessCallback);
     sdkServices.atClientManager.syncService.sync(onDone: _onSuccessCallback);
   }
 
+  /// Function to be called when sync is done
   static void _onSuccessCallback(SyncResult syncResult) {
     _logger.finer(
-        'Sync done : ${DateTime.now()} ${syncResult.toString()} ${syncResult.dataChange}');
+        '======================= ${syncResult.syncStatus.name} =======================');
     _userData.setSyncStatus = SyncProgress().syncStatus ?? SyncStatus.success;
   }
 }

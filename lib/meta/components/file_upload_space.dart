@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 
 // 📦 Package imports:
 import 'package:dotted_border/dotted_border.dart';
+import 'package:file_picker/file_picker.dart';
+
+// 🌎 Project imports:
+import '../../core/services/app.service.dart';
 
 class FileUploadSpace extends StatelessWidget {
   const FileUploadSpace({
@@ -10,16 +14,26 @@ class FileUploadSpace extends StatelessWidget {
     this.uploadMessage,
     this.onDismmisTap,
     this.dismissable = false,
+    this.child,
+    this.messageStyle,
     this.assetPath,
+    this.fileType = FileType.any,
     this.boxColor,
+    this.multipleFiles = false,
+    this.extensions,
     Key? key,
     this.isUploading = false,
   }) : super(key: key);
-  final GestureTapCallback? onTap;
+  final Function(List<PlatformFile>) onTap;
   final VoidCallback? onDismmisTap;
   final String? uploadMessage;
   final String? assetPath;
+  final FileType? fileType;
   final Color? boxColor;
+  final Widget? child;
+  final TextStyle? messageStyle;
+  final bool multipleFiles;
+  final List<String>? extensions;
   final bool isUploading;
   final bool dismissable;
 
@@ -28,7 +42,8 @@ class FileUploadSpace extends StatelessWidget {
     return Stack(
       children: <Widget>[
         GestureDetector(
-          onTap: onTap,
+          onTap: () async => onTap(await AppServices.uploadFile(
+              fileType, multipleFiles, extensions)),
           child: DottedBorder(
             borderType: BorderType.RRect,
             radius: const Radius.circular(10),
@@ -46,10 +61,11 @@ class FileUploadSpace extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Image.asset(
-                    assetPath!,
-                    height: 50,
-                  ),
+                  child ??
+                      Image.asset(
+                        assetPath!,
+                        height: 50,
+                      ),
                   const SizedBox(
                     height: 10,
                   ),
@@ -64,10 +80,12 @@ class FileUploadSpace extends StatelessWidget {
                         )
                       : Text(
                           uploadMessage ?? 'Upload your files',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey[800],
-                          ),
+                          textAlign: TextAlign.center,
+                          style: messageStyle ??
+                              TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey[800]!,
+                              ),
                         ),
                 ],
               ),

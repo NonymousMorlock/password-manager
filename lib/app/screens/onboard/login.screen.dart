@@ -21,6 +21,7 @@ import '../../../core/services/sdk.services.dart';
 import '../../../meta/components/file_upload_space.dart';
 import '../../../meta/components/toast.dart';
 import '../../../meta/extensions/input_formatter.ext.dart';
+import '../../../meta/extensions/string.ext.dart';
 import '../../../meta/notifiers/user_data.dart';
 import '../../constants/assets.dart';
 import '../../constants/constants.dart';
@@ -41,8 +42,8 @@ class _LoginScreenState extends State<LoginScreen> {
       _checkedAtSign = false,
       _isLoading = false,
       _uploading = false;
-  List<PlatformFile> _list = <PlatformFile>[];
-
+  final List<PlatformFile> _list = <PlatformFile>[];
+  final SdkServices _sdk = SdkServices.getInstance();
   @override
   void initState() {
     _atSignController = TextEditingController();
@@ -65,9 +66,10 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() => _isLoading = true);
         String _atKeysData =
             await AppServices.readAtKeysFile(_list.first.path!);
-        ResponseStatus status = await SdkServices.getInstance()
-            .onboardWithAtKeys(_atSign!, _atKeysData);
+        ResponseStatus status =
+            await _sdk.onboardWithAtKeys(_atSign!, _atKeysData);
         if (status.name == 'authSuccess') {
+          _atKeysData.clear();
           context.read<UserData>().currentAtSign = _atSign!;
           await AtClientManager.getInstance().setCurrentAtSign(
               context.read<UserData>().currentAtSign,
@@ -75,8 +77,12 @@ class _LoginScreenState extends State<LoginScreen> {
               context.read<UserData>().atOnboardingPreference);
           _list.clear();
           setState(() => _isLoading = false);
+          bool _masterImgKeyExists = await _sdk.getMasterImageKey();
           await Navigator.pushReplacementNamed(
-              context, PageRouteNames.masterPassword);
+              context,
+              _masterImgKeyExists
+                  ? PageRouteNames.masterPassword
+                  : PageRouteNames.setMasterPassword);
         } else if (status == ResponseStatus.authFailed) {
           _list.clear();
           setState(() => _isLoading = false);
@@ -153,10 +159,8 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Future<void> uploadAtKeys() async {
-    setState(() => _uploading = true);
-    _list = await AppServices.uploadFile();
-    if (_list.isEmpty) {
+  Future<void> uploadAtKeys(List<PlatformFile> _l) async {
+    if (_l.isEmpty) {
       setState(() {
         fileName = null;
         _uploading = false;
@@ -206,7 +210,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: <Widget>[
                         _isValidAtSign
                             ? FileUploadSpace(
-                                onTap: uploadAtKeys,
+                                onTap: (_) async {
+                                  setState(() => _uploading = true);
+                                  await uploadAtKeys(_);
+                                },
                                 assetPath: Assets.atKeys,
                                 uploadMessage: _list.isEmpty
                                     ? 'Upload your atKeys file.'

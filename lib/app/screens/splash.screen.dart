@@ -2,14 +2,14 @@
 import 'package:flutter/material.dart';
 
 // 📦 Package imports:
+import 'package:at_base2e15/at_base2e15.dart';
 import 'package:at_client_mobile/at_client_mobile.dart';
 import 'package:at_onboarding_flutter/services/onboarding_service.dart';
-import 'package:flutter/services.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
-import 'package:at_base2e15/at_base2e15.dart';
 
 // 🌎 Project imports:
+import '../../core/services/app.service.dart';
 import '../../core/services/passman.env.dart';
 import '../../core/services/sdk.services.dart';
 import '../../meta/components/toast.dart';
@@ -28,6 +28,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   final AppLogger _logger = AppLogger('SplashScreen');
   final OnboardingService _os = OnboardingService.getInstance();
+  final SdkServices _sdk = SdkServices.getInstance();
   Future<void> _init() async {
     try {
       String? _currentAtSign;
@@ -50,22 +51,25 @@ class _SplashScreenState extends State<SplashScreen> {
         } else {
           await AtClientManager.getInstance().setCurrentAtSign(
               _currentAtSign, PassmanEnv.appNamespace, _preference);
-          String? a = await SdkServices.getInstance().getProPic();
+          String? a = await _sdk.getProPic();
           if (a != null) {
             context.read<UserData>().currentProfilePic = Base2e15.decode(a);
           } else {
             context.read<UserData>().currentProfilePic =
-                (await rootBundle.load(Assets.logoImg)).buffer.asUint8List();
+                await AppServices.readLocalfilesAsBytes(Assets.logoImg);
           }
         }
       } else {
         await Future<void>.delayed(const Duration(milliseconds: 3200));
       }
       _logger.finer('Checking done...');
+      bool _masterImgKeyExists = await _sdk.getMasterImageKey();
       await Navigator.pushReplacementNamed(
           context,
           onboarded
-              ? PageRouteNames.masterPassword
+              ? _masterImgKeyExists
+                  ? PageRouteNames.masterPassword
+                  : PageRouteNames.setMasterPassword
               : PageRouteNames.loginScreen);
     } catch (e) {
       _logger.severe(e.toString());

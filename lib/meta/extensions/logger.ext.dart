@@ -1,9 +1,11 @@
 // 🎯 Dart imports:
 import 'dart:io';
 
+// 🐦 Flutter imports:
+import 'package:flutter/foundation.dart';
+
 // 📦 Package imports:
 import 'package:at_utils/at_logger.dart';
-import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 
@@ -18,32 +20,36 @@ class AppLogger extends AtSignLogger {
     AtSignLogger.root_level = rootLevel?.toLowerCase() ?? _rootLevel;
   }
 
-  void _writeToFile(String level, Object message) => !kDebugMode
-      ? File(p.join(logPath,
-              'passman_${DateFormat('yyyy-MM-dd').format(DateTime.now())}.log'))
-          .writeAsStringSync(
-          level.toUpperCase() +
-              ' | ${DateTime.now()} | ${logger.name} | $message\n',
-          mode: FileMode.append,
-        )
-      : null;
+  void _writeToFile(String level, Object message,
+          [Object? error, StackTrace? stackTrace]) =>
+      !kDebugMode
+          ? File(p.join(logPath,
+                  'passman_${DateFormat('yyyy-MM-dd').format(DateTime.now())}.log'))
+              .writeAsStringSync(
+              level.toUpperCase() +
+                  ' | ${DateTime.now()} | ${logger.name} | $message\n' +
+                  (error != null ? '$error\n' : '') +
+                  (stackTrace != null ? '$stackTrace\n' : ''),
+              mode: FileMode.append,
+            )
+          : null;
 
   @override
   void shout(dynamic message, [Object? error, StackTrace? stackTrace]) {
     super.shout(message, error, stackTrace);
-    _writeToFile('SHOUT', message);
+    _writeToFile('SHOUT', message, error, stackTrace);
   }
 
   @override
   void severe(dynamic message, [Object? error, StackTrace? stackTrace]) {
     super.severe(message, error, stackTrace);
-    _writeToFile('SEVERE', message);
+    _writeToFile('SEVERE', message, error, stackTrace);
   }
 
   @override
   void warning(dynamic message, [Object? error, StackTrace? stackTrace]) {
     super.warning(message, error, stackTrace);
-    _writeToFile('WARNING', message);
+    _writeToFile('WARNING', message, null, stackTrace);
   }
 
   @override

@@ -2,9 +2,9 @@
 import 'package:flutter/material.dart';
 
 // 📦 Package imports:
+import 'package:at_base2e15/at_base2e15.dart';
 import 'package:at_server_status/at_server_status.dart';
 import 'package:provider/provider.dart';
-import 'package:at_base2e15/at_base2e15.dart';
 
 // 🌎 Project imports:
 import '../../../core/services/app.service.dart';
@@ -79,8 +79,7 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
     _passKey
       ..sharedBy = context.read<NewUser>().getQrData.atSign
       ..value = Value(
-        value:
-            Base2e15.encode(context.read<NewUser>().atSignWithImgData['img']),
+        value: Base2e15.encode(context.read<NewUser>().newUserData['img']),
         type: 'profilepic',
         labelName: 'Profile pic',
       );
@@ -102,15 +101,18 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
           });
           bool activationResponse = await sdk.actiavteAtSign(
               _atSign, context.read<UserData>().atOnboardingPreference);
-          _logger.finer('activationResponse: $activationResponse');
+          _logger.finer('$_atSign activation response : $activationResponse');
           if (activationResponse) {
             status = await AppServices.sdkServices.getAtSignStatus(_atSign);
-            content = 'Activated $_atSign. Polishing your account...';
+            content = 'Activated $_atSign.\nPolishing your account...';
+            _logger.finer('Activated $_atSign. Polishing your account...');
             bool _propicUpdated = await sdk.put(_passKey);
             if (_propicUpdated) {
-              AppServices.refresh();
+              AppServices.sdkServices.atClientManager.notificationService
+                  .subscribe();
+              AppServices.syncData();
               context.read<UserData>().currentProfilePic =
-                  context.read<NewUser>().atSignWithImgData['img'];
+                  context.read<NewUser>().newUserData['img'];
               _logger.finer('profile pic updated');
             } else {
               _logger.severe('profile pic not updated');
@@ -143,6 +145,7 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
           } else {
             status = status?..rootStatus = RootStatus.error;
             content = 'Failed to activate $_atSign.';
+            _logger.severe('Failed to activate $_atSign.');
             setState(() {});
             Future<void>.delayed(const Duration(milliseconds: 2000), () {
               if (mounted) {
@@ -153,6 +156,7 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
           }
         } else if (status?.serverStatus == ServerStatus.activated) {
           content = '$_atSign is already activated.';
+          _logger.warning('$_atSign is already activated.');
           setState(() {});
         }
       },
@@ -181,8 +185,7 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
           children: <Widget>[
             AnimatedBuilder(
               animation: _alphaAnimation,
-              child: Image.memory(
-                  context.read<NewUser>().atSignWithImgData['img'],
+              child: Image.memory(context.read<NewUser>().newUserData['img'],
                   height: 70),
               builder: (BuildContext context, Widget? wChild) {
                 BoxDecoration decoration = BoxDecoration(

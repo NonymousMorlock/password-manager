@@ -3,6 +3,7 @@ import 'dart:convert';
 
 // 📦 Package imports:
 import 'package:at_client_mobile/at_client_mobile.dart';
+import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_onboarding_flutter/services/onboarding_service.dart';
 import 'package:at_onboarding_flutter/utils/response_status.dart';
@@ -35,10 +36,16 @@ class SdkServices {
   /// Onboard the app with an @sign and return the response as bool
   Future<ResponseStatus> onboardWithAtKeys(
       String atSign, String keysData) async {
-    dynamic status = await AppServices.onboardingService.authenticate(atSign,
-        jsonData: keysData, decryptKey: json.decode(keysData)[atSign]);
-    status = status as ResponseStatus;
-    return status;
+    _logger.finer('Onboarding with @sign: $atSign using atKeys file');
+    try {
+      dynamic status = await AppServices.onboardingService.authenticate(atSign,
+          jsonData: keysData, decryptKey: json.decode(keysData)[atSign]);
+      _logger.finer('Onboarding with atKeys file result: $status');
+      return status;
+    } on Exception catch (e, s) {
+      _logger.severe('Error onboarding with @sign: $atSign', e, s);
+      return ResponseStatus.authFailed;
+    }
   }
 
   Future<bool> checkUserStatus(String atSign) async {
@@ -46,37 +53,59 @@ class SdkServices {
     atSignsList =
         await KeyChainManager.getInstance().getAtSignListFromKeychain();
     atSignsList ??= <String>[];
-    AtStatus s = await getAtSignStatus(atSign)
-        .timeout(const Duration(seconds: 30), onTimeout: () => throw 'timeOut');
-    bool atSignExist = atSignsList.contains(atSign);
-    s.serverStatus == ServerStatus.teapot ? atSignExist = false : atSignExist;
-    return atSignExist;
+    try {
+      AtStatus s = await getAtSignStatus(atSign)
+          .timeout(const Duration(seconds: 30), onTimeout: () {
+        _logger.warning('Timeout checking @sign status: $atSign');
+        throw 'timeOut';
+      });
+      bool atSignExist = atSignsList.contains(atSign);
+      s.serverStatus == ServerStatus.teapot ? atSignExist = false : atSignExist;
+      return atSignExist;
+    } on Exception catch (e, s) {
+      _logger.severe('Error checking user status: $atSign', e, s);
+      return false;
+    }
   }
 
   /// Checks if any @sign is onboarded and returns the result.
-  Future<bool> checkIfUserAlreadyExist() async =>
-      (await KeyChainManager.getInstance().getAtsignsWithStatus())
+  Future<bool> checkIfUserAlreadyExist() async {
+    try {
+      _logger.finer('Checking if user already exist...');
+      return (await KeyChainManager.getInstance().getAtsignsWithStatus())
           .values
           .contains(true);
+    } on Exception catch (e, s) {
+      _logger.severe('Error checking if user already exist', e, s);
+      return false;
+    }
+  }
 
   /// Check if user is onboarded and returns the result.
   Future<bool> checkIfAtSignExistInDevice(
-          String atSign, AtClientPreference preference) async =>
-      (OnboardingService.getInstance()
-            ..setAtsign = atSign
-            ..setAtClientPreference = preference)
-          .isExistingAtsign(atSign);
+      String atSign, AtClientPreference preference) async {
+    _logger.finer('Checking if @sign exist in device: $atSign');
+    bool isExists = await (OnboardingService.getInstance()
+          ..setAtsign = atSign
+          ..setAtClientPreference = preference)
+        .isExistingAtsign(atSign);
+    _logger.finer('@sign exist in device: $isExists');
+    return isExists;
+  }
 
   /// Returns the current status of the @sign.
   Future<bool> actiavteAtSign(
       String atSign, AtClientPreference preference) async {
     try {
+      _logger.finer('Activating @sign: $atSign');
       ResponseStatus _cramAuthResponse = await OnboardingService.getInstance()
           .authenticate(atSign, cramSecret: preference.cramSecret);
       if (_cramAuthResponse.name == 'authSuccess') {
+        _logger.finer('CRAM authentication success');
         Map<String, String> keyData = await AppServices.getKeysFileData(atSign);
         ResponseStatus _pkamAuthResponse =
             await onboardWithAtKeys(atSign, jsonEncode(keyData));
+        _logger.finer('PKAM authentication result: ${_pkamAuthResponse.name}');
         _pkamAuthResponse.name == 'authSuccess'
             ? await AtClientManager.getInstance()
                 .setCurrentAtSign(atSign, PassmanEnv.appNamespace, preference)
@@ -105,6 +134,24 @@ class SdkServices {
     return null;
   }
 
+  Future<bool> getMasterImageKey() async {
+    _logger.finer('Getting master image key');
+    ScanVerbBuilder verb = ScanVerbBuilder()
+      ..auth = true
+      ..regex = 'masterpassimg'
+      ..sharedBy = currentAtSign;
+    String? _data = await atClientManager.atClient
+        .getRemoteSecondary()!
+        .executeAndParse(verb);
+    if (_data == '[]') {
+      _logger.warning('No master image key found');
+      return false;
+    } else {
+      _logger.finer('Master image key found: $_data');
+      return true;
+    }
+  }
+
   // --------------------- //
   //    CRUD operations    //
   // --------------------- //
@@ -117,8 +164,8 @@ class SdkServices {
           : entity.value?.value;
 
       return atClientManager.atClient.put(entity.toAtKey(), value);
-    } catch (e) {
-      _logger.severe('Error while putting data: $e');
+    } catch (e, s) {
+      _logger.severe('Error while putting data', e, s);
       return false;
     }
   }

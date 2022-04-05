@@ -2,6 +2,7 @@
 import 'package:at_commons/at_commons.dart';
 
 // 🌎 Project imports:
+import '../../core/services/passman.env.dart';
 import 'value.model.dart';
 
 class PassKey {
@@ -9,7 +10,7 @@ class PassKey {
   Value? value = Value();
   String? sharedWith;
   String? sharedBy;
-  String? namespace;
+  String? namespace = PassmanEnv.appNamespace;
   bool? isPublic = false;
   bool? isCached = false;
   bool? isHidden = false;
@@ -17,8 +18,8 @@ class PassKey {
   bool? isRef = false;
   bool? ccd = false;
   bool? isEncrypted = false;
-  bool? namespaceAware = false;
-  DateTime? createdDate;
+  bool? namespaceAware = true;
+  DateTime? createdDate = DateTime.now();
   int? ttb;
   int? ttl;
   int? ttr;
@@ -46,8 +47,10 @@ class PassKey {
     isHidden ??= false;
     isPublic ??= false;
     isRef ??= false;
+    createdDate ??= DateTime.now();
+    namespace ??= PassmanEnv.appNamespace;
     isEncrypted ??= false;
-    namespaceAware = namespaceAware ?? false;
+    namespaceAware = namespaceAware ?? true;
     ccd ??= false;
 
     value ??= Value();
@@ -124,15 +127,16 @@ class PassKey {
       ..isRef = isRef ?? false
       ..sharedBy = sharedBy
       ..sharedWith = sharedWith
-      ..namespace = namespace
+      ..namespace = namespace ?? PassmanEnv.appNamespace
       ..metadata = (Metadata()
         ..ccd = ccd ?? false
+        ..createdAt = createdDate ?? DateTime.now()
         ..isPublic = isPublic ?? false
         ..isHidden = isHidden ?? false
         ..isCached = isCached ?? false
         ..isEncrypted = isEncrypted ?? false
         ..isBinary = isBinary ?? false
-        ..namespaceAware = namespaceAware ?? false
+        ..namespaceAware = namespaceAware ?? true
         ..ttl = ttl
         ..ttb = ttb
         ..ttr = ttr);

@@ -1,0 +1,1 @@
+enum ApiRequest { post, get }

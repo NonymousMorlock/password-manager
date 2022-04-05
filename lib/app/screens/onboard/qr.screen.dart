@@ -1,6 +1,5 @@
 // 🐦 Flutter imports:
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 // 📦 Package imports:
 import 'package:file_picker/file_picker.dart';
@@ -44,11 +43,9 @@ class _QRScreenState extends State<QRScreen> {
         context.read<UserData>().atOnboardingPreference.cramSecret =
             scanData.code?.split(':')[1];
         context.read<NewUser>()
-          ..atSignWithImgData['atSign'] = scanData.code?.split(':')[0]
-          ..atSignWithImgData['img'] =
-              (await rootBundle.load(Assets.getRandomAvatar()))
-                  .buffer
-                  .asUint8List()
+          ..newUserData['atSign'] = scanData.code?.split(':')[0]
+          ..newUserData['img'] =
+              await AppServices.readLocalfilesAsBytes(Assets.getRandomAvatar())
           ..setQrData = QrModel(
               atSign: scanData.code?.split(':')[0] ?? '',
               cramSecret: scanData.code?.split(':')[1] ?? '');

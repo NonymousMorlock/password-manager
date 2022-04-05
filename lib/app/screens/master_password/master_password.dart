@@ -1,9 +1,13 @@
 // 🐦 Flutter imports:
-import 'package:at_client_mobile/at_client_mobile.dart';
 import 'package:flutter/material.dart';
+
+// 📦 Package imports:
+import 'package:at_client_mobile/at_client_mobile.dart';
 import 'package:provider/provider.dart';
 
+// 🌎 Project imports:
 import '../../../core/services/app.service.dart';
+import '../../../meta/components/sync_indicator.dart';
 import '../../../meta/notifiers/user_data.dart';
 
 class MasterPasswordScreen extends StatefulWidget {
@@ -16,10 +20,11 @@ class MasterPasswordScreen extends StatefulWidget {
 class _MasterPasswordScreenState extends State<MasterPasswordScreen> {
   @override
   void initState() {
-    Future<void>.microtask(() {
+    Future<void>.microtask(() async {
       if (context.read<UserData>().syncStatus != SyncStatus.started ||
           context.read<UserData>().syncStatus != SyncStatus.success) {
-        AppServices.refresh();
+        AppServices.sdkServices.atClientManager.notificationService.subscribe();
+        AppServices.syncData();
       }
     });
     super.initState();
@@ -35,56 +40,29 @@ class _MasterPasswordScreenState extends State<MasterPasswordScreen> {
         actions: <Widget>[
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Stack(
-              alignment: Alignment.center,
-              fit: StackFit.loose,
-              children: <Widget>[
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 500),
-                  height: 45,
-                  width: 45,
-                  curve: Curves.easeInOut,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(
-                      color: context.watch<UserData>().syncStatus ==
-                              SyncStatus.notStarted
-                          ? Colors.transparent
-                          : context.watch<UserData>().syncStatus ==
-                                  SyncStatus.started
-                              ? Colors.yellow[600]!
-                              : context.watch<UserData>().syncStatus ==
-                                      SyncStatus.success
-                                  ? Colors.green
-                                  : Colors.red,
-                      width: 3,
-                    ),
-                    borderRadius: BorderRadius.circular(47),
+            child: SyncIndicator(
+              child: GestureDetector(
+                onTap: () {},
+                child: Hero(
+                  tag: 'profilePic',
+                  createRectTween: (Rect? begin, Rect? end) => RectTween(
+                    begin: begin?.translate(10, 0),
+                    end: end?.translate(0, 10),
                   ),
-                  child: GestureDetector(
-                    onTap: () {},
-                    child: Hero(
-                      tag: 'profilePic',
-                      createRectTween: (Rect? begin, Rect? end) => RectTween(
-                        begin: begin?.translate(10, 0),
-                        end: end?.translate(0, 10),
-                      ),
-                      transitionOnUserGestures: true,
-                      child: ClipOval(
-                        child: Image(
-                          height: 45,
-                          width: 45,
-                          fit: BoxFit.fill,
-                          gaplessPlayback: true,
-                          image: Image.memory(
-                                  context.watch<UserData>().currentProfilePic)
-                              .image,
-                        ),
-                      ),
+                  transitionOnUserGestures: true,
+                  child: ClipOval(
+                    child: Image(
+                      height: 45,
+                      width: 45,
+                      fit: BoxFit.fill,
+                      gaplessPlayback: true,
+                      image: Image.memory(
+                              context.watch<UserData>().currentProfilePic)
+                          .image,
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         ],

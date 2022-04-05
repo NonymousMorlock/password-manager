@@ -2,7 +2,7 @@ class Value {
   String? labelName;
   dynamic value;
   String? type;
-  String? createdDate;
+  String? createdDate = DateTime.now().toString();
   bool? isHidden = false;
 
   Value(

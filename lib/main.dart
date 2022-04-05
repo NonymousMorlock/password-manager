@@ -38,6 +38,13 @@ Future<void> main() async {
   AppLogger.rootLevel = 'finer';
   // await KeyChainManager.getInstance().clearKeychainEntries();
   ErrorWidget.builder = codeErrorScreenBuilder;
+  String _logsPath =
+      p.join((await getApplicationSupportDirectory()).path, 'logs');
+  logFileLocation = _logsPath;
+  log(_logsPath);
+  if (!await Directory(_logsPath).exists()) {
+    await Directory(_logsPath).create(recursive: true);
+  }
   await PassmanEnv.loadEnv(Assets.configFile);
   runApp(
     const MultiProviders(
@@ -54,33 +61,32 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final AppLogger _logger = AppLogger('MyApp');
   @override
   void initState() {
-    Future<void>.microtask(() async {
-      AppServices.init(Provider.of<UserData>(context, listen: false));
-      String _path = (await getApplicationSupportDirectory()).path;
-      String _downloadsPath = p.join(_path, 'downloads');
-      String _logsPath = p.join(_path, 'logs');
-      logFileLocation = _logsPath;
-      if (!await Directory(_downloadsPath).exists()) {
-        await Directory(_downloadsPath).create(recursive: true);
-      }
-      log(_logsPath);
-      if (!await Directory(_logsPath).exists()) {
-        await Directory(_logsPath).create(recursive: true);
-      }
-      AppConstants.rootDomain = PassmanEnv.rootDomain;
-      OnboardingService.getInstance().setAtClientPreference =
-          context.read<UserData>().atOnboardingPreference
-            ..commitLogPath = p.join(_path, 'commitLog')
-            ..hiveStoragePath = p.join(_path, 'hiveStorage')
-            ..downloadPath = _downloadsPath
-            ..syncRegex = PassmanEnv.syncRegex
-            ..isLocalStoreRequired = true
-            ..syncPageLimit = 500
-            ..rootDomain = PassmanEnv.rootDomain
-            ..namespace = PassmanEnv.appNamespace;
-    });
+    _logger.finer('Started initializing the app...');
+    Future<void>.microtask(
+      () async {
+        AppServices.init(Provider.of<UserData>(context, listen: false));
+        String _path = (await getApplicationSupportDirectory()).path;
+        String _downloadsPath = p.join(_path, 'downloads');
+        if (!await Directory(_downloadsPath).exists()) {
+          await Directory(_downloadsPath).create(recursive: true);
+        }
+        AppConstants.rootDomain = PassmanEnv.rootDomain;
+        OnboardingService.getInstance().setAtClientPreference =
+            context.read<UserData>().atOnboardingPreference
+              ..commitLogPath = p.join(_path, 'commitLog')
+              ..hiveStoragePath = p.join(_path, 'hiveStorage')
+              ..downloadPath = _downloadsPath
+              ..syncRegex = PassmanEnv.syncRegex
+              ..isLocalStoreRequired = true
+              ..syncPageLimit = 500
+              ..rootDomain = PassmanEnv.rootDomain
+              ..namespace = PassmanEnv.appNamespace;
+      },
+    );
+    _logger.finer('Initializing the app successfully completed.');
     super.initState();
   }
 
@@ -93,6 +99,7 @@ class _MyAppState extends State<MyApp> {
       ),
       initialRoute: PageRouteNames.splashScreen,
       onGenerateRoute: (RouteSettings settings) {
+        _logger.finer('Navigating to ${settings.name}');
         switch (settings.name) {
           case PageRouteNames.splashScreen:
             return pageTransition(

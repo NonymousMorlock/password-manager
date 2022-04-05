@@ -158,7 +158,7 @@ class _OtpFormState extends State<OtpForm> {
                               setState(() => _submitting = true);
                               context
                                   .read<NewUser>()
-                                  .atSignWithImgData
+                                  .newUserData
                                   .addAll(<String, String>{
                                 'otp': pin1.text +
                                     pin2.text +
