@@ -1,0 +1,86 @@
+name: passman
+description: A new Flutter project.
+
+publish_to: 'none'
+
+version: 0.0.1
+
+environment:
+  sdk: ">=2.16.2 <3.0.0"
+
+dependencies:
+  at_client_mobile: ^3.1.10
+  at_onboarding_flutter: ^4.0.0
+  cupertino_icons: ^1.0.4
+  dotted_border: ^2.0.0+2
+  file_picker: ^4.5.1
+  flutter:
+    sdk: flutter
+  flutter_icons: ^1.1.0
+  flutter_launcher_icons: ^0.9.2
+  freezed_annotation: ^1.1.0
+  intl: ^0.17.0
+  json_annotation: ^4.4.0
+  lottie: ^1.2.2
+  page_transition: ^2.0.5
+  path_provider: ^2.0.9
+  provider: ^6.0.2
+  qr_code_scanner: ^0.7.0
+  tabler_icons: ^0.0.3
+
+dependency_overrides:
+  async: ^2.9.0
+  permission_handler: ^9.2.0
+  at_client: ^3.0.15
+  share_plus:
+    git:
+      url: https://github.com/Coronon/plus_plugins
+      path: packages/share_plus/share_plus
+      ref: main
+  share_plus_platform_interface:
+    git:
+      url: https://github.com/Coronon/plus_plugins
+      path: packages/share_plus/share_plus_platform_interface
+      ref: main
+  share_plus_linux:
+    git:
+      url: https://github.com/Coronon/plus_plugins
+      path: packages/share_plus/share_plus_linux
+      ref: main
+  share_plus_windows:
+    git:
+      url: https://github.com/Coronon/plus_plugins
+      path: packages/share_plus/share_plus_windows
+      ref: main
+  share_plus_macos:
+    git:
+      url: https://github.com/Coronon/plus_plugins
+      path: packages/share_plus/share_plus_macos
+      ref: main
+
+dev_dependencies:
+  build_runner: ^2.1.8
+  flutter_lints: ^1.0.4
+  freezed: ^1.1.1
+  import_sorter: ^4.6.0
+  json_serializable: ^6.1.5
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/
+    - assets/avatars/
+    - assets/images/
+    - assets/lottie/
+    - assets/config/
+
+flutter_icons:
+  image_path: "assets/images/logo.png"
+  adaptive_icon_background: "#FFFFFFFF"
+  adaptive_icon_foreground: "assets/images/logo.png"
+  android: true
+  ios: true
+  remove_alpha_ios: true
+
+import_sorter:
+  emojis: true
