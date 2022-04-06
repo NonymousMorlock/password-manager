@@ -26,6 +26,7 @@ dependencies:
   path_provider: ^2.0.9
   provider: ^6.0.2
   qr_code_scanner: ^0.7.0
+  shared_preferences: ^2.0.13
   tabler_icons: ^0.0.3
 
 dependency_overrides:

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 // 🌎 Project imports:
 import '../../../core/services/app.service.dart';
+import '../../../meta/components/adaptive_loading.dart';
 import '../../../meta/components/toast.dart';
 import '../../../meta/notifiers/new_user.dart';
 import '../../constants/page_route.dart';
@@ -65,9 +66,7 @@ class _GetAtSignScreenState extends State<GetAtSignScreen> {
         children: <Widget>[
           Center(
             child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator.adaptive(),
-                  )
+                ? const AdaptiveLoading()
                 : Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
@@ -180,9 +179,7 @@ class _GetAtSignScreenState extends State<GetAtSignScreen> {
         backgroundColor: _isLoading ? Colors.grey : Colors.green,
         elevation: 0,
         child: _processing
-            ? const CircularProgressIndicator.adaptive(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-              )
+            ? const AdaptiveLoading()
             : Icon(
                 Icons.adaptive.arrow_forward_rounded,
                 color: Colors.white,

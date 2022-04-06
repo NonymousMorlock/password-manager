@@ -29,6 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
   final AppLogger _logger = AppLogger('SplashScreen');
   final OnboardingService _os = OnboardingService.getInstance();
   final SdkServices _sdk = SdkServices.getInstance();
+  bool _masterImgKeyExists = false;
   Future<void> _init() async {
     try {
       String? _currentAtSign;
@@ -58,12 +59,12 @@ class _SplashScreenState extends State<SplashScreen> {
             context.read<UserData>().currentProfilePic =
                 await AppServices.readLocalfilesAsBytes(Assets.logoImg);
           }
+          _masterImgKeyExists = await _sdk.getMasterImageKey();
         }
       } else {
         await Future<void>.delayed(const Duration(milliseconds: 3200));
       }
       _logger.finer('Checking done...');
-      bool _masterImgKeyExists = await _sdk.getMasterImageKey();
       await Navigator.pushReplacementNamed(
           context,
           onboarded

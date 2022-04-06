@@ -12,6 +12,7 @@ import 'package:tabler_icons/tabler_icons.dart';
 
 // 🌎 Project imports:
 import '../../../core/services/app.service.dart';
+import '../../../meta/components/adaptive_loading.dart';
 import '../../../meta/components/file_upload_space.dart';
 import '../../../meta/components/sync_indicator.dart';
 import '../../../meta/components/toast.dart';
@@ -52,24 +53,28 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
         children: <Widget>[
           Center(
             child: _file == null
-                ? FileUploadSpace(
-                    fileType: FileType.image,
-                    onTap: (_) {
-                      if (_.isEmpty) {
-                        showToast(context, 'Image not picked', isError: true);
-                        return;
-                      }
-                      setState(() {
-                        _file = _.first;
-                      });
-                    },
-                    child: const Icon(
-                      TablerIcons.upload,
-                      color: Colors.green,
-                      size: 30,
-                    ),
-                    uploadMessage: 'Select a image to\nset as master password',
-                  )
+                ? _isLoading
+                    ? const AdaptiveLoading()
+                    : FileUploadSpace(
+                        fileType: FileType.image,
+                        onTap: (_) {
+                          if (_.isEmpty) {
+                            showToast(context, 'Image not picked',
+                                isError: true);
+                            return;
+                          }
+                          setState(() {
+                            _file = _.first;
+                          });
+                        },
+                        child: const Icon(
+                          TablerIcons.upload,
+                          color: Colors.green,
+                          size: 30,
+                        ),
+                        uploadMessage:
+                            'Select a image to\nset as master password',
+                      )
                 : Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
@@ -138,28 +143,36 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
             right: 10,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: SyncIndicator(
-                size: 45,
-                child: GestureDetector(
-                  onTap: () {},
-                  child: Hero(
-                    tag: 'profilePic',
-                    createRectTween: (Rect? begin, Rect? end) => RectTween(
-                      begin: begin?.translate(10, 0),
-                      end: end?.translate(0, 10),
-                    ),
-                    transitionOnUserGestures: true,
-                    child: ClipOval(
-                      child: Image(
-                        height: 45,
-                        width: 45,
-                        fit: BoxFit.fill,
-                        gaplessPlayback: true,
-                        image: Image.memory(
-                                context.watch<UserData>().currentProfilePic)
-                            .image,
-                      ),
-                    ),
+              child: ChangeNotifierProvider<UserData>.value(
+                value: context.read<UserData>(),
+                builder: (BuildContext context, _) => Consumer<UserData>(
+                  builder: (BuildContext context, UserData value, Widget? _) =>
+                      SyncIndicator(
+                    size: value.currentProfilePic.isEmpty ? 15 : 45,
+                    child: value.currentProfilePic.isEmpty
+                        ? null
+                        : GestureDetector(
+                            onTap: () {},
+                            child: Hero(
+                              tag: 'profilePic',
+                              createRectTween: (Rect? begin, Rect? end) =>
+                                  RectTween(
+                                begin: begin?.translate(10, 0),
+                                end: end?.translate(0, 10),
+                              ),
+                              transitionOnUserGestures: true,
+                              child: ClipOval(
+                                child: Image(
+                                  height: 45,
+                                  width: 45,
+                                  fit: BoxFit.fill,
+                                  gaplessPlayback: true,
+                                  image: Image.memory(value.currentProfilePic)
+                                      .image,
+                                ),
+                              ),
+                            ),
+                          ),
                   ),
                 ),
               ),
@@ -167,27 +180,29 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          PassKey(
-            key: 'masterpassimg',
-            sharedBy: AppServices.sdkServices.currentAtSign,
-            isPublic: false,
-            isHidden: true,
-            value: Value(
-              value: Base2e15.encode(
-                  await AppServices.readLocalfilesAsBytes(_file!.path!)),
-              labelName: 'Master password image',
-              isHidden: true,
-            ),
-          );
-        },
-        child: const Icon(
-          TablerIcons.check,
-          color: Colors.white,
-        ),
-        backgroundColor: Colors.green,
-      ),
+      floatingActionButton: _file != null
+          ? FloatingActionButton(
+              onPressed: () async {
+                PassKey(
+                  key: 'masterpassimg',
+                  sharedBy: AppServices.sdkServices.currentAtSign,
+                  isPublic: false,
+                  isHidden: true,
+                  value: Value(
+                    value: Base2e15.encode(
+                        await AppServices.readLocalfilesAsBytes(_file!.path!)),
+                    labelName: 'Master password image',
+                    isHidden: true,
+                  ),
+                );
+              },
+              child: const Icon(
+                TablerIcons.check,
+                color: Colors.white,
+              ),
+              backgroundColor: Colors.green,
+            )
+          : null,
     );
   }
 }

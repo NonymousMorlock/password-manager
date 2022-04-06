@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 // 🌎 Project imports:
 import '../../app/constants/global.dart';
 import '../notifiers/new_user.dart';
+import 'adaptive_loading.dart';
 import 'toast.dart';
 
 class OtpForm extends StatefulWidget {
@@ -129,7 +130,7 @@ class _OtpFormState extends State<OtpForm> {
           Column(
             children: <Widget>[
               _submitting
-                  ? const CircularProgressIndicator.adaptive()
+                  ? const AdaptiveLoading()
                   : MaterialButton(
                       mouseCursor: SystemMouseCursors.click,
                       color: _resending ? Colors.grey : Colors.green,
@@ -178,7 +179,7 @@ class _OtpFormState extends State<OtpForm> {
                     ),
               vSpacer(30),
               _resending
-                  ? const CircularProgressIndicator.adaptive()
+                  ? const AdaptiveLoading()
                   : InkWell(
                       mouseCursor: SystemMouseCursors.click,
                       splashFactory: NoSplash.splashFactory,

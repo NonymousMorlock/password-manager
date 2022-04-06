@@ -16,6 +16,7 @@ import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as p;
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zxing2/qrcode.dart';
 
 // 🌎 Project imports:
@@ -46,9 +47,22 @@ class AppServices {
   static final OnboardingService onboardingService =
       OnboardingService.getInstance();
 
+  /// This function will clear the keychain if the app installed newly again.
+  Future<void> clearKeyChain() async {
+    _logger.finer('Checking for keychain entries to clear');
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    if (_prefs.getBool('first_run') ?? true) {
+      _logger.finer('First run detected. Clearing keychain');
+      await KeyChainManager.getInstance().clearKeychainEntries();
+      await _prefs.setBool('first_run', false);
+    }
+  }
+
+  /// This function will read local files as string.
   static Future<String> readLocalfilesAsString(String filePath) async =>
       rootBundle.loadString(filePath);
 
+  /// This function will read local files as bytes.
   static Future<Uint8List> readLocalfilesAsBytes(String filePath) async =>
       (await rootBundle.load(filePath)).buffer.asUint8List();
 

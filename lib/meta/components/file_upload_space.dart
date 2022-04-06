@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 
 // 🌎 Project imports:
 import '../../core/services/app.service.dart';
+import 'adaptive_loading.dart';
 
 class FileUploadSpace extends StatelessWidget {
   const FileUploadSpace({
@@ -74,10 +75,7 @@ class FileUploadSpace extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(vertical: 18.0),
                           height: 10,
                           width: 10,
-                          child: const CircularProgressIndicator.adaptive(
-                            strokeWidth: 3,
-                          ),
-                        )
+                          child: const AdaptiveLoading())
                       : Text(
                           uploadMessage ?? 'Upload your files',
                           textAlign: TextAlign.center,

@@ -40,10 +40,10 @@ class UserData extends ChangeNotifier {
   }
 
   /// Current ProfilePic
-  Uint8List? _currentProfilePic;
+  Uint8List _currentProfilePic = Uint8List(0);
 
   /// Get current ProfilePic
-  Uint8List get currentProfilePic => _currentProfilePic!;
+  Uint8List get currentProfilePic => _currentProfilePic;
 
   /// Set current ProfilePic
   set currentProfilePic(Uint8List value) {

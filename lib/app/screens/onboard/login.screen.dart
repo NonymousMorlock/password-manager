@@ -18,6 +18,7 @@ import 'package:tabler_icons/tabler_icons.dart';
 import '../../../core/services/app.service.dart';
 import '../../../core/services/passman.env.dart';
 import '../../../core/services/sdk.services.dart';
+import '../../../meta/components/adaptive_loading.dart';
 import '../../../meta/components/file_upload_space.dart';
 import '../../../meta/components/toast.dart';
 import '../../../meta/extensions/input_formatter.ext.dart';
@@ -42,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _checkedAtSign = false,
       _isLoading = false,
       _uploading = false;
-  final List<PlatformFile> _list = <PlatformFile>[];
+  List<PlatformFile> _list = <PlatformFile>[];
   final SdkServices _sdk = SdkServices.getInstance();
   @override
   void initState() {
@@ -164,12 +165,14 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         fileName = null;
         _uploading = false;
+        _list = _l;
       });
       showToast(context, 'No file selected');
       return;
     } else {
       setState(() {
-        fileName = _list.first.name;
+        _list = _l;
+        fileName = _l.first.name;
       });
     }
     setState(() => _uploading = false);
@@ -268,14 +271,14 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                         vSpacer(100),
                         _isLoading
-                            ? squareWidget(
-                                48,
-                                child:
-                                    const CircularProgressIndicator.adaptive(),
-                              )
+                            ? const AdaptiveLoading()
                             : MaterialButton(
                                 mouseCursor: SystemMouseCursors.click,
-                                color: Colors.green,
+                                color: _checkedAtSign &&
+                                        _isValidAtSign &&
+                                        _list.isEmpty
+                                    ? Colors.grey
+                                    : Colors.green,
                                 elevation: 0,
                                 splashColor: Colors.transparent,
                                 highlightColor: Colors.transparent,
@@ -297,9 +300,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 onPressed: _checkedAtSign &&
                                         _isValidAtSign &&
                                         _list.isEmpty
-                                    ? () => showToast(context,
-                                        'Please upload an atKeys file.',
-                                        isError: true)
+                                    ? null
                                     : _atSign == null || _atSign!.isEmpty
                                         ? () => showToast(
                                             context, 'Please enter your @sign',

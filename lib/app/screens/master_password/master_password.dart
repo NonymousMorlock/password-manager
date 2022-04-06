@@ -40,27 +40,36 @@ class _MasterPasswordScreenState extends State<MasterPasswordScreen> {
         actions: <Widget>[
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: SyncIndicator(
-              child: GestureDetector(
-                onTap: () {},
-                child: Hero(
-                  tag: 'profilePic',
-                  createRectTween: (Rect? begin, Rect? end) => RectTween(
-                    begin: begin?.translate(10, 0),
-                    end: end?.translate(0, 10),
-                  ),
-                  transitionOnUserGestures: true,
-                  child: ClipOval(
-                    child: Image(
-                      height: 45,
-                      width: 45,
-                      fit: BoxFit.fill,
-                      gaplessPlayback: true,
-                      image: Image.memory(
-                              context.watch<UserData>().currentProfilePic)
-                          .image,
-                    ),
-                  ),
+            child: ChangeNotifierProvider<UserData>.value(
+              value: context.read<UserData>(),
+              builder: (BuildContext context, _) => Consumer<UserData>(
+                builder: (BuildContext context, UserData value, Widget? _) =>
+                    SyncIndicator(
+                  size: value.currentProfilePic.isEmpty ? 15 : 45,
+                  child: value.currentProfilePic.isEmpty
+                      ? null
+                      : GestureDetector(
+                          onTap: () {},
+                          child: Hero(
+                            tag: 'profilePic',
+                            createRectTween: (Rect? begin, Rect? end) =>
+                                RectTween(
+                              begin: begin?.translate(10, 0),
+                              end: end?.translate(0, 10),
+                            ),
+                            transitionOnUserGestures: true,
+                            child: ClipOval(
+                              child: Image(
+                                height: 45,
+                                width: 45,
+                                fit: BoxFit.fill,
+                                gaplessPlayback: true,
+                                image:
+                                    Image.memory(value.currentProfilePic).image,
+                              ),
+                            ),
+                          ),
+                        ),
                 ),
               ),
             ),
