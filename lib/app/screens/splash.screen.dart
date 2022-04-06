@@ -59,7 +59,7 @@ class _SplashScreenState extends State<SplashScreen> {
             context.read<UserData>().currentProfilePic =
                 await AppServices.readLocalfilesAsBytes(Assets.logoImg);
           }
-          _masterImgKeyExists = await _sdk.getMasterImageKey();
+          _masterImgKeyExists = await _sdk.checkMasterImageKey();
         }
       } else {
         await Future<void>.delayed(const Duration(milliseconds: 3200));

@@ -28,6 +28,7 @@ import '../../constants/assets.dart';
 import '../../constants/constants.dart';
 import '../../constants/global.dart';
 import '../../constants/page_route.dart';
+import '../../constants/theme.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -78,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
               context.read<UserData>().atOnboardingPreference);
           _list.clear();
           setState(() => _isLoading = false);
-          bool _masterImgKeyExists = await _sdk.getMasterImageKey();
+          bool _masterImgKeyExists = await _sdk.checkMasterImageKey();
           await Navigator.pushReplacementNamed(
               context,
               _masterImgKeyExists
@@ -193,7 +194,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: <Widget>[
                         Image.asset(
                           Assets.atLogo,
-                          color: Colors.green,
+                          color: AppTheme.primary,
                           height: 120,
                         ),
                         vSpacer(50),
@@ -233,23 +234,23 @@ class _LoginScreenState extends State<LoginScreen> {
                                 width: 300,
                                 height: 50,
                                 decoration: BoxDecoration(
-                                  color: Colors.grey.withOpacity(0.2),
+                                  color: AppTheme.primary.withOpacity(0.2),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: TextFormField(
                                   controller: _atSignController,
                                   autocorrect: false,
                                   textCapitalization: TextCapitalization.none,
-                                  decoration: const InputDecoration(
+                                  decoration: InputDecoration(
                                     isDense: false,
                                     border: InputBorder.none,
-                                    contentPadding:
-                                        EdgeInsets.symmetric(horizontal: 10),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 10),
                                     hintText: '@sign',
                                     prefix: Text(
                                       '@ ',
                                       style: TextStyle(
-                                        color: Colors.green,
+                                        color: AppTheme.primary,
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
@@ -277,8 +278,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 color: _checkedAtSign &&
                                         _isValidAtSign &&
                                         _list.isEmpty
-                                    ? Colors.grey
-                                    : Colors.green,
+                                    ? AppTheme.primary
+                                    : AppTheme.primary,
                                 elevation: 0,
                                 splashColor: Colors.transparent,
                                 highlightColor: Colors.transparent,
@@ -315,10 +316,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           splashFactory: NoSplash.splashFactory,
                           highlightColor: Colors.transparent,
                           hoverColor: Colors.transparent,
-                          child: const Text(
+                          child: Text(
                             'Get an @sign',
                             style: TextStyle(
-                              color: Colors.green,
+                              color: AppTheme.primary,
                               fontWeight: FontWeight.w500,
                             ),
                           ),

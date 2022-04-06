@@ -10,6 +10,7 @@ import '../../../meta/components/adaptive_loading.dart';
 import '../../../meta/components/toast.dart';
 import '../../../meta/notifiers/new_user.dart';
 import '../../constants/page_route.dart';
+import '../../constants/theme.dart';
 
 class GetAtSignScreen extends StatefulWidget {
   const GetAtSignScreen({Key? key}) : super(key: key);
@@ -97,10 +98,10 @@ class _GetAtSignScreenState extends State<GetAtSignScreen> {
                   onTap: () async {
                     await getData();
                   },
-                  child: const Text(
+                  child: Text(
                     'Refresh',
                     style: TextStyle(
-                      color: Colors.green,
+                      color: AppTheme.primary,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -176,7 +177,7 @@ class _GetAtSignScreenState extends State<GetAtSignScreen> {
         focusElevation: 0,
         enableFeedback: true,
         tooltip: 'Next',
-        backgroundColor: _isLoading ? Colors.grey : Colors.green,
+        backgroundColor: _isLoading ? AppTheme.primary : AppTheme.primary,
         elevation: 0,
         child: _processing
             ? const AdaptiveLoading()
@@ -203,7 +204,7 @@ class _GetAtSignScreenState extends State<GetAtSignScreen> {
             height: 50,
             width: 350,
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: AppTheme.primary,
               borderRadius: BorderRadius.circular(10),
             ),
             child: TextField(

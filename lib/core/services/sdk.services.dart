@@ -1,7 +1,9 @@
 // 🎯 Dart imports:
 import 'dart:convert';
+import 'dart:typed_data';
 
 // 📦 Package imports:
+import 'package:at_base2e15/at_base2e15.dart';
 import 'package:at_client_mobile/at_client_mobile.dart';
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
@@ -134,7 +136,8 @@ class SdkServices {
     return null;
   }
 
-  Future<bool> getMasterImageKey() async {
+  /// Checks if master image exists or not in remote secondary returns the result.
+  Future<bool> checkMasterImageKey() async {
     _logger.finer('Getting master image key');
     ScanVerbBuilder verb = ScanVerbBuilder()
       ..auth = true
@@ -152,6 +155,24 @@ class SdkServices {
     }
   }
 
+  /// Fetches the master image key from secondary.
+  Future<Uint8List?> getMasterImage() async {
+    _logger.finer('Getting master image');
+    PassKey _masterImgKey = PassKey(
+      key: 'masterpassimg',
+      sharedBy: currentAtSign,
+    );
+    try {
+      AtValue value =
+          await atClientManager.atClient.get(_masterImgKey.toAtKey());
+      return Uint8List.fromList(
+          Base2e15.decode(json.decode(value.value)['value']));
+    } on Exception catch (e, s) {
+      _logger.severe('Error getting master image', e, s);
+      return null;
+    }
+  }
+
   // --------------------- //
   //    CRUD operations    //
   // --------------------- //
@@ -162,8 +183,10 @@ class SdkServices {
       dynamic value = entity.isBinary == false
           ? jsonEncode(entity.value?.toJson())
           : entity.value?.value;
-
-      return atClientManager.atClient.put(entity.toAtKey(), value);
+      bool putResult =
+          await atClientManager.atClient.put(entity.toAtKey(), value);
+      AppServices.syncData();
+      return putResult;
     } catch (e, s) {
       _logger.severe('Error while putting data', e, s);
       return false;

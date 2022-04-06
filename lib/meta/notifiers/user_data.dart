@@ -26,6 +26,13 @@ class UserData extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool _networkConnected = false;
+  bool get networkConnected => _networkConnected;
+  set networkConnected(bool value) {
+    _networkConnected = value;
+    notifyListeners();
+  }
+
   /// Current @sign
   String? _currentAtSign;
 
@@ -49,6 +56,19 @@ class UserData extends ChangeNotifier {
   set currentProfilePic(Uint8List value) {
     _logger.finer('Setting current profile pic');
     _currentProfilePic = value;
+    notifyListeners();
+  }
+
+  /// Master image
+  Uint8List _masterImage = Uint8List(0);
+
+  /// Get master image
+  Uint8List get masterImage => _masterImage;
+
+  /// Set master image
+  set masterImage(Uint8List value) {
+    _logger.finer('Setting current profile pic');
+    _masterImage = value;
     notifyListeners();
   }
 

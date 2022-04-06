@@ -6,6 +6,7 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:file_picker/file_picker.dart';
 
 // 🌎 Project imports:
+import '../../app/constants/theme.dart';
 import '../../core/services/app.service.dart';
 import 'adaptive_loading.dart';
 
@@ -56,7 +57,7 @@ class FileUploadSpace extends StatelessWidget {
               width: 300,
               height: 150,
               decoration: BoxDecoration(
-                color: boxColor ?? Colors.green.withOpacity(.2),
+                color: boxColor ?? AppTheme.primary.withOpacity(.2),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Column(
@@ -82,7 +83,7 @@ class FileUploadSpace extends StatelessWidget {
                           style: messageStyle ??
                               TextStyle(
                                 fontSize: 13,
-                                color: Colors.grey[800]!,
+                                color: AppTheme.primary,
                               ),
                         ),
                 ],

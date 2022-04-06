@@ -18,6 +18,7 @@ import '../../../meta/notifiers/user_data.dart';
 import '../../constants/assets.dart';
 import '../../constants/global.dart';
 import '../../constants/page_route.dart';
+import '../../constants/theme.dart';
 
 class QRScreen extends StatefulWidget {
   const QRScreen({Key? key}) : super(key: key);
@@ -147,7 +148,7 @@ class _QRScreenState extends State<QRScreen> {
                     flash ? const TablerIconData(0xea38) : TablerIcons.bolt_off,
                     color: flash
                         ? Colors.white
-                        : Colors.grey[300]!.withOpacity(0.3),
+                        : AppTheme.primary.withOpacity(0.3),
                     size: 30,
                   ),
                 ),

@@ -17,6 +17,7 @@ import '../../../meta/models/value.model.dart';
 import '../../../meta/notifiers/new_user.dart';
 import '../../../meta/notifiers/user_data.dart';
 import '../../constants/page_route.dart';
+import '../../constants/theme.dart';
 
 class ActivateAtSignScreen extends StatefulWidget {
   const ActivateAtSignScreen({Key? key}) : super(key: key);
@@ -266,7 +267,7 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
 
   Color get waveColors => status?.serverStatus == ServerStatus.ready ||
           status?.serverStatus == ServerStatus.activated
-      ? Colors.green.withOpacity(
+      ? AppTheme.primary.withOpacity(
           _alphaAnimation.value.clamp(
             0.0,
             1.0,
@@ -286,7 +287,7 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
                     1.0,
                   ),
                 )
-              : Colors.grey.withOpacity(
+              : AppTheme.primary.withOpacity(
                   _alphaAnimation.value.clamp(
                     0.0,
                     1.0,

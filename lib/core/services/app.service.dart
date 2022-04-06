@@ -66,6 +66,10 @@ class AppServices {
   static Future<Uint8List> readLocalfilesAsBytes(String filePath) async =>
       (await rootBundle.load(filePath)).buffer.asUint8List();
 
+  /// This function will read local files as bytes.
+  static Future<Uint8List> readFilesAsBytes(String filePath) async =>
+      File(filePath).readAsBytes();
+
   /// This function will get you a new @sign from the server
   static Future<Map<String, String>> getNewAtSign() async {
     Map<String, String> atSignWithImg = <String, String>{};
@@ -241,4 +245,8 @@ class AppServices {
         '======================= ${syncResult.syncStatus.name} =======================');
     _userData.setSyncStatus = SyncProgress().syncStatus ?? SyncStatus.success;
   }
+
+  static Future<String?> getCryptKey() async =>
+      (await KeychainUtil.getAESKey(sdkServices.currentAtSign!))
+          ?.substring(0, 32);
 }

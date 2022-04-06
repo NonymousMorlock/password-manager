@@ -17,6 +17,9 @@ PageTransition<Widget> pageTransition(RouteSettings settings, Widget screen) {
   );
 }
 
+/// Bin size which is used to reduce the accuracy of the plot.
+const int binSize = 10;
+
 /// Vertical spacer with presised height.
 SizedBox vSpacer(double size) => SizedBox(width: 0, height: size);
 

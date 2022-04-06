@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 
 // 🌎 Project imports:
 import '../../app/constants/global.dart';
+import '../../app/constants/theme.dart';
 import '../notifiers/new_user.dart';
 import 'adaptive_loading.dart';
 import 'toast.dart';
@@ -133,7 +134,7 @@ class _OtpFormState extends State<OtpForm> {
                   ? const AdaptiveLoading()
                   : MaterialButton(
                       mouseCursor: SystemMouseCursors.click,
-                      color: _resending ? Colors.grey : Colors.green,
+                      color: _resending ? AppTheme.primary : AppTheme.primary,
                       elevation: 0,
                       splashColor: Colors.transparent,
                       highlightColor: Colors.transparent,
@@ -188,7 +189,9 @@ class _OtpFormState extends State<OtpForm> {
                       child: Text(
                         'Resend',
                         style: TextStyle(
-                          color: widget.resend ? Colors.green : Colors.grey,
+                          color: widget.resend
+                              ? AppTheme.primary
+                              : AppTheme.primary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -253,7 +256,7 @@ class _OtpFieldState extends State<OtpField> {
       width: 60,
       height: 70,
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        color: AppTheme.primary,
         borderRadius: BorderRadius.circular(5),
       ),
       child: Center(

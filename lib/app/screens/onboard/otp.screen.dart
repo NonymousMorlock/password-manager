@@ -13,6 +13,7 @@ import '../../../meta/notifiers/new_user.dart';
 import '../../../meta/notifiers/user_data.dart';
 import '../../constants/global.dart';
 import '../../constants/page_route.dart';
+import '../../constants/theme.dart';
 
 // 📦 Package imports:
 
@@ -116,7 +117,7 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                       value: progress,
                       strokeWidth: 3,
                       valueColor:
-                          const AlwaysStoppedAnimation<Color>(Colors.green),
+                          AlwaysStoppedAnimation<Color>(AppTheme.primary),
                     ),
                   )
                 ],
