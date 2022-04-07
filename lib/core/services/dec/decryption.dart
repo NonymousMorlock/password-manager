@@ -1,6 +1,8 @@
-import '../../../meta/extensions/logger.ext.dart';
+// 📦 Package imports:
 import 'package:encrypt/encrypt.dart' as crypt;
 
+// 🌎 Project imports:
+import '../../../meta/extensions/logger.ext.dart';
 import '../helper.service.dart';
 
 class Decryption {

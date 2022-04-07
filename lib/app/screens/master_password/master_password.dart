@@ -5,8 +5,8 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 
 // 📦 Package imports:
-import 'package:provider/provider.dart';
 import 'package:image/image.dart' as imglib;
+import 'package:provider/provider.dart';
 import 'package:tabler_icons/tabler_icons.dart';
 
 // 🌎 Project imports:

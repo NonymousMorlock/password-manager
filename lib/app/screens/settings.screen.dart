@@ -1,7 +1,11 @@
+// 🐦 Flutter imports:
 import 'package:flutter/material.dart';
+
+// 📦 Package imports:
 import 'package:provider/provider.dart';
 import 'package:tabler_icons/tabler_icons.dart';
 
+// 🌎 Project imports:
 import '../../core/services/app.service.dart';
 import '../../meta/components/sync_indicator.dart';
 import '../../meta/components/toast.dart';

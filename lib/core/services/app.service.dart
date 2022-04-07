@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 // 📦 Package imports:
 import 'package:at_base2e15/at_base2e15.dart';
 import 'package:at_client_mobile/at_client_mobile.dart';
+import 'package:at_commons/at_commons.dart';
 import 'package:at_onboarding_flutter/services/onboarding_service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
@@ -20,7 +21,6 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zxing2/qrcode.dart';
-import 'package:at_commons/at_commons.dart';
 
 // 🌎 Project imports:
 import '../../app/constants/assets.dart';
