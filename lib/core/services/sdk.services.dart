@@ -1,9 +1,7 @@
 // 🎯 Dart imports:
 import 'dart:convert';
-import 'dart:typed_data';
 
 // 📦 Package imports:
-import 'package:at_base2e15/at_base2e15.dart';
 import 'package:at_client_mobile/at_client_mobile.dart';
 import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
@@ -155,24 +153,6 @@ class SdkServices {
     }
   }
 
-  /// Fetches the master image key from secondary.
-  Future<Uint8List?> getMasterImage() async {
-    _logger.finer('Getting master image');
-    PassKey _masterImgKey = PassKey(
-      key: 'masterpassimg',
-      sharedBy: currentAtSign,
-    );
-    try {
-      AtValue value =
-          await atClientManager.atClient.get(_masterImgKey.toAtKey());
-      return Uint8List.fromList(
-          Base2e15.decode(json.decode(value.value)['value']));
-    } on Exception catch (e, s) {
-      _logger.severe('Error getting master image', e, s);
-      return null;
-    }
-  }
-
   // --------------------- //
   //    CRUD operations    //
   // --------------------- //
@@ -185,11 +165,26 @@ class SdkServices {
           : entity.value?.value;
       bool putResult =
           await atClientManager.atClient.put(entity.toAtKey(), value);
-      AppServices.syncData();
+      if (putResult) AppServices.syncData();
       return putResult;
     } catch (e, s) {
       _logger.severe('Error while putting data', e, s);
       return false;
+    }
+  }
+
+  /// Get the value of the key.
+  Future<String?> get(PassKey entity) async {
+    try {
+      AtValue _value = await atClientManager.atClient.get(entity.toAtKey());
+      print(_value);
+      return json.decode(_value.value)['value'];
+    } on KeyNotFoundException catch (e, s) {
+      _logger.warning('Key not found with message ${e.message}', e, s);
+      return null;
+    } on Exception catch (e, s) {
+      _logger.severe('Error while getting data', e, s);
+      return null;
     }
   }
 }

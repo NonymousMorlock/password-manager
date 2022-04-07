@@ -16,7 +16,6 @@ dependencies:
   file_picker: ^4.5.1
   flutter:
     sdk: flutter
-  flutter_icons: ^1.1.0
   flutter_launcher_icons: ^0.9.2
   freezed_annotation: ^1.1.0
   intl: ^0.17.0
@@ -32,7 +31,11 @@ dependencies:
 dependency_overrides:
   async: ^2.9.0
   permission_handler: ^9.2.0
-  at_client: ^3.0.15
+  at_client:
+    git:
+      url: https://github.com/atsign-foundation/at_client_sdk.git
+      path: at_client
+      ref: trunk
   share_plus:
     git:
       url: https://github.com/Coronon/plus_plugins

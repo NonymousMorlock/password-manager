@@ -13,6 +13,7 @@ import 'package:at_server_status/at_server_status.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:tabler_icons/tabler_icons.dart';
+import 'package:at_base2e15/at_base2e15.dart';
 
 // 🌎 Project imports:
 import '../../../core/services/app.service.dart';
@@ -78,8 +79,13 @@ class _LoginScreenState extends State<LoginScreen> {
               PassmanEnv.appNamespace,
               context.read<UserData>().atOnboardingPreference);
           _list.clear();
-          setState(() => _isLoading = false);
           bool _masterImgKeyExists = await _sdk.checkMasterImageKey();
+          String? _profilePic = await _sdk.getProPic();
+          if (_profilePic != null) {
+            context.read<UserData>().currentProfilePic =
+                Base2e15.decode(_profilePic);
+          }
+          setState(() => _isLoading = false);
           await Navigator.pushReplacementNamed(
               context,
               _masterImgKeyExists
@@ -234,7 +240,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 width: 300,
                                 height: 50,
                                 decoration: BoxDecoration(
-                                  color: AppTheme.primary.withOpacity(0.2),
+                                  color: AppTheme.disabled.withOpacity(0.2),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: TextFormField(

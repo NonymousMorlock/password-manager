@@ -25,6 +25,7 @@ import 'app/screens/onboard/get@sign.screen.dart';
 import 'app/screens/onboard/login.screen.dart';
 import 'app/screens/onboard/otp.screen.dart';
 import 'app/screens/onboard/qr.screen.dart';
+import 'app/screens/settings.screen.dart';
 import 'app/screens/splash.screen.dart';
 import 'app/screens/unknown.screen.dart';
 import 'core/development/dev_err_screen.dart';
@@ -45,6 +46,7 @@ Future<void> main() async {
   if (!await Directory(_logsPath).exists()) {
     await Directory(_logsPath).create(recursive: true);
   }
+  await AppServices.checkFirstRun();
   await PassmanEnv.loadEnv(Assets.configFile);
   runApp(
     const MultiProviders(
@@ -140,6 +142,11 @@ class _MyAppState extends State<MyApp> {
             return pageTransition(
               settings,
               const ActivateAtSignScreen(),
+            );
+          case PageRouteNames.settings:
+            return pageTransition(
+              settings,
+              const SettingsScreen(),
             );
           case PageRouteNames.homeScreen:
             return pageTransition(

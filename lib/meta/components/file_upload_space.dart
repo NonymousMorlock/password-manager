@@ -44,7 +44,7 @@ class FileUploadSpace extends StatelessWidget {
     return Stack(
       children: <Widget>[
         GestureDetector(
-          onTap: () async => onTap(await AppServices.uploadFile(
+          onTap: () async => onTap.call(await AppServices.uploadFile(
               fileType, multipleFiles, extensions)),
           child: DottedBorder(
             borderType: BorderType.RRect,

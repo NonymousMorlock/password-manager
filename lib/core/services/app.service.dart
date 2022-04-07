@@ -1,5 +1,6 @@
 // 🎯 Dart imports:
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -8,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 // 📦 Package imports:
+import 'package:at_base2e15/at_base2e15.dart';
 import 'package:at_client_mobile/at_client_mobile.dart';
 import 'package:at_onboarding_flutter/services/onboarding_service.dart';
 import 'package:file_picker/file_picker.dart';
@@ -18,6 +20,7 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zxing2/qrcode.dart';
+import 'package:at_commons/at_commons.dart';
 
 // 🌎 Project imports:
 import '../../app/constants/assets.dart';
@@ -25,10 +28,16 @@ import '../../app/constants/constants.dart';
 import '../../app/constants/enum.dart';
 import '../../meta/components/toast.dart';
 import '../../meta/extensions/logger.ext.dart';
+import '../../meta/extensions/plots.ext.dart';
 import '../../meta/extensions/string.ext.dart';
+import '../../meta/models/key.model.dart';
+import '../../meta/models/plots.model.dart';
 import '../../meta/models/qr.model.dart';
 import '../../meta/notifiers/new_user.dart';
 import '../../meta/notifiers/user_data.dart';
+import 'dec/decode.dart';
+import 'dec/decryption.dart';
+import 'enc/encryption.dart';
 import 'sdk.services.dart';
 
 class AppServices {
@@ -48,7 +57,7 @@ class AppServices {
       OnboardingService.getInstance();
 
   /// This function will clear the keychain if the app installed newly again.
-  Future<void> clearKeyChain() async {
+  static Future<void> checkFirstRun() async {
     _logger.finer('Checking for keychain entries to clear');
     SharedPreferences _prefs = await SharedPreferences.getInstance();
     if (_prefs.getBool('first_run') ?? true) {
@@ -246,7 +255,66 @@ class AppServices {
     _userData.setSyncStatus = SyncProgress().syncStatus ?? SyncStatus.success;
   }
 
+  /// Fetches the master image key from secondary.
+  static Future<void> getMasterImage() async {
+    _logger.finer('Getting master image');
+    PassKey _masterImgKey = PassKey(
+      key: 'masterpassimg',
+      sharedBy: sdkServices.currentAtSign,
+    );
+    try {
+      AtValue value = await sdkServices.atClientManager.atClient
+          .get(_masterImgKey.toAtKey());
+      _userData.masterImage = Uint8List.fromList(
+          Base2e15.decode(json.decode(value.value)['value']));
+      _logger.finer('Fetched master image successfully');
+    } on Exception catch (e, s) {
+      _logger.severe('Error getting master image', e, s);
+      return;
+    }
+  }
+
+  /// Fetches the master image key from secondary.
+  static Future<void> getProfilePic() async {
+    _logger.finer('Fetching profile pic');
+    PassKey _masterImgKey = PassKey(
+      key: 'profilepic',
+      sharedBy: sdkServices.currentAtSign,
+    );
+    try {
+      AtValue value = await sdkServices.atClientManager.atClient
+          .get(_masterImgKey.toAtKey());
+      _userData.currentProfilePic = Uint8List.fromList(
+          Base2e15.decode(json.decode(value.value)['value']));
+      _logger.finer('Fetched profile picture successfully');
+    } on Exception catch (e, s) {
+      _logger.severe('Error getting master image', e, s);
+      return;
+    }
+  }
+
   static Future<String?> getCryptKey() async =>
       (await KeychainUtil.getAESKey(sdkServices.currentAtSign!))
           ?.substring(0, 32);
+
+  static Future<bool> validatePlots(img.Image image, List<Plots> _plots) async {
+    _logger.finer('Validating plots');
+    try {
+      String _msg = '';
+      for (Plots pass in _plots) {
+        _msg += pass.join();
+      }
+      log(_msg);
+      String? _token = await getCryptKey();
+      _msg = Encryption.getInstance().encryptValue(_token!, _msg);
+      String? _data = Decode.getInstance()
+          .decodeMessageFromImage(image, _token, getRealData: false);
+      log(Decryption.getInstance().decryptValue(_token, _data!));
+      _logger.finer('Plots validated successfully as ${_msg == _data}');
+      return _msg == _data;
+    } on Exception catch (e, s) {
+      _logger.severe('Error validating plots', e, s);
+      return false;
+    }
+  }
 }

@@ -9,7 +9,6 @@ import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
 // 🌎 Project imports:
-import '../../core/services/app.service.dart';
 import '../../core/services/passman.env.dart';
 import '../../core/services/sdk.services.dart';
 import '../../meta/components/toast.dart';
@@ -52,12 +51,11 @@ class _SplashScreenState extends State<SplashScreen> {
         } else {
           await AtClientManager.getInstance().setCurrentAtSign(
               _currentAtSign, PassmanEnv.appNamespace, _preference);
-          String? a = await _sdk.getProPic();
-          if (a != null) {
-            context.read<UserData>().currentProfilePic = Base2e15.decode(a);
-          } else {
+          String? _profilePic = await _sdk.getProPic();
+          if (_profilePic != null) {
+            context.read<UserData>().currentAtSign = _currentAtSign;
             context.read<UserData>().currentProfilePic =
-                await AppServices.readLocalfilesAsBytes(Assets.logoImg);
+                Base2e15.decode(_profilePic);
           }
           _masterImgKeyExists = await _sdk.checkMasterImageKey();
         }

@@ -13,6 +13,16 @@ import '../extensions/logger.ext.dart';
 class UserData extends ChangeNotifier {
   final AppLogger _logger = AppLogger('UserData');
 
+  String? _userName;
+
+  String? get userName => _userName;
+
+  set userName(String? value) {
+    _logger.finer('Setting userName to $value');
+    _userName = value;
+    notifyListeners();
+  }
+
   /// Onboarding preferences
   AtClientPreference _atOnboardingPreference = AtClientPreference();
 

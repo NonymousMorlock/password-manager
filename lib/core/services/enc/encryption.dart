@@ -18,8 +18,7 @@ class Encryption {
     crypto.IV iv = crypto.IV.fromLength(16);
     crypto.Encrypter encrypter = crypto.Encrypter(crypto.AES(key));
     crypto.Encrypted encrypted = encrypter.encrypt(msg, iv: iv);
-    msg = encrypted.base64;
     _logger.finer('Data encrypted successfully');
-    return msg;
+    return encrypted.base64;
   }
 }

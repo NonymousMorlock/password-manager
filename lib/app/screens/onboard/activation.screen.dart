@@ -111,7 +111,7 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
             if (_propicUpdated) {
               AppServices.sdkServices.atClientManager.notificationService
                   .subscribe();
-              AppServices.syncData();
+              context.read<UserData>().currentAtSign = _atSign;
               context.read<UserData>().currentProfilePic =
                   context.read<NewUser>().newUserData['img'];
               _logger.finer('profile pic updated');

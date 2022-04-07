@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 
 // 📦 Package imports:
 import 'package:at_base2e15/at_base2e15.dart';
-import 'package:at_client_mobile/at_client_mobile.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image/image.dart' as imglib;
 import 'package:provider/provider.dart';
@@ -45,15 +44,17 @@ class SetMasterPasswordScreen extends StatefulWidget {
 class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
   final AppLogger _logger = AppLogger('Set Master Password Screen');
   PlatformFile? _file;
-  bool _isLoading = false, _imgSaved = false, _saving = false;
+  bool _isLoading = false, _imgSaved = false, _saving = false, _canPop = false;
   List<Plots>? _plots;
   @override
   void initState() {
     _plots = <Plots>[];
     context.read<NewUser>().newUserData.clear();
-    Future<void>.microtask(() {
-      if (context.read<UserData>().syncStatus != SyncStatus.started ||
-          context.read<UserData>().syncStatus != SyncStatus.success) {
+    Future<void>.delayed(Duration.zero, () async {
+      setState(
+          () => _canPop = ModalRoute.of(context)!.settings.arguments! as bool);
+      if (!await AppServices.sdkServices.atClientManager.syncService
+          .isInSync()) {
         AppServices.sdkServices.atClientManager.notificationService.subscribe();
         AppServices.syncData();
       }
@@ -63,11 +64,6 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // for (Plots item in _plots!) {
-    //   log('${item.x}  ${item.y}');
-    // }
-    // String pointString =
-    //     _plots!.map((Plots pass) => '(${pass.x} ${pass.y})').join('');
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -78,6 +74,7 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                     : FileUploadSpace(
                         fileType: FileType.image,
                         onTap: (_) {
+                          setState(() => _isLoading = true);
                           if (_.isEmpty) {
                             showToast(context, 'Image not picked',
                                 isError: true);
@@ -85,6 +82,7 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                           }
                           setState(() {
                             _file = _.first;
+                            _isLoading = false;
                           });
                         },
                         child: Icon(
@@ -104,7 +102,7 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                               details.localPosition.dx.floorToDouble();
                           double clickY =
                               details.localPosition.dy.floorToDouble();
-                          log('($clickX, $clickY)');
+                          log('(${(clickX / binSize).floorToDouble()}, ${(clickY / binSize).floorToDouble()})');
                           _plots!.add(
                             Plots(
                               x: (clickX / binSize).floorToDouble(),
@@ -234,23 +232,14 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                         ? null
                         : GestureDetector(
                             onTap: () {},
-                            child: Hero(
-                              tag: 'profilePic',
-                              createRectTween: (Rect? begin, Rect? end) =>
-                                  RectTween(
-                                begin: begin?.translate(10, 0),
-                                end: end?.translate(0, 10),
-                              ),
-                              transitionOnUserGestures: true,
-                              child: ClipOval(
-                                child: Image(
-                                  height: 45,
-                                  width: 45,
-                                  fit: BoxFit.fill,
-                                  gaplessPlayback: true,
-                                  image: Image.memory(value.currentProfilePic)
-                                      .image,
-                                ),
+                            child: ClipOval(
+                              child: Image(
+                                height: 45,
+                                width: 45,
+                                fit: BoxFit.fill,
+                                gaplessPlayback: true,
+                                image:
+                                    Image.memory(value.currentProfilePic).image,
                               ),
                             ),
                           ),
@@ -259,6 +248,21 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
               ),
             ),
           ),
+          _canPop
+              ? Positioned(
+                  top: 60,
+                  left: 10,
+                  child: IconButton(
+                    splashRadius: 0.1,
+                    onPressed: () {
+                      _file = null;
+                      _plots?.clear();
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(TablerIcons.x),
+                  ),
+                )
+              : square(0),
         ],
       ),
       floatingActionButton: _file != null
@@ -284,10 +288,11 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                             ),
                           );
                           try {
-                            imglib.Image? _img = imglib.decodeImage(
-                                (await AppServices.readFilesAsBytes(
-                                        _file!.path!))
-                                    .toList());
+                            Uint8List _pickedImage =
+                                await AppServices.readFilesAsBytes(
+                                    _file!.path!);
+                            imglib.Image? _img =
+                                imglib.decodeImage(_pickedImage.toList());
                             String _msg = '';
                             for (Plots pass in _plots!) {
                               _msg += pass.join();
@@ -314,9 +319,15 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                                   _saving = false;
                                   _imgSaved = true;
                                 });
-                                // showToast(context, 'Image saved successfully');
-                                await Navigator.pushReplacementNamed(
-                                    context, PageRouteNames.masterPassword);
+                                showToast(context, 'Image saved successfully');
+                                _file = null;
+                                context.read<UserData>().masterImage =
+                                    encryptedData;
+                                _plots?.clear();
+                                _canPop
+                                    ? Navigator.pop(context)
+                                    : await Navigator.pushReplacementNamed(
+                                        context, PageRouteNames.masterPassword);
                               } else {
                                 showToast(context,
                                     'Error occured while saving image to secondary',
