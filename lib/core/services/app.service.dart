@@ -26,13 +26,15 @@ import 'package:zxing2/qrcode.dart';
 import '../../app/constants/assets.dart';
 import '../../app/constants/constants.dart';
 import '../../app/constants/enum.dart';
+import '../../app/constants/keys.dart';
 import '../../meta/components/toast.dart';
 import '../../meta/extensions/logger.ext.dart';
 import '../../meta/extensions/plots.ext.dart';
 import '../../meta/extensions/string.ext.dart';
+import '../../meta/models/freezed/password.model.dart';
+import '../../meta/models/freezed/plots.model.dart';
+import '../../meta/models/freezed/qr.model.dart';
 import '../../meta/models/key.model.dart';
-import '../../meta/models/plots.model.dart';
-import '../../meta/models/qr.model.dart';
 import '../../meta/notifiers/new_user.dart';
 import '../../meta/notifiers/user_data.dart';
 import 'dec/decode.dart';
@@ -258,10 +260,8 @@ class AppServices {
   /// Fetches the master image key from secondary.
   static Future<void> getMasterImage() async {
     _logger.finer('Getting master image');
-    PassKey _masterImgKey = PassKey(
-      key: 'masterpassimg',
-      sharedBy: sdkServices.currentAtSign,
-    );
+    PassKey _masterImgKey = Keys.masterImgKey
+      ..sharedBy = sdkServices.currentAtSign;
     try {
       AtValue value = await sdkServices.atClientManager.atClient
           .get(_masterImgKey.toAtKey());
@@ -277,10 +277,8 @@ class AppServices {
   /// Fetches the master image key from secondary.
   static Future<void> getProfilePic() async {
     _logger.finer('Fetching profile pic');
-    PassKey _masterImgKey = PassKey(
-      key: 'profilepic',
-      sharedBy: sdkServices.currentAtSign,
-    );
+    PassKey _masterImgKey = Keys.profilePicKey
+      ..sharedBy = sdkServices.currentAtSign;
     try {
       AtValue value = await sdkServices.atClientManager.atClient
           .get(_masterImgKey.toAtKey());
@@ -293,10 +291,12 @@ class AppServices {
     }
   }
 
+  /// Get Cryptic keys to Encrypt/Decrypt the data
   static Future<String?> getCryptKey() async =>
       (await KeychainUtil.getAESKey(sdkServices.currentAtSign!))
           ?.substring(0, 32);
 
+  /// Validate the plots and return true/false
   static Future<bool> validatePlots(img.Image image, List<Plots> _plots) async {
     _logger.finer('Validating plots');
     try {
@@ -315,6 +315,50 @@ class AppServices {
     } on Exception catch (e, s) {
       _logger.severe('Error validating plots', e, s);
       return false;
+    }
+  }
+
+  /// Fetch url favicon
+  static Future<Uint8List> getFavicon(String url) async {
+    url = url
+        .replaceAll('https://', '')
+        .replaceAll('http://', '')
+        .split('/')
+        .first;
+    http.Response _res;
+    try {
+      _res = await http.get(Uri.https(Constants.faviconDomain, url));
+      _logger.finer('Fetched favicon.');
+      if (_res.statusCode == 200 &&
+          _res.headers['content-type'] == 'image/png') {
+        return _res.bodyBytes;
+      } else {
+        return Uint8List(0);
+      }
+    } catch (e, s) {
+      _logger.severe('Failed to fetch favicon.', e, s);
+      return Uint8List(0);
+    }
+  }
+
+  static Future<void> getPasswords() async {
+    _logger.finer('Fetching passwords');
+    try {
+      List<Password> _pass = <Password>[];
+      List<AtKey> _passwordkeys =
+          await sdkServices.getAllKeys(regex: 'password_');
+      for (AtKey _key in _passwordkeys) {
+        Map<String, dynamic> _value =
+            await sdkServices.get(PassKey(key: _key.key));
+        Password _password = Password.fromJson(_value);
+        _pass.add(_password);
+        // await sdkServices.delete(PassKey(key: _key.key));
+      }
+      _userData.passwords = _pass;
+      _logger.finer('Passwords fetched successfully');
+    } on Exception catch (e, s) {
+      _logger.severe('Error fetching passwords', e, s);
+      return;
     }
   }
 }

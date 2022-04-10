@@ -8,7 +8,6 @@ import 'package:provider/provider.dart';
 
 // 🌎 Project imports:
 import '../../../core/services/app.service.dart';
-import '../../../core/services/passman.env.dart';
 import '../../../core/services/sdk.services.dart';
 import '../../../meta/components/toast.dart';
 import '../../../meta/extensions/logger.ext.dart';
@@ -16,6 +15,7 @@ import '../../../meta/models/key.model.dart';
 import '../../../meta/models/value.model.dart';
 import '../../../meta/notifiers/new_user.dart';
 import '../../../meta/notifiers/user_data.dart';
+import '../../constants/keys.dart';
 import '../../constants/page_route.dart';
 import '../../constants/theme.dart';
 
@@ -30,15 +30,7 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
     with SingleTickerProviderStateMixin {
   final AppLogger _logger = AppLogger('ActivateAtSignScreen');
   SdkServices sdk = SdkServices.getInstance();
-  final PassKey _passKey = PassKey()
-    ..key = 'profilepic'
-    ..namespace = PassmanEnv.appNamespace
-    ..ttl = 0
-    ..ttl = 0
-    ..createdDate = DateTime.now()
-    ..isBinary = false
-    ..isPublic = true
-    ..namespaceAware = true;
+  final PassKey _passKey = Keys.profilePicKey;
   AtStatus? status;
   String content = 'Fetching @sign...';
   late final AnimationController controller = AnimationController(
@@ -103,6 +95,7 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
           bool activationResponse = await sdk.actiavteAtSign(
               _atSign, context.read<UserData>().atOnboardingPreference);
           _logger.finer('$_atSign activation response : $activationResponse');
+          context.read<UserData>().authenticated = activationResponse;
           if (activationResponse) {
             status = await AppServices.sdkServices.getAtSignStatus(_atSign);
             content = 'Activated $_atSign.\nPolishing your account...';

@@ -9,9 +9,20 @@ import 'package:at_client_mobile/at_client_mobile.dart';
 
 // 🌎 Project imports:
 import '../extensions/logger.ext.dart';
+import '../models/freezed/password.model.dart';
 
 class UserData extends ChangeNotifier {
   final AppLogger _logger = AppLogger('UserData');
+
+  bool _authenticated = false;
+
+  bool get authenticated => _authenticated;
+
+  set authenticated(bool _auth) {
+    _logger.finer('Setting user auth status to $_auth');
+    _authenticated = _auth;
+    notifyListeners();
+  }
 
   String? _userName;
 
@@ -92,6 +103,19 @@ class UserData extends ChangeNotifier {
   set setSyncStatus(SyncStatus isSyncing) {
     _logger.finer('Setting current sync status to ${isSyncing.name}');
     _syncStatus = isSyncing;
+    notifyListeners();
+  }
+
+  /// List of passwords
+  List<Password> _passwords = <Password>[];
+
+  /// Get the list of passwords
+  List<Password> get passwords => _passwords;
+
+  /// Set the list of passwords
+  set passwords(List<Password> value) {
+    _logger.finer('Setting current passwords to $value');
+    _passwords = value;
     notifyListeners();
   }
 }

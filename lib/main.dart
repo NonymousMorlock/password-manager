@@ -17,7 +17,7 @@ import 'app/constants/assets.dart';
 import 'app/constants/global.dart';
 import 'app/constants/page_route.dart';
 import 'app/provider/app_provider.dart';
-import 'app/screens/home.screen.dart';
+import 'app/screens/home/home.screen.dart';
 import 'app/screens/master_password/master_password.dart';
 import 'app/screens/master_password/set_master_password.dart';
 import 'app/screens/onboard/activation.screen.dart';
@@ -97,6 +97,11 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'P@ssman',
       theme: ThemeData(
+        highlightColor: Colors.transparent,
+        splashFactory: NoSplash.splashFactory,
+        splashColor: Colors.transparent,
+        hoverColor: Colors.transparent,
+        focusColor: Colors.transparent,
         primarySwatch: Colors.lightGreen,
       ),
       initialRoute: PageRouteNames.splashScreen,

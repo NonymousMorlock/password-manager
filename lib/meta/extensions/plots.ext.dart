@@ -1,5 +1,5 @@
 // 🌎 Project imports:
-import '../models/plots.model.dart';
+import '../models/freezed/plots.model.dart';
 
 extension JoiningPlots on Plots {
   /// join method will return the plots as co-ordinates

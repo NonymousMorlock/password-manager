@@ -44,6 +44,7 @@ class _SplashScreenState extends State<SplashScreen> {
               .getEncryptionPrivateKey(_currentAtSign);
         _os.setAtClientPreference = _preference;
         onboarded = await _os.onboard();
+        context.read<UserData>().authenticated = onboarded;
         if (!onboarded) {
           showToast(
               context, 'Auto login failed. Please onboard with at sign again.',

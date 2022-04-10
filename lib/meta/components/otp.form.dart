@@ -136,8 +136,6 @@ class _OtpFormState extends State<OtpForm> {
                       mouseCursor: SystemMouseCursors.click,
                       color: _resending ? AppTheme.primary : AppTheme.primary,
                       elevation: 0,
-                      splashColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
                       highlightElevation: 0,
                       hoverElevation: 0,
                       focusElevation: 0,
@@ -183,9 +181,6 @@ class _OtpFormState extends State<OtpForm> {
                   ? const AdaptiveLoading()
                   : InkWell(
                       mouseCursor: SystemMouseCursors.click,
-                      splashFactory: NoSplash.splashFactory,
-                      highlightColor: Colors.transparent,
-                      hoverColor: Colors.transparent,
                       child: Text(
                         'Resend',
                         style: TextStyle(

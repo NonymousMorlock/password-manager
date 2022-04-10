@@ -23,7 +23,7 @@ class PassmanEnv {
   static final String rootDomain = _yaml['ROOT_DOMAIN'] ?? 'vip.ve.atsign.zone';
 
   /// Returns the root port from the environment.
-  static final int rootPort = _yaml['ROOT_PORT'] ?? 64;
+  static final int rootPort = _yaml['ROOT_PORT'];
 
   /// Returns the namespace from the environment.
   static final String appNamespace = _yaml['NAMESPACE'] ?? 'passman';

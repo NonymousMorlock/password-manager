@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import '../../../core/services/app.service.dart';
 import '../../../meta/components/otp.form.dart';
 import '../../../meta/components/toast.dart';
-import '../../../meta/models/qr.model.dart';
+import '../../../meta/models/freezed/qr.model.dart';
 import '../../../meta/notifiers/new_user.dart';
 import '../../../meta/notifiers/user_data.dart';
 import '../../constants/global.dart';
@@ -180,9 +180,6 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
             child: IconButton(
               icon: const Icon(Icons.close_rounded),
               splashRadius: 0.1,
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-              hoverColor: Colors.transparent,
               onPressed: () async => Navigator.pushNamedAndRemoveUntil(
                 context,
                 PageRouteNames.loginScreen,

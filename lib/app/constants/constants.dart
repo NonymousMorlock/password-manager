@@ -1,3 +1,6 @@
+// 📦 Package imports:
+import 'package:uuid/uuid.dart';
+
 // 🌎 Project imports:
 import '../../core/services/passman.env.dart';
 
@@ -19,6 +22,9 @@ class Constants {
   /// End point for validating a new atsign to an user
   static const String validateOTP = 'validate-person';
 
+  /// Domain for fetching favicons of websites
+  static const String faviconDomain = 'api.faviconkit.com';
+
   /// @sign regex pattern
   static const String atSignPattern =
       '[a-zA-Z0-9_]|\u00a9|\u00af|[\u2155-\u2900]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff]';
@@ -27,4 +33,7 @@ class Constants {
     'Authorization': PassmanEnv.appApiKey,
     'Content-Type': 'application/json',
   };
+
+  /// Get a new UUID
+  static String get uuid => const Uuid().v4();
 }

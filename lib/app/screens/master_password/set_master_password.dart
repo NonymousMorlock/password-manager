@@ -24,12 +24,12 @@ import '../../../meta/components/sync_indicator.dart';
 import '../../../meta/components/toast.dart';
 import '../../../meta/extensions/logger.ext.dart';
 import '../../../meta/extensions/plots.ext.dart';
+import '../../../meta/models/freezed/plots.model.dart';
 import '../../../meta/models/key.model.dart';
-import '../../../meta/models/plots.model.dart';
-import '../../../meta/models/value.model.dart';
 import '../../../meta/notifiers/new_user.dart';
 import '../../../meta/notifiers/user_data.dart';
 import '../../constants/global.dart';
+import '../../constants/keys.dart';
 import '../../constants/page_route.dart';
 import '../../constants/theme.dart';
 
@@ -51,8 +51,8 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
     _plots = <Plots>[];
     context.read<NewUser>().newUserData.clear();
     Future<void>.delayed(Duration.zero, () async {
-      setState(
-          () => _canPop = ModalRoute.of(context)!.settings.arguments! as bool);
+      setState(() => _canPop =
+          ModalRoute.of(context)!.settings.arguments as bool? ?? false);
       if (!await AppServices.sdkServices.atClientManager.syncService
           .isInSync()) {
         AppServices.sdkServices.atClientManager.notificationService.subscribe();
@@ -182,9 +182,6 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                                 : square(24),
                             InkWell(
                               mouseCursor: SystemMouseCursors.click,
-                              splashFactory: NoSplash.splashFactory,
-                              highlightColor: Colors.transparent,
-                              hoverColor: Colors.transparent,
                               child: Text(
                                 'Change Image',
                                 style: TextStyle(
@@ -277,16 +274,8 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                       ? null
                       : () async {
                           setState(() => _saving = true);
-                          PassKey _passkey = PassKey(
-                            key: 'masterpassimg',
-                            sharedBy: AppServices.sdkServices.currentAtSign,
-                            isPublic: false,
-                            isHidden: true,
-                            value: Value(
-                              labelName: 'Master password image',
-                              isHidden: true,
-                            ),
-                          );
+                          PassKey _passkey = Keys.masterImgKey
+                            ..sharedBy = AppServices.sdkServices.currentAtSign;
                           try {
                             Uint8List _pickedImage =
                                 await AppServices.readFilesAsBytes(

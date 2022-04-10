@@ -21,6 +21,7 @@ import '../../../core/services/passman.env.dart';
 import '../../../core/services/sdk.services.dart';
 import '../../../meta/components/adaptive_loading.dart';
 import '../../../meta/components/file_upload_space.dart';
+import '../../../meta/components/filled_text_field.dart';
 import '../../../meta/components/toast.dart';
 import '../../../meta/extensions/input_formatter.ext.dart';
 import '../../../meta/extensions/string.ext.dart';
@@ -71,6 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
             await AppServices.readAtKeysFile(_list.first.path!);
         ResponseStatus status =
             await _sdk.onboardWithAtKeys(_atSign!, _atKeysData);
+        context.read<UserData>().authenticated = status.name == 'authSuccess';
         if (status.name == 'authSuccess') {
           _atKeysData.clear();
           context.read<UserData>().currentAtSign = _atSign!;
@@ -236,45 +238,29 @@ class _LoginScreenState extends State<LoginScreen> {
                                   _checkedAtSign = false;
                                 }),
                               )
-                            : Container(
-                                width: 300,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  color: AppTheme.disabled.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: TextFormField(
-                                  controller: _atSignController,
-                                  autocorrect: false,
-                                  textCapitalization: TextCapitalization.none,
-                                  decoration: InputDecoration(
-                                    isDense: false,
-                                    border: InputBorder.none,
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 10),
-                                    hintText: '@sign',
-                                    prefix: Text(
-                                      '@ ',
-                                      style: TextStyle(
-                                        color: AppTheme.primary,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
+                            : FilledTextField(
+                                controller: _atSignController,
+                                hint: '@sign',
+                                prefix: Text(
+                                  '@ ',
+                                  style: TextStyle(
+                                    color: AppTheme.primary,
+                                    fontWeight: FontWeight.w500,
                                   ),
-                                  onChanged: (_) {
-                                    setState(() {
-                                      _atSign =
-                                          '@' + _atSignController.text.trim();
-                                      _checkedAtSign = false;
-                                    });
-                                  },
-                                  inputFormatters: <TextInputFormatter>[
-                                    FilteringTextInputFormatter.allow(
-                                      RegExp(Constants.atSignPattern),
-                                    ),
-                                    LowerCaseTextFormatter(),
-                                  ],
                                 ),
+                                onChanged: (_) {
+                                  setState(() {
+                                    _atSign =
+                                        '@' + _atSignController.text.trim();
+                                    _checkedAtSign = false;
+                                  });
+                                },
+                                inputFormatters: <TextInputFormatter>[
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(Constants.atSignPattern),
+                                  ),
+                                  LowerCaseTextFormatter(),
+                                ],
                               ),
                         vSpacer(100),
                         _isLoading
@@ -287,8 +273,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ? AppTheme.primary
                                     : AppTheme.primary,
                                 elevation: 0,
-                                splashColor: Colors.transparent,
-                                highlightColor: Colors.transparent,
                                 highlightElevation: 0,
                                 hoverElevation: 0,
                                 focusElevation: 0,
@@ -319,9 +303,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         vSpacer(30),
                         InkWell(
                           mouseCursor: SystemMouseCursors.click,
-                          splashFactory: NoSplash.splashFactory,
-                          highlightColor: Colors.transparent,
-                          hoverColor: Colors.transparent,
                           child: Text(
                             'Get an @sign',
                             style: TextStyle(
@@ -344,8 +325,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: () =>
                     Navigator.pushNamed(context, PageRouteNames.qrScreen),
                 splashRadius: 0.01,
-                highlightColor: Colors.transparent,
-                splashColor: Colors.transparent,
               ),
               top: 0,
               right: 10,

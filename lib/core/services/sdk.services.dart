@@ -174,17 +174,46 @@ class SdkServices {
   }
 
   /// Get the value of the key.
-  Future<String?> get(PassKey entity) async {
+  Future<dynamic> get(PassKey entity) async {
     try {
       AtValue _value = await atClientManager.atClient.get(entity.toAtKey());
-      print(_value);
-      return json.decode(_value.value)['value'];
+      return jsonDecode(_value.value)['value'];
     } on KeyNotFoundException catch (e, s) {
-      _logger.warning('Key not found with message ${e.message}', e, s);
+      _logger.severe('Key not found with message ${e.message}', e, s);
       return null;
     } on Exception catch (e, s) {
       _logger.severe('Error while getting data', e, s);
       return null;
+    }
+  }
+
+  Future<bool> delete(PassKey entity) async {
+    try {
+      bool deleteResult =
+          await atClientManager.atClient.delete(entity.toAtKey());
+      if (deleteResult) AppServices.syncData();
+      return deleteResult;
+    } on KeyNotFoundException catch (e, s) {
+      _logger.severe('Key not found with message ${e.message}', e, s);
+      return false;
+    } on Exception catch (e, s) {
+      _logger.severe('Error while deleting data', e, s);
+      return false;
+    }
+  }
+
+  Future<List<AtKey>> getAllKeys({
+    String? regex,
+    String? sharedBy,
+    String? sharedWith,
+  }) async {
+    try {
+      List<AtKey> result = await atClientManager.atClient
+          .getAtKeys(regex: regex, sharedBy: sharedBy, sharedWith: sharedWith);
+      return result;
+    } on Exception catch (e, s) {
+      _logger.severe('Error while fetching keys', e, s);
+      return <AtKey>[];
     }
   }
 }

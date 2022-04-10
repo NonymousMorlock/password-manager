@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 // 🌎 Project imports:
 import '../extensions/logger.ext.dart';
-import '../models/qr.model.dart';
+import '../models/freezed/qr.model.dart';
 
 class NewUser extends ChangeNotifier {
   final AppLogger _logger = AppLogger('NewUser');

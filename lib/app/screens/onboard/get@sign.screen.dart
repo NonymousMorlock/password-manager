@@ -114,10 +114,6 @@ class _GetAtSignScreenState extends State<GetAtSignScreen> {
             left: 10,
             child: IconButton(
               icon: Icon(Icons.adaptive.arrow_back_rounded),
-              focusColor: Colors.transparent,
-              hoverColor: Colors.transparent,
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
               splashRadius: 0.1,
               onPressed: () => Navigator.of(context).pop(),
             ),

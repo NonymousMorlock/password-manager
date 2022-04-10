@@ -12,7 +12,7 @@ import 'package:tabler_icons/tabler_icons.dart';
 import '../../../core/services/app.service.dart';
 import '../../../meta/components/toast.dart';
 import '../../../meta/extensions/logger.ext.dart';
-import '../../../meta/models/qr.model.dart';
+import '../../../meta/models/freezed/qr.model.dart';
 import '../../../meta/notifiers/new_user.dart';
 import '../../../meta/notifiers/user_data.dart';
 import '../../constants/assets.dart';
@@ -97,8 +97,6 @@ class _QRScreenState extends State<QRScreen> {
                   color: Colors.white,
                 ),
                 splashRadius: 0.01,
-                highlightColor: Colors.transparent,
-                splashColor: Colors.transparent,
                 onPressed: () async {
                   try {
                     await controller!.pauseCamera();
@@ -138,8 +136,6 @@ class _QRScreenState extends State<QRScreen> {
                   );
                 },
                 splashRadius: 0.01,
-                highlightColor: Colors.transparent,
-                splashColor: Colors.transparent,
                 icon: FutureBuilder<bool?>(
                   future: controller?.getFlashStatus(),
                   builder:
@@ -167,8 +163,6 @@ class _QRScreenState extends State<QRScreen> {
                   size: 30,
                 ),
                 splashRadius: 0.01,
-                highlightColor: Colors.transparent,
-                splashColor: Colors.transparent,
               ),
             ),
           ],

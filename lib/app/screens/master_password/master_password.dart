@@ -14,7 +14,7 @@ import '../../../core/services/app.service.dart';
 import '../../../meta/components/mark.paint.dart';
 import '../../../meta/components/sync_indicator.dart';
 import '../../../meta/components/toast.dart';
-import '../../../meta/models/plots.model.dart';
+import '../../../meta/models/freezed/plots.model.dart';
 import '../../../meta/notifiers/user_data.dart';
 import '../../constants/global.dart';
 import '../../constants/page_route.dart';
@@ -119,8 +119,6 @@ class _MasterPasswordScreenState extends State<MasterPasswordScreen> {
                   mouseCursor: SystemMouseCursors.click,
                   color: AppTheme.primary,
                   elevation: 0,
-                  splashColor: Colors.transparent,
-                  highlightColor: Colors.transparent,
                   highlightElevation: 0,
                   hoverElevation: 0,
                   focusElevation: 0,
@@ -182,7 +180,10 @@ class _MasterPasswordScreenState extends State<MasterPasswordScreen> {
                     child: value.currentProfilePic.isEmpty
                         ? null
                         : GestureDetector(
-                            onTap: () {},
+                            onTap: () async {
+                              await Navigator.pushNamed(
+                                  context, PageRouteNames.settings);
+                            },
                             child: ClipOval(
                               child: Image(
                                 height: 45,
