@@ -7,11 +7,11 @@ import 'package:at_onboarding_flutter/widgets/custom_dialog.dart';
 import 'package:provider/provider.dart';
 
 // 🌎 Project imports:
-import '../../app/constants/global.dart';
-import '../../app/constants/theme.dart';
-import '../notifiers/new_user.dart';
-import 'adaptive_loading.dart';
-import 'toast.dart';
+import '../../../app/constants/global.dart';
+import '../../../app/constants/theme.dart';
+import '../../notifiers/new_user.dart';
+import '../adaptive_loading.dart';
+import '../toast.dart';
 
 class OtpForm extends StatefulWidget {
   const OtpForm(
@@ -251,7 +251,7 @@ class _OtpFieldState extends State<OtpField> {
       width: 60,
       height: 70,
       decoration: BoxDecoration(
-        color: AppTheme.primary,
+        color: AppTheme.grey[200],
         borderRadius: BorderRadius.circular(5),
       ),
       child: Center(

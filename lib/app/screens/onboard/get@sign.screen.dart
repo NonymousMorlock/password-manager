@@ -150,15 +150,15 @@ class _GetAtSignScreenState extends State<GetAtSignScreen> {
                           Navigator.of(context).pop();
                           showToast(context, 'Mail sent successfully');
                           context.read<NewUser>().newUserData['email'] = _email;
+                          setState(() => _processing = false);
+                          await Navigator.pushNamed(
+                              context, PageRouteNames.otpScreen);
                         } else {
                           Navigator.of(context).pop();
                           showToast(context,
                               'Something went wrong. Failed to send mail. Try again...',
                               isError: true);
                         }
-                        setState(() => _processing = false);
-                        await Navigator.pushNamed(
-                            context, PageRouteNames.otpScreen);
                       } else {
                         showToast(context, 'Looks like email is not correct.',
                             isError: true);
@@ -200,7 +200,7 @@ class _GetAtSignScreenState extends State<GetAtSignScreen> {
             height: 50,
             width: 350,
             decoration: BoxDecoration(
-              color: AppTheme.primary,
+              color: AppTheme.grey[200],
               borderRadius: BorderRadius.circular(10),
             ),
             child: TextField(

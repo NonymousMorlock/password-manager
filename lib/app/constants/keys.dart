@@ -1,24 +1,28 @@
 // 🌎 Project imports:
-import '../../core/services/passman.env.dart';
 import '../../meta/models/key.model.dart';
 import '../../meta/models/value.model.dart';
 
 class Keys {
   /// Profile picture key
-  static final PassKey profilePicKey = PassKey()
-    ..key = 'profilepic'
-    ..namespace = PassmanEnv.appNamespace
-    ..ttl = 0
-    ..ttl = 0
-    ..createdDate = DateTime.now()
-    ..isBinary = false
-    ..isPublic = true
-    ..namespaceAware = true;
+  static final PassKey profilePicKey = PassKey(
+    key: 'profilepic',
+    isPublic: false,
+    isHidden: true,
+    value: Value(
+      isHidden: true,
+      labelName: 'Profile pic',
+    ),
+  );
 
   /// User name key
   static final PassKey nameKey = PassKey(
     key: 'name',
-    isPublic: true,
+    isPublic: false,
+    isHidden: true,
+    value: Value(
+      labelName: 'Username',
+      isHidden: true,
+    ),
   );
 
   /// Master image key
@@ -38,6 +42,37 @@ class Keys {
     isHidden: true,
     value: Value(
       labelName: 'Password',
+      isHidden: true,
+    ),
+  );
+
+  /// Cards key
+  static final PassKey cardsKey = PassKey(
+    isPublic: false,
+    isHidden: true,
+    value: Value(
+      labelName: 'Cards',
+      isHidden: true,
+    ),
+  );
+
+  /// Images key
+  static final PassKey imagesKey = PassKey(
+    isPublic: false,
+    isHidden: true,
+    value: Value(
+      labelName: 'Images',
+      isHidden: true,
+    ),
+  );
+
+  /// Fingerprint key
+  static final PassKey fingerprintKey = PassKey(
+    isPublic: false,
+    key: 'fingerprint',
+    isHidden: true,
+    value: Value(
+      labelName: 'Fingerprint',
       isHidden: true,
     ),
   );

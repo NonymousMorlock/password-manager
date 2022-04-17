@@ -8,9 +8,10 @@ part 'password.model.g.dart';
 @freezed
 class Password with _$Password {
   const factory Password({
+    required String id,
     required String favicon,
-    required String? name,
-    required String? password,
+    required String name,
+    required String password,
   }) = _Password;
 
   factory Password.fromJson(Map<String, dynamic> json) =>

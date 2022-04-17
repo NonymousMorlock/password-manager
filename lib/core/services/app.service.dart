@@ -17,6 +17,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as p;
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -31,6 +32,8 @@ import '../../meta/components/toast.dart';
 import '../../meta/extensions/logger.ext.dart';
 import '../../meta/extensions/plots.ext.dart';
 import '../../meta/extensions/string.ext.dart';
+import '../../meta/models/freezed/card.model.dart';
+import '../../meta/models/freezed/image.model.dart';
 import '../../meta/models/freezed/password.model.dart';
 import '../../meta/models/freezed/plots.model.dart';
 import '../../meta/models/freezed/qr.model.dart';
@@ -81,6 +84,74 @@ class AppServices {
   static Future<Uint8List> readFilesAsBytes(String filePath) async =>
       File(filePath).readAsBytes();
 
+  /// Check for the list of permissions.
+  static Future<bool> checkPermission(List<Permission> permissions) async {
+    int _permissionsCount = permissions.length;
+    while (_permissionsCount == 0) {
+      for (Permission permission in permissions) {
+        if (await permission.status != PermissionStatus.granted) {
+          await permission.request();
+          _permissionsCount--;
+        } else {
+          _permissionsCount--;
+        }
+      }
+    }
+    return _permissionsCount == 0;
+  }
+
+  /// This function determines the CC type based on the cardPatterns
+  static CreditCardType detectCCType(String ccNumStr) {
+    CreditCardType cardType = CreditCardType.unknown;
+    ccNumStr = ccNumStr.replaceAll(Constants.whiteSpace, '');
+
+    if (ccNumStr.isEmpty) {
+      return cardType;
+    }
+
+    // Check that only numerics are in the string
+    if (Constants.nonNumeric.hasMatch(ccNumStr)) {
+      return cardType;
+    }
+
+    Constants.cardNumPatterns.forEach(
+      (CreditCardType type, Set<List<String>> patterns) {
+        for (List<String> patternRange in patterns) {
+          // Remove any spaces
+          String ccPatternStr = ccNumStr;
+          int rangeLen = patternRange[0].length;
+          // Trim the CC number str to match the pattern prefix length
+          if (rangeLen < ccNumStr.length) {
+            ccPatternStr = ccPatternStr.substring(0, rangeLen);
+          }
+
+          if (patternRange.length > 1) {
+            // Convert the prefix range into numbers then make sure the
+            // CC num is in the pattern range.
+            // Because Strings don't have '>=' type operators
+            int ccPrefixAsInt = int.parse(ccPatternStr);
+            int startPatternPrefixAsInt = int.parse(patternRange[0]);
+            int endPatternPrefixAsInt = int.parse(patternRange[1]);
+            if (ccPrefixAsInt >= startPatternPrefixAsInt &&
+                ccPrefixAsInt <= endPatternPrefixAsInt) {
+              // Found a match
+              cardType = type;
+              break;
+            }
+          } else {
+            // Just compare the single pattern prefix with the CC prefix
+            if (ccPatternStr == patternRange[0]) {
+              // Found a match
+              cardType = type;
+              break;
+            }
+          }
+        }
+      },
+    );
+    return cardType;
+  }
+
   /// This function will get you a new @sign from the server
   static Future<Map<String, String>> getNewAtSign() async {
     Map<String, String> atSignWithImg = <String, String>{};
@@ -110,6 +181,8 @@ class AppServices {
     } on Exception catch (e) {
       _logger.severe('Error while fetching new @sign: $e');
     }
+    _logger.finer(
+        'Register with mail response status code: ${response.statusCode}');
     return response.statusCode == 200;
   }
 
@@ -141,14 +214,14 @@ class AppServices {
               headers: Constants.apiHeaders,
             )
           : http.post(
-              Uri.https(Constants.domain, endPoint),
+              Uri.https(Constants.domain, Constants.apiPath + endPoint),
               body: json.encode(requestBody),
               headers: Constants.apiHeaders,
             );
 
   /// Uploads the file to the device.
   /// This function will return the list of files.
-  static Future<List<PlatformFile>> uploadFile(
+  static Future<Set<PlatformFile>> uploadFile(
           [FileType? fileType,
           bool? allowMultipleFiles,
           List<String>? extensions]) async =>
@@ -156,8 +229,9 @@ class AppServices {
               type: fileType ?? FileType.any,
               allowMultiple: allowMultipleFiles ?? false,
               allowedExtensions: extensions))
-          ?.files ??
-      <PlatformFile>[];
+          ?.files
+          .toSet() ??
+      <PlatformFile>{};
 
   /// Read .atKeys file and return the content as a Map<Strings, String>
   static Future<String> readAtKeysFile(String filePath) async =>
@@ -236,9 +310,30 @@ class AppServices {
       ShareResult shareResult = await Share.shareFilesWithResult(<String>[
         _fileName
       ], sharePositionOrigin: Rect.fromLTWH(0, 0, size.width, size.height / 2));
-      return shareResult.status.name == 'success';
+      return shareResult.status == ShareResultStatus.success;
     } on Exception catch (e) {
       _logger.severe('Error while saving keys: $e');
+      return false;
+    }
+  }
+
+  /// Function to logout the user
+  static Future<bool> logout() async {
+    AtClientPreference? _pref =
+        sdkServices.atClientManager.atClient.getPreferences();
+    if (_pref != null) {
+      try {
+        await Directory(_pref.hiveStoragePath!).delete(recursive: true);
+        await Directory(_pref.downloadPath!).delete(recursive: true);
+        await Directory(_pref.commitLogPath!).delete(recursive: true);
+        await KeyChainManager.getInstance().clearKeychainEntries();
+        return true;
+      } on Exception catch (e, s) {
+        _logger.severe('Error while logging out: $e', e, s);
+        return false;
+      }
+    } else {
+      _logger.severe('Error while logging out: AtClient preference is null');
       return false;
     }
   }
@@ -251,10 +346,11 @@ class AppServices {
   }
 
   /// Function to be called when sync is done
-  static void _onSuccessCallback(SyncResult syncResult) {
+  static Future<void> _onSuccessCallback(SyncResult syncResult) async {
     _logger.finer(
         '======================= ${syncResult.syncStatus.name} =======================');
     _userData.setSyncStatus = SyncProgress().syncStatus ?? SyncStatus.success;
+    await HapticFeedback.lightImpact();
   }
 
   /// Fetches the master image key from secondary.
@@ -277,11 +373,11 @@ class AppServices {
   /// Fetches the master image key from secondary.
   static Future<void> getProfilePic() async {
     _logger.finer('Fetching profile pic');
-    PassKey _masterImgKey = Keys.profilePicKey
+    PassKey _proPicKey = Keys.profilePicKey
       ..sharedBy = sdkServices.currentAtSign;
     try {
-      AtValue value = await sdkServices.atClientManager.atClient
-          .get(_masterImgKey.toAtKey());
+      AtValue value =
+          await sdkServices.atClientManager.atClient.get(_proPicKey.toAtKey());
       _userData.currentProfilePic = Uint8List.fromList(
           Base2e15.decode(json.decode(value.value)['value']));
       _logger.finer('Fetched profile picture successfully');
@@ -352,12 +448,58 @@ class AppServices {
             await sdkServices.get(PassKey(key: _key.key));
         Password _password = Password.fromJson(_value);
         _pass.add(_password);
-        // await sdkServices.delete(PassKey(key: _key.key));
       }
       _userData.passwords = _pass;
       _logger.finer('Passwords fetched successfully');
     } on Exception catch (e, s) {
       _logger.severe('Error fetching passwords', e, s);
+      return;
+    }
+  }
+
+  static Future<void> getCards() async {
+    _logger.finer('Fetching Cards');
+    try {
+      List<CardModel> _cards = <CardModel>[];
+      List<AtKey> _cardkeys = await sdkServices.getAllKeys(regex: 'cards_');
+      for (AtKey _key in _cardkeys) {
+        Map<String, dynamic>? _value =
+            await sdkServices.get(PassKey(key: _key.key));
+        if (_value != null) {
+          CardModel _card = CardModel.fromJson(_value);
+          _cards.add(_card);
+        }
+        // bool isDelete = await sdkServices.delete(PassKey.fromAtKey(_key));
+        // print(isDelete);
+      }
+      _cardkeys.clear();
+      _userData.cards = _cards;
+      _logger.finer('Passwords fetched successfully');
+    } on Exception catch (e, s) {
+      _logger.severe('Error fetching passwords', e, s);
+      return;
+    }
+  }
+
+  static Future<void> getImages() async {
+    _logger.finer('Fetching Images');
+    try {
+      List<Images> _images = <Images>[];
+      List<AtKey> _imagekeys = await sdkServices.getAllKeys(regex: 'images_');
+      for (AtKey _key in _imagekeys) {
+        Map<String, dynamic>? _value =
+            await sdkServices.get(PassKey(key: _key.key));
+        if (_value != null) {
+          Images _image = Images.fromJson(_value);
+          _images.add(_image);
+        }
+        // bool isDelete = await sdkServices.delete(_key.key!);
+        // print(isDelete);
+      }
+      _imagekeys.clear();
+      _userData.images = _images;
+    } on Exception catch (e, s) {
+      _logger.severe('Error fetching images', e, s);
       return;
     }
   }

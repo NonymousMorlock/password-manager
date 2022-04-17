@@ -9,10 +9,22 @@ import 'package:at_client_mobile/at_client_mobile.dart';
 
 // 🌎 Project imports:
 import '../extensions/logger.ext.dart';
+import '../models/freezed/card.model.dart';
+import '../models/freezed/image.model.dart';
 import '../models/freezed/password.model.dart';
 
 class UserData extends ChangeNotifier {
   final AppLogger _logger = AppLogger('UserData');
+
+  bool _isAdmin = false;
+
+  bool get isAdmin => _isAdmin;
+
+  set isAdmin(bool value) {
+    _logger.finer('isAdmin: $value');
+    _isAdmin = value;
+    notifyListeners();
+  }
 
   bool _authenticated = false;
 
@@ -21,6 +33,16 @@ class UserData extends ChangeNotifier {
   set authenticated(bool _auth) {
     _logger.finer('Setting user auth status to $_auth');
     _authenticated = _auth;
+    notifyListeners();
+  }
+
+  bool _fingerprintAuthEnabled = false;
+
+  bool get fingerprintAuthEnabled => _fingerprintAuthEnabled;
+
+  set fingerprintAuthEnabled(bool _auth) {
+    _logger.finer('Setting fingerprint auth status to $_auth');
+    _fingerprintAuthEnabled = _auth;
     notifyListeners();
   }
 
@@ -64,6 +86,16 @@ class UserData extends ChangeNotifier {
   set currentAtSign(String value) {
     _logger.finer('Setting current @sign to $value');
     _currentAtSign = value;
+    notifyListeners();
+  }
+
+  String? _name;
+
+  String get name => _name!;
+
+  set name(String value) {
+    _logger.finer('Setting current @sign name to $value');
+    _name = value;
     notifyListeners();
   }
 
@@ -114,8 +146,34 @@ class UserData extends ChangeNotifier {
 
   /// Set the list of passwords
   set passwords(List<Password> value) {
-    _logger.finer('Setting current passwords to $value');
+    _logger.finer('Total passwords : ${value.length}');
     _passwords = value;
+    notifyListeners();
+  }
+
+  /// List of passwords
+  List<CardModel> _cards = <CardModel>[];
+
+  /// Get the list of passwords
+  List<CardModel> get cards => _cards;
+
+  /// Set the list of passwords
+  set cards(List<CardModel> value) {
+    _logger.finer('Total cards: ${value.length}');
+    _cards = value;
+    notifyListeners();
+  }
+
+  /// List of images
+  List<Images> _images = <Images>[];
+
+  /// Get the list of images
+  List<Images> get images => _images;
+
+  /// Set the list of images
+  set images(List<Images> value) {
+    _logger.finer('Total images: ${value.length}');
+    _images = value;
     notifyListeners();
   }
 }

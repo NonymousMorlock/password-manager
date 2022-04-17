@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 
 // 🌎 Project imports:
 import '../../../core/services/app.service.dart';
-import '../../../meta/components/otp.form.dart';
+import '../../../meta/components/forms/otp.form.dart';
 import '../../../meta/components/toast.dart';
 import '../../../meta/models/freezed/qr.model.dart';
 import '../../../meta/notifiers/new_user.dart';
@@ -79,10 +79,11 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
             children: <Widget>[
               Column(
                 children: <Widget>[
-                  Image.memory(
-                    context.read<NewUser>().newUserData['img'],
-                    height: 100,
-                  ),
+                  if (context.read<NewUser>().newUserData['img'] != null)
+                    Image.memory(
+                      context.read<NewUser>().newUserData['img'],
+                      height: 100,
+                    ),
                   Center(
                     child: Text(
                       context.read<NewUser>().newUserData['atSign'],

@@ -53,9 +53,10 @@ class _MasterPasswordScreenState extends State<MasterPasswordScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 ChangeNotifierProvider<UserData>.value(
-                    value: context.watch<UserData>(),
-                    builder: (BuildContext context, _) {
-                      return Consumer<UserData>(builder:
+                  value: context.watch<UserData>(),
+                  builder: (BuildContext context, _) {
+                    return Consumer<UserData>(
+                      builder:
                           (BuildContext context, UserData value, Widget? _) {
                         return GestureDetector(
                           onPanDown: value.masterImage.isEmpty
@@ -112,9 +113,30 @@ class _MasterPasswordScreenState extends State<MasterPasswordScreen> {
                             ],
                           ),
                         );
-                      });
-                    }),
-                vSpacer(100),
+                      },
+                    );
+                  },
+                ),
+                vSpacer(50),
+                _plots!.isEmpty
+                    ? square(20)
+                    : GestureDetector(
+                        onLongPress: () => setState(() => _plots!.clear()),
+                        onTap: () {
+                          _plots!.removeLast();
+                          setState(() => _plots!.length);
+                        },
+                        child: Text(
+                          'Undo',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w500,
+                            color: AppTheme.primary,
+                          ),
+                        ),
+                      ),
+                vSpacer(50),
                 MaterialButton(
                   mouseCursor: SystemMouseCursors.click,
                   color: AppTheme.primary,
@@ -143,29 +165,6 @@ class _MasterPasswordScreenState extends State<MasterPasswordScreen> {
               ],
             ),
           ),
-          _plots!.isEmpty
-              ? square(0)
-              : Positioned(
-                  bottom: 280,
-                  right: 0,
-                  left: 0,
-                  child: GestureDetector(
-                    onLongPress: () => setState(() => _plots!.clear()),
-                    onTap: () {
-                      _plots!.removeLast();
-                      setState(() => _plots!.length);
-                    },
-                    child: Text(
-                      'Undo',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w500,
-                        color: AppTheme.primary,
-                      ),
-                    ),
-                  ),
-                ),
           Positioned(
             top: 60,
             right: 10,
@@ -176,9 +175,19 @@ class _MasterPasswordScreenState extends State<MasterPasswordScreen> {
                 builder: (BuildContext context, _) => Consumer<UserData>(
                   builder: (BuildContext context, UserData value, Widget? _) =>
                       SyncIndicator(
-                    size: value.currentProfilePic.isEmpty ? 15 : 45,
+                    size: 45,
                     child: value.currentProfilePic.isEmpty
-                        ? null
+                        ? GestureDetector(
+                            onTap: () async {
+                              await Navigator.pushNamed(
+                                  context, PageRouteNames.settings,
+                                  arguments: false);
+                            },
+                            child: const Icon(
+                              TablerIcons.user,
+                              size: 15,
+                            ),
+                          )
                         : GestureDetector(
                             onTap: () async {
                               await Navigator.pushNamed(
@@ -221,10 +230,10 @@ class _MasterPasswordScreenState extends State<MasterPasswordScreen> {
                           isError: !_valid);
                       if (_valid) {
                         setState(() => _plots?.clear());
-                        await Navigator.pushNamedAndRemoveUntil(
+                        await Navigator.pushReplacementNamed(
                           context,
                           PageRouteNames.homeScreen,
-                          ModalRoute.withName(PageRouteNames.masterPassword),
+                          // ModalRoute.withName(PageRouteNames.masterPassword),
                         );
                       }
                     },

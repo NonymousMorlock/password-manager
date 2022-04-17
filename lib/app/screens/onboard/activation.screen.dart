@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 // 📦 Package imports:
 import 'package:at_base2e15/at_base2e15.dart';
 import 'package:at_server_status/at_server_status.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 // 🌎 Project imports:
@@ -74,10 +75,14 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
       ..value = Value(
         value: Base2e15.encode(context.read<NewUser>().newUserData['img']),
         type: 'profilepic',
-        labelName: 'Profile pic',
       );
     Future<void>.microtask(
       () async {
+        await AppServices.checkPermission(<Permission>[
+          Permission.storage,
+          Permission.photos,
+          Permission.manageExternalStorage
+        ]);
         controller.addStatusListener(_statusListener);
         String _atSign = context.read<NewUser>().getQrData.atSign;
         content = 'fetching $_atSign status...';
@@ -113,6 +118,15 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
               showToast(context, 'Failed to updated default profile pic',
                   isError: true);
             }
+            await AppServices.sdkServices.put(
+              PassKey(
+                key: 'admin',
+                value: Value(
+                  value: Value(value: 'false'),
+                  type: 'admin',
+                ),
+              ),
+            );
             _keySaved = await AppServices.saveAtKeys(
                 _atSign,
                 context.read<UserData>().atOnboardingPreference.downloadPath!,

@@ -16,7 +16,10 @@ class FilledTextField extends StatelessWidget {
     this.prefix,
     this.width,
     this.textStyle,
+    this.validator,
+    this.enableInteractiveSelection = true,
     this.obsecureText = false,
+    this.toolbarOptions,
     Key? key,
   }) : super(key: key);
   final TextEditingController? controller;
@@ -29,6 +32,9 @@ class FilledTextField extends StatelessWidget {
   final TextStyle? textStyle;
   final VoidCallback? onEditingComplete;
   final ValueChanged<String>? onFieldSubmitted;
+  final bool enableInteractiveSelection;
+  final FormFieldValidator<String>? validator;
+  final ToolbarOptions? toolbarOptions;
 
   @override
   Widget build(BuildContext context) {
@@ -43,6 +49,9 @@ class FilledTextField extends StatelessWidget {
         controller: controller,
         obscureText: obsecureText,
         autocorrect: false,
+        validator: validator,
+        enableInteractiveSelection: enableInteractiveSelection,
+        toolbarOptions: toolbarOptions,
         textCapitalization: TextCapitalization.none,
         decoration: InputDecoration(
           isDense: false,

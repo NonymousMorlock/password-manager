@@ -134,6 +134,27 @@ class SdkServices {
     return null;
   }
 
+  Future<bool> isAdmin() async {
+    _logger.finer('Checking if user is admin...');
+    ScanVerbBuilder verb = ScanVerbBuilder()
+      ..auth = true
+      ..regex = 'admin'
+      ..sharedBy = currentAtSign;
+    String? _data = await atClientManager.atClient
+        .getRemoteSecondary()!
+        .executeAndParse(verb);
+    if (_data == '[]') {
+      _logger.warning('User is not admin');
+      return false;
+    } else {
+      bool _isAdmin = await get(PassKey(key: 'admin'));
+      _isAdmin
+          ? _logger.warning('User is admin')
+          : _logger.finer('User is not admin');
+      return _isAdmin;
+    }
+  }
+
   /// Checks if master image exists or not in remote secondary returns the result.
   Future<bool> checkMasterImageKey() async {
     _logger.finer('Getting master image key');
@@ -150,6 +171,50 @@ class SdkServices {
     } else {
       _logger.finer('Master image key found: $_data');
       return true;
+    }
+  }
+
+  /// Checks if master image exists or not in remote secondary returns the result.
+  Future<bool> checkFingerprint() async {
+    _logger.finer('Checking fingerprint');
+    ScanVerbBuilder verb = ScanVerbBuilder()
+      ..auth = true
+      ..regex = 'fingerprint'
+      ..sharedBy = currentAtSign;
+    String? _data = await atClientManager.atClient
+        .getRemoteSecondary()!
+        .executeAndParse(verb);
+    if (_data == '[]') {
+      _logger.warning('No fingerprint key found');
+      return false;
+    } else {
+      _logger.finer('Fingerprint key found: $_data');
+      bool _enabled = await get(
+        PassKey.fromAtKey((await getAllKeys(regex: 'fingerprint')).first),
+      );
+      _logger.finer('Fingerprint enabled : $_enabled');
+      return _enabled;
+    }
+  }
+
+  Future<String?> getName() async {
+    _logger.finer('Getting name');
+    ScanVerbBuilder verb = ScanVerbBuilder()
+      ..auth = true
+      ..regex = 'name'
+      ..sharedBy = currentAtSign;
+    String? _data = await atClientManager.atClient
+        .getRemoteSecondary()!
+        .executeAndParse(verb);
+    if (_data == '[]') {
+      _logger.warning('No name key found');
+      return null;
+    } else {
+      _logger.finer('Name key found: $_data');
+      String name = await get(
+        PassKey.fromAtKey((await getAllKeys(regex: 'name')).first),
+      );
+      return name;
     }
   }
 
@@ -187,14 +252,27 @@ class SdkServices {
     }
   }
 
-  Future<bool> delete(PassKey entity) async {
+  Future<bool> delete(String key) async {
+    bool _keyDeleted = false;
     try {
-      bool deleteResult =
-          await atClientManager.atClient.delete(entity.toAtKey());
-      if (deleteResult) AppServices.syncData();
-      return deleteResult;
+      List<AtKey> a = await getAllKeys(regex: key);
+      if (a.length > 1) {
+        _logger
+            .severe('Looks like you have more that one key with the keyname');
+        return false;
+      }
+      for (AtKey k in a) {
+        _keyDeleted = await atClientManager.atClient.delete(k);
+      }
+      // bool deleteResult =
+      //     await atClientManager.atClient.delete(entity.toAtKey());
+      if (_keyDeleted) {
+        _logger.finer('$key deleted successfully');
+        AppServices.syncData();
+      }
+      return _keyDeleted;
     } on KeyNotFoundException catch (e, s) {
-      _logger.severe('Key not found with message ${e.message}', e, s);
+      _logger.severe('${e.message} to delete it.', e, s);
       return false;
     } on Exception catch (e, s) {
       _logger.severe('Error while deleting data', e, s);

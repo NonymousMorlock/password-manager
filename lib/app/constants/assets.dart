@@ -16,6 +16,12 @@ class Assets {
 
   static const String configFile = '$_assetsBasePath/config/env.yaml';
 
+  static const String _cardsBasePath = '$_imgBasePath/cards';
+
+  static const String chip = '$_cardsBasePath/chip.png';
+
+  static String cardLogo(String cardName) => '$_cardsBasePath/$cardName.png';
+
   static const String logo = '$_lottieBasePath/logo.json';
   static const String logoImg = '$_imgBasePath/logo.png';
 

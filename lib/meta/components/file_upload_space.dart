@@ -26,7 +26,7 @@ class FileUploadSpace extends StatelessWidget {
     Key? key,
     this.isUploading = false,
   }) : super(key: key);
-  final Function(List<PlatformFile>) onTap;
+  final Function(Set<PlatformFile>) onTap;
   final VoidCallback? onDismmisTap;
   final String? uploadMessage;
   final String? assetPath;

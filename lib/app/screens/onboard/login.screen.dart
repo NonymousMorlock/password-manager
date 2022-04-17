@@ -24,6 +24,7 @@ import '../../../meta/components/file_upload_space.dart';
 import '../../../meta/components/filled_text_field.dart';
 import '../../../meta/components/toast.dart';
 import '../../../meta/extensions/input_formatter.ext.dart';
+import '../../../meta/extensions/logger.ext.dart';
 import '../../../meta/extensions/string.ext.dart';
 import '../../../meta/notifiers/user_data.dart';
 import '../../constants/assets.dart';
@@ -40,13 +41,14 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final AppLogger _logger = AppLogger('LoginScreen');
   late TextEditingController _atSignController;
   String? fileName, _atSign;
   bool _isValidAtSign = false,
       _checkedAtSign = false,
       _isLoading = false,
       _uploading = false;
-  List<PlatformFile> _list = <PlatformFile>[];
+  Set<PlatformFile> _list = <PlatformFile>{};
   final SdkServices _sdk = SdkServices.getInstance();
   @override
   void initState() {
@@ -112,10 +114,11 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _isLoading = false);
       showToast(context, e.message + '😥. Please upload the atKeys file again.',
           isError: true);
-    } catch (e) {
+    } catch (e, s) {
       _list.clear();
       setState(() => _isLoading = false);
       showToast(context, 'Authentication failed', isError: true);
+      _logger.severe('Authentication failed', e, s);
     }
   }
 
@@ -169,7 +172,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Future<void> uploadAtKeys(List<PlatformFile> _l) async {
+  Future<void> uploadAtKeys(Set<PlatformFile> _l) async {
     if (_l.isEmpty) {
       setState(() {
         fileName = null;

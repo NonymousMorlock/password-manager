@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:at_base2e15/at_base2e15.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image/image.dart' as imglib;
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:tabler_icons/tabler_icons.dart';
 
@@ -51,6 +52,11 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
     _plots = <Plots>[];
     context.read<NewUser>().newUserData.clear();
     Future<void>.delayed(Duration.zero, () async {
+      await AppServices.checkPermission(<Permission>[
+        Permission.storage,
+        Permission.photos,
+        Permission.manageExternalStorage
+      ]);
       setState(() => _canPop =
           ModalRoute.of(context)!.settings.arguments as bool? ?? false);
       if (!await AppServices.sdkServices.atClientManager.syncService
@@ -78,6 +84,7 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                           if (_.isEmpty) {
                             showToast(context, 'Image not picked',
                                 isError: true);
+                            setState(() => _isLoading = false);
                             return;
                           }
                           setState(() {
@@ -193,7 +200,7 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                                 setState(() {
                                   _isLoading = true;
                                 });
-                                List<PlatformFile> _anotherFile =
+                                Set<PlatformFile> _anotherFile =
                                     await AppServices.uploadFile(
                                         FileType.image);
                                 if (_anotherFile.isEmpty) {

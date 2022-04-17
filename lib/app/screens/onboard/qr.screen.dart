@@ -100,7 +100,7 @@ class _QRScreenState extends State<QRScreen> {
                 onPressed: () async {
                   try {
                     await controller!.pauseCamera();
-                    List<PlatformFile> _file =
+                    Set<PlatformFile> _file =
                         await AppServices.uploadFile(FileType.image);
                     if (_file.isNotEmpty) {
                       bool _gotData = await AppServices.getQRData(

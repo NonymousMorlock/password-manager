@@ -8,9 +8,11 @@ import 'package:flutter/material.dart';
 // 📦 Package imports:
 import 'package:at_onboarding_flutter/services/onboarding_service.dart';
 import 'package:at_onboarding_flutter/utils/app_constants.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:secure_application/secure_application.dart';
 
 // 🌎 Project imports:
 import 'app/constants/assets.dart';
@@ -25,6 +27,7 @@ import 'app/screens/onboard/get@sign.screen.dart';
 import 'app/screens/onboard/login.screen.dart';
 import 'app/screens/onboard/otp.screen.dart';
 import 'app/screens/onboard/qr.screen.dart';
+import 'app/screens/reports.screen.dart';
 import 'app/screens/settings.screen.dart';
 import 'app/screens/splash.screen.dart';
 import 'app/screens/unknown.screen.dart';
@@ -37,7 +40,6 @@ import 'meta/notifiers/user_data.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppLogger.rootLevel = 'finer';
-  // await KeyChainManager.getInstance().clearKeychainEntries();
   ErrorWidget.builder = codeErrorScreenBuilder;
   String _logsPath =
       p.join((await getApplicationSupportDirectory()).path, 'logs');
@@ -92,17 +94,41 @@ class _MyAppState extends State<MyApp> {
     super.initState();
   }
 
+  final LocalAuthentication _authentication = LocalAuthentication();
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'P@ssman',
       theme: ThemeData(
+        scaffoldBackgroundColor: Colors.white,
         highlightColor: Colors.transparent,
         splashFactory: NoSplash.splashFactory,
         splashColor: Colors.transparent,
         hoverColor: Colors.transparent,
+        canvasColor: Colors.transparent,
         focusColor: Colors.transparent,
         primarySwatch: Colors.lightGreen,
+      ),
+      builder: (BuildContext context, Widget? child) => SecureApplication(
+        nativeRemoveDelay: 800,
+        onNeedUnlock:
+            (SecureApplicationController? secureApplicationController) async {
+          bool authResult = await _authentication.authenticate(
+            localizedReason: 'Authenticate to unlock',
+            useErrorDialogs: true,
+            stickyAuth: true,
+            biometricOnly: true,
+          );
+          if (authResult) {
+            secureApplicationController?.authSuccess(unlock: true);
+          } else {
+            secureApplicationController?.authFailed(unlock: false);
+            secureApplicationController?.open();
+          }
+          return null;
+        },
+        child: child!,
       ),
       initialRoute: PageRouteNames.splashScreen,
       onGenerateRoute: (RouteSettings settings) {
@@ -157,6 +183,11 @@ class _MyAppState extends State<MyApp> {
             return pageTransition(
               settings,
               const HomeScreen(),
+            );
+          case PageRouteNames.reports:
+            return pageTransition(
+              settings,
+              const ReportsScreen(),
             );
           default:
             return pageTransition(

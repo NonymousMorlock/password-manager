@@ -23,10 +23,12 @@ class _$PasswordTearOff {
   const _$PasswordTearOff();
 
   _Password call(
-      {required String favicon,
-      required String? name,
-      required String? password}) {
+      {required String id,
+      required String favicon,
+      required String name,
+      required String password}) {
     return _Password(
+      id: id,
       favicon: favicon,
       name: name,
       password: password,
@@ -43,9 +45,10 @@ const $Password = _$PasswordTearOff();
 
 /// @nodoc
 mixin _$Password {
+  String get id => throw _privateConstructorUsedError;
   String get favicon => throw _privateConstructorUsedError;
-  String? get name => throw _privateConstructorUsedError;
-  String? get password => throw _privateConstructorUsedError;
+  String get name => throw _privateConstructorUsedError;
+  String get password => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -57,7 +60,7 @@ mixin _$Password {
 abstract class $PasswordCopyWith<$Res> {
   factory $PasswordCopyWith(Password value, $Res Function(Password) then) =
       _$PasswordCopyWithImpl<$Res>;
-  $Res call({String favicon, String? name, String? password});
+  $Res call({String id, String favicon, String name, String password});
 }
 
 /// @nodoc
@@ -70,11 +73,16 @@ class _$PasswordCopyWithImpl<$Res> implements $PasswordCopyWith<$Res> {
 
   @override
   $Res call({
+    Object? id = freezed,
     Object? favicon = freezed,
     Object? name = freezed,
     Object? password = freezed,
   }) {
     return _then(_value.copyWith(
+      id: id == freezed
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
       favicon: favicon == freezed
           ? _value.favicon
           : favicon // ignore: cast_nullable_to_non_nullable
@@ -82,11 +90,11 @@ class _$PasswordCopyWithImpl<$Res> implements $PasswordCopyWith<$Res> {
       name: name == freezed
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       password: password == freezed
           ? _value.password
           : password // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
     ));
   }
 }
@@ -96,7 +104,7 @@ abstract class _$PasswordCopyWith<$Res> implements $PasswordCopyWith<$Res> {
   factory _$PasswordCopyWith(_Password value, $Res Function(_Password) then) =
       __$PasswordCopyWithImpl<$Res>;
   @override
-  $Res call({String favicon, String? name, String? password});
+  $Res call({String id, String favicon, String name, String password});
 }
 
 /// @nodoc
@@ -110,11 +118,16 @@ class __$PasswordCopyWithImpl<$Res> extends _$PasswordCopyWithImpl<$Res>
 
   @override
   $Res call({
+    Object? id = freezed,
     Object? favicon = freezed,
     Object? name = freezed,
     Object? password = freezed,
   }) {
     return _then(_Password(
+      id: id == freezed
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
       favicon: favicon == freezed
           ? _value.favicon
           : favicon // ignore: cast_nullable_to_non_nullable
@@ -122,11 +135,11 @@ class __$PasswordCopyWithImpl<$Res> extends _$PasswordCopyWithImpl<$Res>
       name: name == freezed
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
       password: password == freezed
           ? _value.password
           : password // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
     ));
   }
 }
@@ -135,21 +148,26 @@ class __$PasswordCopyWithImpl<$Res> extends _$PasswordCopyWithImpl<$Res>
 @JsonSerializable()
 class _$_Password implements _Password {
   const _$_Password(
-      {required this.favicon, required this.name, required this.password});
+      {required this.id,
+      required this.favicon,
+      required this.name,
+      required this.password});
 
   factory _$_Password.fromJson(Map<String, dynamic> json) =>
       _$$_PasswordFromJson(json);
 
   @override
+  final String id;
+  @override
   final String favicon;
   @override
-  final String? name;
+  final String name;
   @override
-  final String? password;
+  final String password;
 
   @override
   String toString() {
-    return 'Password(favicon: $favicon, name: $name, password: $password)';
+    return 'Password(id: $id, favicon: $favicon, name: $name, password: $password)';
   }
 
   @override
@@ -157,6 +175,7 @@ class _$_Password implements _Password {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _Password &&
+            const DeepCollectionEquality().equals(other.id, id) &&
             const DeepCollectionEquality().equals(other.favicon, favicon) &&
             const DeepCollectionEquality().equals(other.name, name) &&
             const DeepCollectionEquality().equals(other.password, password));
@@ -165,6 +184,7 @@ class _$_Password implements _Password {
   @override
   int get hashCode => Object.hash(
       runtimeType,
+      const DeepCollectionEquality().hash(id),
       const DeepCollectionEquality().hash(favicon),
       const DeepCollectionEquality().hash(name),
       const DeepCollectionEquality().hash(password));
@@ -182,18 +202,21 @@ class _$_Password implements _Password {
 
 abstract class _Password implements Password {
   const factory _Password(
-      {required String favicon,
-      required String? name,
-      required String? password}) = _$_Password;
+      {required String id,
+      required String favicon,
+      required String name,
+      required String password}) = _$_Password;
 
   factory _Password.fromJson(Map<String, dynamic> json) = _$_Password.fromJson;
 
   @override
+  String get id;
+  @override
   String get favicon;
   @override
-  String? get name;
+  String get name;
   @override
-  String? get password;
+  String get password;
   @override
   @JsonKey(ignore: true)
   _$PasswordCopyWith<_Password> get copyWith =>
