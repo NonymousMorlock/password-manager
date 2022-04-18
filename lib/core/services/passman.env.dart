@@ -34,4 +34,7 @@ class PassmanEnv {
 
   /// Returns the app regex from the environment.
   static final String syncRegex = _yaml['SYNC_REGEX'] ?? '.passman';
+
+  /// Returns the app reporting @sign from the environment.
+  static final String reportAtsign = _yaml['REPORT_ATSIGN'] ?? '@';
 }

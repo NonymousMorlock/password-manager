@@ -12,6 +12,7 @@ import '../extensions/logger.ext.dart';
 import '../models/freezed/card.model.dart';
 import '../models/freezed/image.model.dart';
 import '../models/freezed/password.model.dart';
+import '../models/freezed/report.model.dart';
 
 class UserData extends ChangeNotifier {
   final AppLogger _logger = AppLogger('UserData');
@@ -174,6 +175,19 @@ class UserData extends ChangeNotifier {
   set images(List<Images> value) {
     _logger.finer('Total images: ${value.length}');
     _images = value;
+    notifyListeners();
+  }
+
+  /// List of reports
+  List<Report> _reports = <Report>[];
+
+  /// Get the list of _reports
+  List<Report> get reports => _reports;
+
+  /// Set the list of _reports
+  set reports(List<Report> value) {
+    _logger.finer('Total reports: ${value.length}');
+    _reports = value;
     notifyListeners();
   }
 }

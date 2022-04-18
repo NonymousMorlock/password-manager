@@ -18,8 +18,6 @@ import '../../core/services/passman.env.dart';
 import '../../core/services/sdk.services.dart';
 import '../../meta/components/toast.dart';
 import '../../meta/extensions/logger.ext.dart';
-import '../../meta/models/key.model.dart';
-import '../../meta/models/value.model.dart';
 import '../../meta/notifiers/user_data.dart';
 import '../constants/assets.dart';
 import '../constants/page_route.dart';
@@ -63,6 +61,10 @@ class _SplashScreenState extends State<SplashScreen> {
         } else {
           await AtClientManager.getInstance().setCurrentAtSign(
               _currentAtSign, PassmanEnv.appNamespace, _preference);
+          AppServices.syncData();
+          while (context.read<UserData>().syncStatus != SyncStatus.success) {
+            await Future<void>.delayed(Duration.zero);
+          }
           String? _profilePic = await _sdk.getProPic();
           if (_profilePic != null) {
             await AppServices.getProfilePic();
@@ -70,15 +72,6 @@ class _SplashScreenState extends State<SplashScreen> {
             context.read<UserData>().currentProfilePic =
                 Base2e15.decode(_profilePic);
           }
-          await AppServices.sdkServices.put(
-            PassKey(
-              key: 'admin',
-              value: Value(
-                value: true,
-                type: 'admin',
-              ),
-            ),
-          );
           context.read<UserData>().isAdmin = await _sdk.isAdmin();
           String? _name = await _sdk.getName();
           if (_name != null) {

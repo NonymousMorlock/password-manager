@@ -1,5 +1,7 @@
 // 🎯 Dart imports:
+import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
 
 // 🐦 Flutter imports:
 import 'package:flutter/material.dart';
@@ -12,9 +14,10 @@ import 'package:at_onboarding_flutter/services/onboarding_service.dart';
 import 'package:at_onboarding_flutter/utils/response_status.dart';
 import 'package:at_server_status/at_server_status.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:tabler_icons/tabler_icons.dart';
-
+import 'package:path/path.dart' as p;
 // 🌎 Project imports:
 import '../../../core/services/app.service.dart';
 import '../../../core/services/passman.env.dart';
@@ -22,6 +25,7 @@ import '../../../core/services/sdk.services.dart';
 import '../../../meta/components/adaptive_loading.dart';
 import '../../../meta/components/file_upload_space.dart';
 import '../../../meta/components/filled_text_field.dart';
+import '../../../meta/components/set_propic.dart';
 import '../../../meta/components/toast.dart';
 import '../../../meta/extensions/input_formatter.ext.dart';
 import '../../../meta/extensions/logger.ext.dart';
@@ -53,6 +57,14 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     _atSignController = TextEditingController();
+    Future<void>.delayed(Duration.zero, () async {
+      String _path = (await getApplicationSupportDirectory()).path;
+      String _downloadsPath = p.join(_path, 'downloads');
+      if (!await Directory(_downloadsPath).exists()) {
+        await Directory(_downloadsPath).create(recursive: true);
+        _logger.finer('Created downloads directory at $_downloadsPath');
+      }
+    });
     super.initState();
   }
 
@@ -84,12 +96,32 @@ class _LoginScreenState extends State<LoginScreen> {
               context.read<UserData>().atOnboardingPreference);
           _list.clear();
           bool _masterImgKeyExists = await _sdk.checkMasterImageKey();
+          AppServices.syncData();
+          while (context.read<UserData>().syncStatus != SyncStatus.success) {
+            await Future<void>.delayed(Duration.zero);
+          }
+          context.read<UserData>().isAdmin = await _sdk.isAdmin();
           String? _profilePic = await _sdk.getProPic();
           if (_profilePic != null) {
             context.read<UserData>().currentProfilePic =
                 Base2e15.decode(_profilePic);
+          } else {
+            Uint8List _avatar = await AppServices.readLocalfilesAsBytes(
+                Assets.getRandomAvatar());
+            await showModalBottomSheet(
+              backgroundColor: Colors.white,
+              isScrollControlled: true,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              context: context,
+              builder: (_) {
+                return SetProPic(_avatar);
+              },
+            );
           }
           setState(() => _isLoading = false);
+          await AppServices.startMonitor();
           await Navigator.pushReplacementNamed(
               context,
               _masterImgKeyExists
@@ -109,9 +141,10 @@ class _LoginScreenState extends State<LoginScreen> {
               isError: true);
         }
       }
-    } on FileSystemException catch (e) {
+    } on FileSystemException catch (e, s) {
       _list.clear();
       setState(() => _isLoading = false);
+      _logger.severe('FileSystemException: ${e.toString}', e, s);
       showToast(context, e.message + '😥. Please upload the atKeys file again.',
           isError: true);
     } catch (e, s) {
@@ -119,6 +152,7 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() => _isLoading = false);
       showToast(context, 'Authentication failed', isError: true);
       _logger.severe('Authentication failed', e, s);
+      log('Authentication failed', error: e, stackTrace: s);
     }
   }
 

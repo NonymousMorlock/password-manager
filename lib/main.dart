@@ -71,11 +71,12 @@ class _MyAppState extends State<MyApp> {
     _logger.finer('Started initializing the app...');
     Future<void>.microtask(
       () async {
-        AppServices.init(Provider.of<UserData>(context, listen: false));
+        await AppServices.init(Provider.of<UserData>(context, listen: false));
         String _path = (await getApplicationSupportDirectory()).path;
         String _downloadsPath = p.join(_path, 'downloads');
         if (!await Directory(_downloadsPath).exists()) {
           await Directory(_downloadsPath).create(recursive: true);
+          _logger.finer('Created downloads directory at $_downloadsPath');
         }
         AppConstants.rootDomain = PassmanEnv.rootDomain;
         OnboardingService.getInstance().setAtClientPreference =

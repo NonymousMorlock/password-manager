@@ -46,12 +46,14 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
   final AppLogger _logger = AppLogger('Set Master Password Screen');
   PlatformFile? _file;
   bool _isLoading = false, _imgSaved = false, _saving = false, _canPop = false;
+  Uint8List? _imgBytes;
   List<Plots>? _plots;
   @override
   void initState() {
     _plots = <Plots>[];
     context.read<NewUser>().newUserData.clear();
     Future<void>.delayed(Duration.zero, () async {
+      await AppServices.startMonitor();
       await AppServices.checkPermission(<Permission>[
         Permission.storage,
         Permission.photos,
@@ -61,7 +63,6 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
           ModalRoute.of(context)!.settings.arguments as bool? ?? false);
       if (!await AppServices.sdkServices.atClientManager.syncService
           .isInSync()) {
-        AppServices.sdkServices.atClientManager.notificationService.subscribe();
         AppServices.syncData();
       }
     });
@@ -74,12 +75,12 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
       body: Stack(
         children: <Widget>[
           Center(
-            child: _file == null
+            child: _file == null && _imgBytes == null
                 ? _isLoading
                     ? const AdaptiveLoading()
                     : FileUploadSpace(
                         fileType: FileType.image,
-                        onTap: (_) {
+                        onTap: (_) async {
                           setState(() => _isLoading = true);
                           if (_.isEmpty) {
                             showToast(context, 'Image not picked',
@@ -87,7 +88,10 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                             setState(() => _isLoading = false);
                             return;
                           }
+                          Uint8List _bytes =
+                              await AppServices.readFilesAsBytes(_.first.path!);
                           setState(() {
+                            _imgBytes = _bytes;
                             _file = _.first;
                             _isLoading = false;
                           });
@@ -129,8 +133,8 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                                 image: _isLoading
                                     ? null
                                     : DecorationImage(
-                                        image: AssetImage(_file!.path!),
-                                        fit: BoxFit.fill,
+                                        image: MemoryImage(_imgBytes!),
+                                        fit: BoxFit.cover,
                                       ),
                                 borderRadius: BorderRadius.circular(10),
                                 border: _imgSaved
@@ -209,7 +213,11 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                                   setState(() => _isLoading = false);
                                   return;
                                 }
+                                Uint8List _bytes =
+                                    await AppServices.readFilesAsBytes(
+                                        _anotherFile.first.path!);
                                 setState(() {
+                                  _imgBytes = _bytes;
                                   _file = _anotherFile.first;
                                   _isLoading = false;
                                 });
@@ -227,20 +235,33 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: ChangeNotifierProvider<UserData>.value(
-                value: context.read<UserData>(),
+                value: context.watch<UserData>(),
                 builder: (BuildContext context, _) => Consumer<UserData>(
                   builder: (BuildContext context, UserData value, Widget? _) =>
                       SyncIndicator(
-                    size: value.currentProfilePic.isEmpty ? 15 : 45,
+                    size: 45,
                     child: value.currentProfilePic.isEmpty
-                        ? null
+                        ? GestureDetector(
+                            onTap: () async {
+                              await Navigator.pushNamed(
+                                  context, PageRouteNames.settings,
+                                  arguments: false);
+                            },
+                            child: const Icon(
+                              TablerIcons.user,
+                              size: 15,
+                            ),
+                          )
                         : GestureDetector(
-                            onTap: () {},
+                            onTap: () async {
+                              await Navigator.pushNamed(
+                                  context, PageRouteNames.settings);
+                            },
                             child: ClipOval(
                               child: Image(
                                 height: 45,
                                 width: 45,
-                                fit: BoxFit.fill,
+                                fit: BoxFit.cover,
                                 gaplessPlayback: true,
                                 image:
                                     Image.memory(value.currentProfilePic).image,

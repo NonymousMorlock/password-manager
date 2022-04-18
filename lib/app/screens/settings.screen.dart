@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 // 📦 Package imports:
 import 'package:at_client_mobile/at_client_mobile.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:tabler_icons/tabler_icons.dart';
 
@@ -13,6 +14,7 @@ import 'package:tabler_icons/tabler_icons.dart';
 import '../../core/services/app.service.dart';
 import '../../meta/components/adaptive_loading.dart';
 import '../../meta/components/change_propic.dart';
+import '../../meta/components/forms/report.form.dart';
 import '../../meta/components/settings/settings_category.dart';
 import '../../meta/components/settings/settings_tile.dart';
 import '../../meta/components/sync_indicator.dart';
@@ -36,19 +38,23 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  final TextEditingController _userNameController = TextEditingController();
-  final FocusNode _nameFocusNode = FocusNode();
+  final TextEditingController _userNameController = TextEditingController(),
+      _reportController = TextEditingController(),
+      _titleController = TextEditingController(text: 'Title of the report');
+  final FocusNode _nameFocusNode = FocusNode(), _titleFocusNode = FocusNode();
   bool _editing = false, _saving = false, _enableFingerprint = false;
   final AppLogger _logger = AppLogger('Settings screen');
   final PassKey _nameKey = Keys.nameKey
     ..sharedBy = AppServices.sdkServices.currentAtSign;
   final LocalAuthentication _localAuth = LocalAuthentication();
+  PackageInfo? packageInfo;
   @override
   void initState() {
     Future<void>.delayed(Duration.zero, () async {
+      packageInfo = await PackageInfo.fromPlatform();
       String? _name = await AppServices.sdkServices.get(_nameKey);
       context.read<UserData>().userName = _name;
-      _nameFocusNode.unfocus();
+      if (mounted) _nameFocusNode.unfocus();
       setState(() {
         _userNameController.text =
             context.read<UserData>().userName ?? 'Your Name';
@@ -74,6 +80,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showToast(context,
         _nameUpdated ? 'Name updated successfully' : 'Failed to update name',
         isError: !_nameUpdated);
+  }
+
+  @override
+  void dispose() {
+    _userNameController.dispose();
+    _reportController.dispose();
+    _titleController.dispose();
+    _nameFocusNode.dispose();
+    _titleFocusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -150,7 +166,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                   child: Image(
                                     height: 100,
                                     width: 100,
-                                    fit: BoxFit.fill,
+                                    fit: BoxFit.cover,
                                     gaplessPlayback: true,
                                     image: Image.memory(
                                             _userData.currentProfilePic)
@@ -368,90 +384,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             TablerIcons.report,
                             color: Colors.amber[700],
                           ),
-                          onTap: () {
+                          onTap: () async {
                             context.read<UserData>().isAdmin
-                                ? Navigator.pushNamed(
+                                ? await Navigator.pushNamed(
                                     context, PageRouteNames.reports)
-                                : showModalBottomSheet(
-                                    isScrollControlled: true,
-                                    backgroundColor: Colors.white,
-                                    shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(20),
-                                        topRight: Radius.circular(20),
-                                      ),
-                                    ),
-                                    context: context,
-                                    builder: (_) {
-                                      return Padding(
-                                        padding:
-                                            MediaQuery.of(context).viewInsets,
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: <Widget>[
-                                            const Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                  vertical: 10.0),
-                                              child: Text(
-                                                'Report your issue here',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.w700,
-                                                  fontSize: 16,
-                                                ),
-                                              ),
-                                            ),
-                                            vSpacer(20),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 20.0),
-                                              child: Container(
-                                                height: 100,
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        vertical: 3.0,
-                                                        horizontal: 10.0),
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
-                                                  color: Colors.grey[200],
-                                                ),
-                                                child: TextFormField(
-                                                  maxLines: 30,
-                                                  decoration: InputDecoration(
-                                                    fillColor: AppTheme.grey
-                                                        .withOpacity(0.2),
-                                                    hintText:
-                                                        'Oops, Sorry to get you here. Please tell us what happened.',
-                                                    hintStyle: const TextStyle(
-                                                      fontSize: 14,
-                                                    ),
-                                                    border: InputBorder.none,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            vSpacer(15),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 10.0),
-                                              child: GestureDetector(
-                                                child: Text(
-                                                  'Send',
-                                                  style: TextStyle(
-                                                    color: AppTheme.primary,
-                                                  ),
-                                                ),
-                                                onTap: () {},
-                                              ),
-                                            ),
-                                            vSpacer(15),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                  );
+                                : await reportSheet(context);
                           },
                           lable: 'Report',
                           subLable: 'Report a bug or send feedback',
@@ -492,11 +429,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                 ),
+                vSpacer(10),
+                Center(
+                  child: Text(
+                    'Version : ${packageInfo?.version}',
+                    style: TextStyle(
+                      color: AppTheme.disabled,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> reportSheet(BuildContext context) async {
+    await showModalBottomSheet(
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      context: context,
+      builder: (_) {
+        return const ReportForm();
+      },
     );
   }
 }

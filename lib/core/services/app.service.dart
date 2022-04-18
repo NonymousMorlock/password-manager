@@ -22,6 +22,7 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zxing2/qrcode.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 // 🌎 Project imports:
 import '../../app/constants/assets.dart';
@@ -37,15 +38,19 @@ import '../../meta/models/freezed/image.model.dart';
 import '../../meta/models/freezed/password.model.dart';
 import '../../meta/models/freezed/plots.model.dart';
 import '../../meta/models/freezed/qr.model.dart';
+import '../../meta/models/freezed/report.model.dart';
 import '../../meta/models/key.model.dart';
 import '../../meta/notifiers/new_user.dart';
 import '../../meta/notifiers/user_data.dart';
 import 'dec/decode.dart';
 import 'dec/decryption.dart';
 import 'enc/encryption.dart';
+import 'passman.env.dart';
 import 'sdk.services.dart';
 
 class AppServices {
+  static late FlutterLocalNotificationsPlugin _notificationsPlugin;
+
   /// Returns the [UserData] instance.
   static late final UserData _userData;
 
@@ -55,7 +60,37 @@ class AppServices {
   /// [SdkServices] instance
   static final SdkServices sdkServices = SdkServices.getInstance();
 
-  static void init(UserData userData) => _userData = userData;
+  static Future<void> init(UserData userData) async {
+    _userData = userData;
+    _notificationsPlugin = FlutterLocalNotificationsPlugin();
+
+    if (Platform.isIOS) {
+      await _notificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>()
+          ?.requestPermissions(
+            alert: false,
+            badge: true,
+            sound: true,
+          );
+    }
+    await _notificationsPlugin.initialize(
+      const InitializationSettings(
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        iOS: IOSInitializationSettings(
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+        ),
+      ),
+      onSelectNotification: (String? payload) async {
+        if (payload != null) {
+          debugPrint('notification payload: ' + payload);
+        }
+      },
+    );
+    _logger.finer('initialiazed notification service');
+  }
 
   /// [OnboardingService] instance
   static final OnboardingService onboardingService =
@@ -322,10 +357,26 @@ class AppServices {
     AtClientPreference? _pref =
         sdkServices.atClientManager.atClient.getPreferences();
     if (_pref != null) {
+      List<String> _paths = <String>[
+        _pref.hiveStoragePath!,
+        _pref.downloadPath!,
+        _pref.commitLogPath!,
+      ];
       try {
-        await Directory(_pref.hiveStoragePath!).delete(recursive: true);
-        await Directory(_pref.downloadPath!).delete(recursive: true);
-        await Directory(_pref.commitLogPath!).delete(recursive: true);
+        for (String _path in _paths) {
+          Directory _dir = Directory(_path);
+          if (_dir.existsSync()) {
+            List<FileSystemEntity> _files =
+                await _dir.list(recursive: true).toList();
+            for (FileSystemEntity _file in _files) {
+              if (_file is File) {
+                await _file.delete();
+              } else if (_file is Directory) {
+                await _file.delete(recursive: true);
+              }
+            }
+          }
+        }
         await KeyChainManager.getInstance().clearKeychainEntries();
         return true;
       } on Exception catch (e, s) {
@@ -335,6 +386,47 @@ class AppServices {
     } else {
       _logger.severe('Error while logging out: AtClient preference is null');
       return false;
+    }
+  }
+
+  // startMonitor needs to be called at the beginning of session
+  static Future<void> startMonitor() async {
+    _logger.finer('Starting app notification monitor');
+    sdkServices.atClientManager.notificationService
+        .subscribe(regex: PassmanEnv.syncRegex)
+        .listen((AtNotification monitorNotification) async {
+      try {
+        _logger.finer('Listening to notification: ${monitorNotification.id}');
+        syncData();
+        await _listenToNotifications(monitorNotification);
+        await getReports();
+      } catch (e) {
+        _logger.severe(e.toString());
+      }
+    });
+  }
+
+  static Future<void> _listenToNotifications(
+      AtNotification monitorNotification) async {
+    _logger.finer('Listening to notification: ${monitorNotification.id}');
+    await _showNotification(monitorNotification);
+  }
+
+  static Future<void> _showNotification(AtNotification atNotification) async {
+    _logger.finer('inside show notification...');
+    NotificationDetails platformChannelSpecifics = const NotificationDetails(
+      android: AndroidNotificationDetails('CHANNEL_ID', 'CHANNEL_NAME',
+          channelDescription: 'CHANNEL_DESCRIPTION',
+          importance: Importance.max,
+          priority: Priority.high,
+          showWhen: false),
+      iOS: IOSNotificationDetails(),
+    );
+
+    if (atNotification.key.contains('report')) {
+      await _notificationsPlugin.show(
+          0, 'Report', atNotification.value, platformChannelSpecifics,
+          payload: jsonEncode(atNotification.toJson()));
     }
   }
 
@@ -500,6 +592,27 @@ class AppServices {
       _userData.images = _images;
     } on Exception catch (e, s) {
       _logger.severe('Error fetching images', e, s);
+      return;
+    }
+  }
+
+  static Future<void> getReports() async {
+    _logger.finer('Fetching Reports');
+    try {
+      List<Report> _reports = <Report>[];
+      List<AtKey> _reportKeys = await sdkServices.getAllKeys(regex: 'report_');
+      for (AtKey _key in _reportKeys) {
+        dynamic _value = await sdkServices.get(PassKey.fromAtKey(_key));
+        if (_value != null) {
+          Report _report = Report.fromJson(_value);
+          _reports.add(_report);
+        }
+      }
+      _reports.sort((Report a, Report b) => b.createdAt.compareTo(a.createdAt));
+      _reportKeys.clear();
+      _userData.reports = _reports;
+    } on Exception catch (e, s) {
+      _logger.severe('Error fetching reports', e, s);
       return;
     }
   }

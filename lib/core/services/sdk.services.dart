@@ -8,6 +8,7 @@ import 'package:at_commons/at_commons.dart';
 import 'package:at_onboarding_flutter/services/onboarding_service.dart';
 import 'package:at_onboarding_flutter/utils/response_status.dart';
 import 'package:at_server_status/at_server_status.dart';
+import 'package:at_client/src/service/notification_service.dart';
 
 // 🌎 Project imports:
 import '../../meta/extensions/logger.ext.dart';
@@ -123,15 +124,21 @@ class SdkServices {
   String? get currentAtSign => atClientManager.atClient.getCurrentAtSign();
 
   Future<String?> getProPic() async {
-    List<AtKey> list = await atClientManager.atClient
-        .getAtKeys(regex: 'profilepic', sharedBy: currentAtSign);
-    for (AtKey key in list) {
-      if (key.key == 'profilepic' && key.namespace == PassmanEnv.appNamespace) {
-        AtValue img = await atClientManager.atClient.get(key);
-        return json.decode(img.value)['value'];
+    try {
+      List<AtKey> list = await atClientManager.atClient
+          .getAtKeys(regex: 'profilepic', sharedBy: currentAtSign);
+      for (AtKey key in list) {
+        if (key.key == 'profilepic' &&
+            key.namespace == PassmanEnv.appNamespace) {
+          AtValue img = await atClientManager.atClient.get(key);
+          return json.decode(img.value)['value'];
+        }
       }
+      return null;
+    } on Exception catch (e, s) {
+      _logger.warning('Error getting profile pic', e, s);
+      return null;
     }
-    return null;
   }
 
   Future<bool> isAdmin() async {
@@ -211,7 +218,7 @@ class SdkServices {
       return null;
     } else {
       _logger.finer('Name key found: $_data');
-      String name = await get(
+      String? name = await get(
         PassKey.fromAtKey((await getAllKeys(regex: 'name')).first),
       );
       return name;
@@ -230,7 +237,20 @@ class SdkServices {
           : entity.value?.value;
       bool putResult =
           await atClientManager.atClient.put(entity.toAtKey(), value);
-      if (putResult) AppServices.syncData();
+      if (putResult) {
+        AppServices.syncData();
+        if (entity.key!.contains('report')) {
+          await AppServices.sdkServices.atClientManager.notificationService
+              .notify(
+                NotificationParams.forUpdate(
+                  entity.toAtKey(),
+                  value: entity.value?.value['title'],
+                ),
+              )
+              .then((NotificationResult value) => _logger.finer(
+                  'Notification status: ${value.notificationStatusEnum.name}'));
+        }
+      }
       return putResult;
     } catch (e, s) {
       _logger.severe('Error while putting data', e, s);
@@ -244,10 +264,10 @@ class SdkServices {
       AtValue _value = await atClientManager.atClient.get(entity.toAtKey());
       return jsonDecode(_value.value)['value'];
     } on KeyNotFoundException catch (e, s) {
-      _logger.severe('Key not found with message ${e.message}', e, s);
+      _logger.warning('Key not found with message ${e.message}', e, s);
       return null;
     } on Exception catch (e, s) {
-      _logger.severe('Error while getting data', e, s);
+      _logger.severe('Error while getting data, Error: $e', e, s);
       return null;
     }
   }

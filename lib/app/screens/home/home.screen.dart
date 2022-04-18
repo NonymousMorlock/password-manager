@@ -84,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             child: Image(
                               height: 45,
                               width: 45,
-                              fit: BoxFit.fill,
+                              fit: BoxFit.cover,
                               gaplessPlayback: true,
                               image: Image.memory(_userValue.currentProfilePic)
                                   .image,

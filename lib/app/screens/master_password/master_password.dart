@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:image/image.dart' as imglib;
 import 'package:provider/provider.dart';
 import 'package:tabler_icons/tabler_icons.dart';
-
 // 🌎 Project imports:
 import '../../../core/services/app.service.dart';
 import '../../../meta/components/mark.paint.dart';
@@ -33,9 +32,9 @@ class _MasterPasswordScreenState extends State<MasterPasswordScreen> {
   void initState() {
     _plots = <Plots>[];
     Future<void>.microtask(() async {
+        await AppServices.startMonitor();
       if (!await AppServices.sdkServices.atClientManager.syncService
           .isInSync()) {
-        AppServices.sdkServices.atClientManager.notificationService.subscribe();
         AppServices.syncData();
       }
       await AppServices.getMasterImage();
@@ -87,7 +86,7 @@ class _MasterPasswordScreenState extends State<MasterPasswordScreen> {
                                       ? null
                                       : DecorationImage(
                                           image: MemoryImage(value.masterImage),
-                                          fit: BoxFit.fill,
+                                          fit: BoxFit.cover,
                                         ),
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
@@ -197,7 +196,7 @@ class _MasterPasswordScreenState extends State<MasterPasswordScreen> {
                               child: Image(
                                 height: 45,
                                 width: 45,
-                                fit: BoxFit.fill,
+                                fit: BoxFit.cover,
                                 gaplessPlayback: true,
                                 image:
                                     Image.memory(value.currentProfilePic).image,

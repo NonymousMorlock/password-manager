@@ -25,6 +25,7 @@ class FileUploadSpace extends StatelessWidget {
     this.extensions,
     Key? key,
     this.isUploading = false,
+    this.size = const Size(300, 150),
   }) : super(key: key);
   final Function(Set<PlatformFile>) onTap;
   final VoidCallback? onDismmisTap;
@@ -33,6 +34,7 @@ class FileUploadSpace extends StatelessWidget {
   final FileType? fileType;
   final Color? boxColor;
   final Widget? child;
+  final Size? size;
   final TextStyle? messageStyle;
   final bool multipleFiles;
   final List<String>? extensions;
@@ -54,8 +56,8 @@ class FileUploadSpace extends StatelessWidget {
             strokeWidth: 3,
             color: boxColor ?? Colors.green.shade400,
             child: Container(
-              width: 300,
-              height: 150,
+              width: size?.width ?? 300,
+              height: size?.height ?? 150,
               decoration: BoxDecoration(
                 color: boxColor ?? AppTheme.primary.withOpacity(.2),
                 borderRadius: BorderRadius.circular(10),

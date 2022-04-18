@@ -107,8 +107,7 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
             _logger.finer('Activated $_atSign. Polishing your account...');
             bool _propicUpdated = await sdk.put(_passKey);
             if (_propicUpdated) {
-              AppServices.sdkServices.atClientManager.notificationService
-                  .subscribe();
+              await AppServices.startMonitor();
               context.read<UserData>().currentAtSign = _atSign;
               context.read<UserData>().currentProfilePic =
                   context.read<NewUser>().newUserData['img'];
@@ -122,11 +121,12 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
               PassKey(
                 key: 'admin',
                 value: Value(
-                  value: Value(value: 'false'),
+                  value: false,
                   type: 'admin',
                 ),
               ),
             );
+            context.read<UserData>().isAdmin = false;
             _keySaved = await AppServices.saveAtKeys(
                 _atSign,
                 context.read<UserData>().atOnboardingPreference.downloadPath!,
@@ -143,6 +143,8 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
                           : 'Failed to save atKeys file.',
                       isError: !_keySaved);
                 }
+                await AppServices.startMonitor();
+
                 await Navigator.pushNamedAndRemoveUntil(
                   context,
                   PageRouteNames.setMasterPassword,

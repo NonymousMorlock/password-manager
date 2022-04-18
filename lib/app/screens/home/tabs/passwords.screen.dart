@@ -98,7 +98,7 @@ class _PasswordsPageState extends State<PasswordsPage> {
                                                   Base2e15.decode(userData
                                                       .passwords[i].favicon),
                                                   height: 30,
-                                                  fit: BoxFit.scaleDown,
+                                                  fit: BoxFit.cover,
                                                 ),
                                         ),
                                       ),
