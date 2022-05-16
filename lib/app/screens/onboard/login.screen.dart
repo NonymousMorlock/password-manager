@@ -121,11 +121,11 @@ class _LoginScreenState extends State<LoginScreen> {
             );
           }
           setState(() => _isLoading = false);
-          await AppServices.startMonitor();
+          
           await Navigator.pushReplacementNamed(
               context,
               _masterImgKeyExists
-                  ? PageRouteNames.masterPassword
+                  ? PageRouteNames.loadingScreen
                   : PageRouteNames.setMasterPassword);
         } else if (status == ResponseStatus.authFailed) {
           _list.clear();

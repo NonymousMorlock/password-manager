@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 // 📦 Package imports:
 import 'package:at_base2e15/at_base2e15.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:provider/provider.dart';
 import 'package:tabler_icons/tabler_icons.dart';
 
 // 🌎 Project imports:
@@ -19,7 +18,7 @@ import '../../../app/constants/theme.dart';
 import '../../../core/services/app.service.dart';
 import '../../models/freezed/image.model.dart';
 import '../../models/key.model.dart';
-import '../../notifiers/user_data.dart';
+import '../adaptive_loading.dart';
 import '../file_upload_space.dart';
 
 class ImagesForm extends StatefulWidget {
@@ -33,6 +32,7 @@ class _ImagesFormState extends State<ImagesForm> {
   late TextEditingController _folderNameController;
   final Set<PlatformFile> _images = <PlatformFile>{};
   final FocusNode _folderNameFocusNode = FocusNode();
+  bool _put = false;
   @override
   void initState() {
     _folderNameController = TextEditingController(text: 'Folder Name');
@@ -113,42 +113,49 @@ class _ImagesFormState extends State<ImagesForm> {
                     },
                   ),
                   vSpacer(40),
-                  MaterialButton(
-                    onPressed: (_folderNameController.text.isEmpty ||
-                            _folderNameController.text == 'Folder Name')
-                        ? null
-                        : () async {
-                            Map<int, String> _imagesData = <int, String>{};
-
-                            for (int i = 0; i < _images.length; i++) {
-                              Uint8List _bytes =
-                                  await AppServices.readFilesAsBytes(
-                                      _images.elementAt(i).path!);
-                              _imagesData[i] = Base2e15.encode(_bytes);
-                            }
-                            String _id = Constants.uuid;
-                            Images _imgData = Images(
-                              folderId: _folderNameController.text + '_' + _id,
-                              folderName: _folderNameController.text,
-                              images: _imagesData,
-                              imageCount: _images.length,
-                            );
-                            PassKey _imgKeys = Keys.imagesKey
-                              ..key = 'images_' + _id
-                              ..value?.value = _imgData.toJson();
-                            bool _isPut =
-                                await AppServices.sdkServices.put(_imgKeys);
-                            if (_isPut) {
-                              context.read<UserData>().images.add(_imgData);
-                              _folderNameController.clear();
-                              _imagesData.clear();
-                              _images.clear();
-                              Navigator.pop(
-                                  context, _folderNameController.text);
-                            }
-                          },
-                    child: const Text('Save'),
-                  ),
+                  _put
+                      ? const AdaptiveLoading(
+                          size: 40,
+                        )
+                      : MaterialButton(
+                          onPressed: (_folderNameController.text.isEmpty ||
+                                  _folderNameController.text == 'Folder Name')
+                              ? null
+                              : () async {
+                                  setState(() => _put = false);
+                                  Set<String> _imagesData = <String>{};
+                                  for (int i = 0; i < _images.length; i++) {
+                                    Uint8List _bytes =
+                                        await AppServices.readFilesAsBytes(
+                                            _images.elementAt(i).path!);
+                                    _imagesData.add(Base2e15.encode(_bytes));
+                                  }
+                                  String _id = Constants.uuid;
+                                  Images _imgData = Images(
+                                    folderId:
+                                        _folderNameController.text + '_' + _id,
+                                    folderName: _folderNameController.text,
+                                    images: _imagesData,
+                                    imageCount: _images.length,
+                                    createdAt: DateTime.now(),
+                                  );
+                                  PassKey _imgKeys = Keys.imagesKey
+                                    ..key = 'images_' + _id
+                                    ..value?.value = _imgData.toJson();
+                                  bool _isPut = await AppServices.sdkServices
+                                      .put(_imgKeys);
+                                  if (_isPut) {
+                                    await AppServices.getImages();
+                                    setState(() => _put = false);
+                                    _folderNameController.clear();
+                                    _imagesData.clear();
+                                    _images.clear();
+                                    Navigator.pop(
+                                        context, _folderNameController.text);
+                                  }
+                                },
+                          child: const Text('Save'),
+                        ),
                   vSpacer(20),
                 ],
               ),

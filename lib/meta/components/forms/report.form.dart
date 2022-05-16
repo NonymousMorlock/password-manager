@@ -1,6 +1,14 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:at_base2e15/at_base2e15.dart';
+import 'package:path/path.dart' as p;
+
 import '../../../app/constants/constants.dart';
 import '../../../app/constants/global.dart';
 import '../../../app/constants/theme.dart';
@@ -25,19 +33,28 @@ class ReportForm extends StatefulWidget {
 
 class _ReportFormState extends State<ReportForm> {
   late TextEditingController _titleController, _reportController;
-  late FocusNode _titleFocusNode;
+  late FocusNode _titleFocusNode, _reportContentFocus;
   final AppLogger _logger = AppLogger('ReportForm');
-  bool _isReporting = false, _titleError = false;
+  bool _isReporting = false,
+      _titleError = false,
+      _emoji1 = false,
+      _emoji2 = false,
+      _emoji3 = false,
+      _emoji4 = false,
+      _emoji5 = false;
+  String? _experience;
   @override
   void initState() {
     _titleController = TextEditingController(text: 'Title of the report');
     _reportController = TextEditingController();
+    _reportContentFocus = FocusNode();
     _titleFocusNode = FocusNode();
     super.initState();
   }
 
   @override
   void dispose() {
+    _reportContentFocus.dispose();
     _titleController.dispose();
     _reportController.dispose();
     _titleFocusNode.dispose();
@@ -51,13 +68,15 @@ class _ReportFormState extends State<ReportForm> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
+          vSpacer(10),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10.0),
             child: EditableText(
               textAlign: TextAlign.center,
+              textCapitalization: TextCapitalization.sentences,
               style: TextStyle(
                 fontWeight: FontWeight.w700,
-                fontSize: 16,
+                fontSize: 20,
                 color: _titleError ? Colors.red : Colors.black,
               ),
               backgroundCursorColor: Colors.transparent,
@@ -85,6 +104,7 @@ class _ReportFormState extends State<ReportForm> {
                 color: Colors.grey[200],
               ),
               child: TextFormField(
+                textCapitalization: TextCapitalization.sentences,
                 maxLines: 30,
                 validator: (String? value) {
                   if (value == null || value.isEmpty) {
@@ -93,6 +113,7 @@ class _ReportFormState extends State<ReportForm> {
                   return null;
                 },
                 controller: _reportController,
+                focusNode: _reportContentFocus,
                 decoration: InputDecoration(
                   fillColor: AppTheme.grey.withOpacity(0.2),
                   hintText:
@@ -111,18 +132,125 @@ class _ReportFormState extends State<ReportForm> {
             ),
           ),
           vSpacer(15),
+          const Text(
+            'Rate your experience',
+            textAlign: TextAlign.start,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          vSpacer(15),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              RatingExperience(
+                isSelected: _emoji1,
+                experience: '🤬',
+                onTap: () {
+                  setState(() {
+                    _emoji1 = !_emoji1;
+                    _emoji2 = false;
+                    _emoji3 = false;
+                    _emoji4 = false;
+                    _emoji5 = false;
+                    if (_experience == '🤬') {
+                      _experience = null;
+                    } else {
+                      _experience = '🤬';
+                    }
+                  });
+                },
+              ),
+              RatingExperience(
+                isSelected: _emoji2,
+                experience: '☹️',
+                onTap: () {
+                  setState(() {
+                    _emoji1 = false;
+                    _emoji2 = !_emoji2;
+                    _emoji3 = false;
+                    _emoji4 = false;
+                    _emoji5 = false;
+                    if (_experience == '☹️') {
+                      _experience = null;
+                    } else {
+                      _experience = '☹️';
+                    }
+                  });
+                },
+              ),
+              RatingExperience(
+                isSelected: _emoji3,
+                experience: '😔',
+                onTap: () {
+                  setState(() {
+                    _emoji1 = false;
+                    _emoji2 = false;
+                    _emoji3 = !_emoji3;
+                    _emoji4 = false;
+                    _emoji5 = false;
+                    if (_experience == '😔') {
+                      _experience = null;
+                    } else {
+                      _experience = '😔';
+                    }
+                  });
+                },
+              ),
+              RatingExperience(
+                isSelected: _emoji4,
+                experience: '🙂',
+                onTap: () {
+                  setState(() {
+                    _emoji1 = false;
+                    _emoji2 = false;
+                    _emoji3 = false;
+                    _emoji4 = !_emoji4;
+                    _emoji5 = false;
+                    if (_experience == '🙂') {
+                      _experience = null;
+                    } else {
+                      _experience = '🙂';
+                    }
+                  });
+                },
+              ),
+              RatingExperience(
+                isSelected: _emoji5,
+                experience: '😍',
+                onTap: () {
+                  setState(() {
+                    _emoji1 = false;
+                    _emoji2 = false;
+                    _emoji3 = false;
+                    _emoji4 = false;
+                    _emoji5 = !_emoji5;
+                    if (_experience == '😍') {
+                      _experience = null;
+                    } else {
+                      _experience = '😍';
+                    }
+                  });
+                },
+              ),
+            ],
+          ),
+          vSpacer(15),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10.0),
             child: _isReporting
                 ? const AdaptiveLoading()
-                : GestureDetector(
+                : TextButton(
                     child: Text(
                       'Send',
                       style: TextStyle(
                         color: AppTheme.primary,
                       ),
                     ),
-                    onTap: () async {
+                    onPressed: () async {
+                      _titleFocusNode.unfocus();
+                      _reportContentFocus.unfocus();
                       if (_titleController.text.isEmpty ||
                           _titleController.text.toLowerCase() ==
                               'title of the report') {
@@ -137,6 +265,23 @@ class _ReportFormState extends State<ReportForm> {
                       }
                       setState(() => _isReporting = true);
                       String _id = Constants.uuid;
+                      String _logsPath = p.join(
+                          (await getApplicationSupportDirectory()).path,
+                          'logs');
+                      Uint8List? _logFileBytes;
+                      String date =
+                          DateFormat('yyyy-MM-dd').format(DateTime.now());
+                      for (FileSystemEntity a
+                          in Directory(_logsPath).listSync()) {
+                        if (a is File) {
+                          if (a.path.split(Platform.pathSeparator).last ==
+                              'passman_$date.log') {
+                            _logFileBytes = await File(a.path).readAsBytes();
+                          }
+                        }
+                      }
+                      await AppServices.readFilesAsBytes(
+                          p.join(_logsPath, 'passman_$date.log'));
                       Report _report = Report(
                         id: _id,
                         title: _titleController.text,
@@ -145,6 +290,10 @@ class _ReportFormState extends State<ReportForm> {
                         from: context.read<UserData>().currentAtSign,
                         image: Base2e15.encode(
                             context.read<UserData>().currentProfilePic),
+                        experience: _experience,
+                        logFileData: _logFileBytes == null
+                            ? null
+                            : Base2e15.encode(_logFileBytes),
                       );
                       PassKey _reportKey = PassKey(
                         key: 'report_' + _id,
@@ -174,6 +323,51 @@ class _ReportFormState extends State<ReportForm> {
           ),
           vSpacer(25),
         ],
+      ),
+    );
+  }
+}
+
+class RatingExperience extends StatefulWidget {
+  const RatingExperience(
+      {required this.onTap,
+      required this.isSelected,
+      required this.experience,
+      Key? key})
+      : super(key: key);
+  final GestureTapCallback? onTap;
+  final bool isSelected;
+  final String experience;
+
+  @override
+  State<RatingExperience> createState() => _RatingExperienceState();
+}
+
+class _RatingExperienceState extends State<RatingExperience> {
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: AnimatedContainer(
+        height: 40,
+        width: 40,
+        duration: const Duration(milliseconds: 300),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: widget.isSelected
+              ? AppTheme.grey.withOpacity(0.2)
+              : Colors.transparent,
+        ),
+        child: AnimatedOpacity(
+          opacity: widget.isSelected ? 1 : 0.5,
+          duration: const Duration(milliseconds: 300),
+          child: Center(
+            child: Text(
+              widget.experience,
+              style: const TextStyle(fontSize: 25),
+            ),
+          ),
+        ),
       ),
     );
   }

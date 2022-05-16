@@ -38,6 +38,7 @@ class _SplashScreenState extends State<SplashScreen> {
   bool _masterImgKeyExists = false,
       _fingerAuthApproved = false,
       _fingerPrint = false;
+
   Future<void> _init() async {
     try {
       String? _currentAtSign;
@@ -46,7 +47,9 @@ class _SplashScreenState extends State<SplashScreen> {
       Map<String, bool?> atSigns =
           await KeyChainManager.getInstance().getAtsignsWithStatus();
       if (atSigns.isNotEmpty) {
-        _currentAtSign = atSigns.keys.firstWhere((String key) => atSigns[key]!);
+        _currentAtSign = atSigns.keys.firstWhere(
+            (String key) => atSigns[key] == true,
+            orElse: () => throw 'No AtSigns found');
         _preference = context.read<UserData>().atOnboardingPreference;
         _preference = context.read<UserData>().atOnboardingPreference
           ..privateKey = await KeyChainManager.getInstance()
@@ -92,30 +95,53 @@ class _SplashScreenState extends State<SplashScreen> {
               }
               _fingerAuthApproved = await _authentication.authenticate(
                 localizedReason: 'Please authenticate to continue',
-                biometricOnly: true,
               );
             }
             if (_fingerAuthApproved) {
               await Future<void>.delayed(const Duration(seconds: 2));
             }
           }
+          await AppServices.getPasswords();
+          await AppServices.getImages();
+          await AppServices.getCards();
+          await AppServices.getReports();
         }
       } else {
         await Future<void>.delayed(const Duration(milliseconds: 3200));
       }
       _logger.finer('Checking done...');
-      await Navigator.pushReplacementNamed(
-          context,
-          onboarded
-              ? _masterImgKeyExists &&
-                      ((!_fingerPrint) || (_fingerPrint && _fingerAuthApproved))
-                  ? PageRouteNames.masterPassword
-                  : PageRouteNames.setMasterPassword
-              : PageRouteNames.loginScreen);
+      if (mounted) {
+        await Navigator.pushReplacementNamed(
+            context,
+            onboarded
+                ? _masterImgKeyExists &&
+                        ((!_fingerPrint) ||
+                            (_fingerPrint && _fingerAuthApproved))
+                    ? PageRouteNames.masterPassword
+                    : PageRouteNames.setMasterPassword
+                : PageRouteNames.loginScreen);
+      }
     } catch (e, s) {
       _logger.severe(e.toString(), e, s);
       return;
     }
+  }
+
+  @override
+  void initState() {
+    Future<void>.delayed(Duration.zero, () async {
+      if (mounted && MediaQuery.of(context).size.width >= 500) {
+        await Navigator.pushReplacementNamed(
+            context, PageRouteNames.mobileDeviceScreen);
+        return;
+      }
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   @override

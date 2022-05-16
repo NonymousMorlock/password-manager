@@ -86,7 +86,7 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                     ),
                   Center(
                     child: Text(
-                      context.read<NewUser>().newUserData['atSign'],
+                      context.read<NewUser>().newUserData['atSign'] ?? '',
                       style: const TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.w600,

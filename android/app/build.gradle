@@ -27,6 +27,8 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
+def enableProguardInReleaseBuilds = true
+
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
@@ -47,11 +49,16 @@ android {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
+    lintOptions {
+      disable 'InvalidPackage'
+      checkReleaseBuilds false
+    }
+
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.passman"
         minSdkVersion 24
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
@@ -70,6 +77,7 @@ android {
         release {
             minifyEnabled true
             shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro' 
             signingConfig signingConfigs.release
         }
     }
@@ -82,4 +90,12 @@ flutter {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.android.support:multidex:1.0.3'
+    // configurations.all {
+    //     resolutionStrategy.eachDependency { DependencyResolveDetails details ->
+    //         if (details.requested.group == 'com.google.zxing' && details.requested.name == 'core') {
+    //             details.useVersion "3.4.1"
+    //             details.because 'Zxing 3.4.1 is compatible with another flutter QR plugin'
+    //         }
+    //     }
+    // }
 }

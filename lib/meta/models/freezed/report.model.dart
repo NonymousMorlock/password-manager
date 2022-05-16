@@ -12,6 +12,8 @@ class Report with _$Report {
     required String from,
     required DateTime createdAt,
     required String image,
+    String? experience,
+    required String? logFileData,
   }) = _Report;
 
   factory Report.fromJson(Map<String, dynamic> json) => _$ReportFromJson(json);

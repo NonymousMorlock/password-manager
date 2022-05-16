@@ -22,8 +22,10 @@ import 'app/provider/app_provider.dart';
 import 'app/screens/home/home.screen.dart';
 import 'app/screens/master_password/master_password.dart';
 import 'app/screens/master_password/set_master_password.dart';
+import 'app/screens/mobile.screen.dart';
 import 'app/screens/onboard/activation.screen.dart';
 import 'app/screens/onboard/get@sign.screen.dart';
+import 'app/screens/onboard/loading.screen.dart';
 import 'app/screens/onboard/login.screen.dart';
 import 'app/screens/onboard/otp.screen.dart';
 import 'app/screens/onboard/qr.screen.dart';
@@ -117,9 +119,6 @@ class _MyAppState extends State<MyApp> {
             (SecureApplicationController? secureApplicationController) async {
           bool authResult = await _authentication.authenticate(
             localizedReason: 'Authenticate to unlock',
-            useErrorDialogs: true,
-            stickyAuth: true,
-            biometricOnly: true,
           );
           if (authResult) {
             secureApplicationController?.authSuccess(unlock: true);
@@ -189,6 +188,16 @@ class _MyAppState extends State<MyApp> {
             return pageTransition(
               settings,
               const ReportsScreen(),
+            );
+          case PageRouteNames.loadingScreen:
+            return pageTransition(
+              settings,
+              const LoadingDataScreen(),
+            );
+          case PageRouteNames.mobileDeviceScreen:
+            return pageTransition(
+              settings,
+              const MobileDeviceScreen(),
             );
           default:
             return pageTransition(

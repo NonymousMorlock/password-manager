@@ -42,7 +42,7 @@
 			<string>UIInterfaceOrientationLandscapeRight</string>
 		</array>
 		<key>io.flutter.embedded_views_preview</key>
-		<true/>
+		<string>YES</string>
 		<key>NSCameraUsageDescription</key>
 		<string>Passman needs camera access to scan QR code and onboard.</string>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
@@ -56,11 +56,15 @@
 		<true/>
 		<key>LSSupportsOpeningDocumentsInPlace</key>
 		<true/>
+		<key>UIFileSharingEnabled</key>
+		<true/>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>We access your photos to let you upload them to the app.</string>
 		<key>NSAppleMusicUsageDescription</key>
 		<string>We access your music to let you upload them to the app.</string>
 		<key>NSFaceIDUsageDescription</key>
 		<string>Authentication with TouchId or FaceID to view or access data.</string>
-	</dict>
+		<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+</dict>
 </plist>

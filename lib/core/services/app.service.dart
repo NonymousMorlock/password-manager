@@ -61,35 +61,40 @@ class AppServices {
   static final SdkServices sdkServices = SdkServices.getInstance();
 
   static Future<void> init(UserData userData) async {
-    _userData = userData;
-    _notificationsPlugin = FlutterLocalNotificationsPlugin();
+    try {
+      _userData = userData;
+      _notificationsPlugin = FlutterLocalNotificationsPlugin();
 
-    if (Platform.isIOS) {
-      await _notificationsPlugin
-          .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-            alert: false,
-            badge: true,
-            sound: true,
-          );
-    }
-    await _notificationsPlugin.initialize(
-      const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-        iOS: IOSInitializationSettings(
-          requestAlertPermission: true,
-          requestBadgePermission: true,
-          requestSoundPermission: true,
+      if (Platform.isIOS) {
+        await _notificationsPlugin
+            .resolvePlatformSpecificImplementation<
+                IOSFlutterLocalNotificationsPlugin>()
+            ?.requestPermissions(
+              alert: false,
+              badge: true,
+              sound: true,
+            );
+      }
+      await _notificationsPlugin.initialize(
+        const InitializationSettings(
+          android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+          iOS: IOSInitializationSettings(
+            requestAlertPermission: true,
+            requestBadgePermission: true,
+            requestSoundPermission: true,
+          ),
         ),
-      ),
-      onSelectNotification: (String? payload) async {
-        if (payload != null) {
-          debugPrint('notification payload: ' + payload);
-        }
-      },
-    );
-    _logger.finer('initialiazed notification service');
+        onSelectNotification: (String? payload) async {
+          if (payload != null) {
+            debugPrint('notification payload: ' + payload);
+          }
+        },
+      );
+      _logger.finer('initialiazed notification service');
+    } on Exception catch (e, s) {
+      log(e.toString(), error: e, stackTrace: s);
+      _logger.severe('failed to initialize notification service : $e', e, s);
+    }
   }
 
   /// [OnboardingService] instance
@@ -397,7 +402,9 @@ class AppServices {
         .listen((AtNotification monitorNotification) async {
       try {
         _logger.finer('Listening to notification: ${monitorNotification.id}');
-        syncData();
+        if (!(await sdkServices.atClientManager.syncService.isInSync())) {
+          syncData();
+        }
         await _listenToNotifications(monitorNotification);
         await getReports();
       } catch (e) {
@@ -448,11 +455,14 @@ class AppServices {
   /// Fetches the master image key from secondary.
   static Future<void> getMasterImage() async {
     _logger.finer('Getting master image');
-    PassKey _masterImgKey = Keys.masterImgKey
+    // PassKey _masterImgKey = Keys.masterImgKey;
+    // ..sharedBy = sdkServices.currentAtSign;
+    AtKey _key = AtKey()
+      ..key = Keys.masterImgKey.key
+      ..namespace = PassmanEnv.appNamespace
       ..sharedBy = sdkServices.currentAtSign;
     try {
-      AtValue value = await sdkServices.atClientManager.atClient
-          .get(_masterImgKey.toAtKey());
+      AtValue value = await sdkServices.atClientManager.atClient.get(_key);
       _userData.masterImage = Uint8List.fromList(
           Base2e15.decode(json.decode(value.value)['value']));
       _logger.finer('Fetched master image successfully');
@@ -474,7 +484,7 @@ class AppServices {
           Base2e15.decode(json.decode(value.value)['value']));
       _logger.finer('Fetched profile picture successfully');
     } on Exception catch (e, s) {
-      _logger.severe('Error getting master image', e, s);
+      _logger.severe('Error getting profile picture', e, s);
       return;
     }
   }
@@ -589,6 +599,7 @@ class AppServices {
         // print(isDelete);
       }
       _imagekeys.clear();
+      _images.sort((Images a, Images b) => b.createdAt.compareTo(a.createdAt));
       _userData.images = _images;
     } on Exception catch (e, s) {
       _logger.severe('Error fetching images', e, s);
@@ -602,6 +613,10 @@ class AppServices {
       List<Report> _reports = <Report>[];
       List<AtKey> _reportKeys = await sdkServices.getAllKeys(regex: 'report_');
       for (AtKey _key in _reportKeys) {
+        if (!_key.metadata!.isCached) {
+          _userData.reports = _reports;
+          return;
+        }
         dynamic _value = await sdkServices.get(PassKey.fromAtKey(_key));
         if (_value != null) {
           Report _report = Report.fromJson(_value);

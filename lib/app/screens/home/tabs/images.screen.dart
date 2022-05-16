@@ -11,6 +11,7 @@ import 'package:at_base2e15/at_base2e15.dart';
 import 'package:tabler_icons/tabler_icons.dart';
 
 // 🌎 Project imports:
+import '../../../../core/services/app.service.dart';
 import '../../../../meta/models/freezed/image.model.dart';
 import '../../../../meta/notifiers/user_data.dart';
 import '../../../constants/theme.dart';
@@ -35,77 +36,75 @@ class _ImagesPageState extends State<ImagesPage> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        UserDataListener(
-          builder: (BuildContext context, UserData userData) {
-            return userData.images.isEmpty
-                ? const Center(
-                    child: Text('Not implemented yet'),
-                  )
-                : Wrap(
-                    children: userData.images.map(
-                      (Images image) {
-                        return Container(
-                          margin: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppTheme.grey[300],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
-                            children: <Widget>[
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 15.0),
-                                child: Text(
-                                  image.folderName,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+        RefreshIndicator(
+          backgroundColor: Colors.white,
+          onRefresh: () async => AppServices.getImages(),
+          child: UserDataListener(
+            builder: (BuildContext context, UserData userData) {
+              return userData.images.isEmpty
+                  ? const Center(
+                      child: Text('Not implemented yet'),
+                    )
+                  : Wrap(
+                      children: userData.images.map(
+                        (Images image) {
+                          return Container(
+                            margin: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.grey[300],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              children: <Widget>[
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 15.0),
+                                  child: Text(
+                                    image.folderName,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              Divider(
-                                height: 1,
-                                color: AppTheme.grey[400],
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 20.0),
-                                child: Wrap(
-                                  children: <Widget>[
-                                    for (int i in image.images.keys)
-                                      GestureDetector(
-                                        onTap: _img != null
-                                            ? null
-                                            : () {
-                                                setState(() {
-                                                  _img = image.images[i];
-                                                });
-                                              },
-                                        child: Container(
-                                          height: 50,
-                                          width: 50,
-                                          decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                          ),
-                                          child: Image.memory(
-                                            Base2e15.decode(
-                                              image.images[i]!,
+                                Divider(
+                                  height: 1,
+                                  color: AppTheme.grey[400],
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 20.0),
+                                  child: Wrap(
+                                    children: <Widget>[
+                                      for (String img in image.images)
+                                        GestureDetector(
+                                          onTap: () {
+                                            setState(() => _img = img);
+                                          },
+                                          child: Container(
+                                            height: 50,
+                                            width: 50,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                             ),
-                                            fit: BoxFit.cover,
+                                            child: Image.memory(
+                                              Base2e15.decode(img),
+                                              fit: BoxFit.cover,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ).toList(),
-                  );
-          },
+                              ],
+                            ),
+                          );
+                        },
+                      ).toList(),
+                    );
+            },
+          ),
         ),
         if (_img != null)
           Center(

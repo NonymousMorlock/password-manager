@@ -10,7 +10,8 @@ class Images with _$Images {
     required String folderId,
     required String folderName,
     required int imageCount,
-    required Map<int, String> images,
+    required Set<String> images,
+    required DateTime createdAt,
   }) = _Images;
 
   factory Images.fromJson(Map<String, dynamic> json) => _$ImagesFromJson(json);

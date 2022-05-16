@@ -28,7 +28,9 @@ class _$ReportTearOff {
       required String content,
       required String from,
       required DateTime createdAt,
-      required String image}) {
+      required String image,
+      String? experience,
+      required String? logFileData}) {
     return _Report(
       id: id,
       title: title,
@@ -36,6 +38,8 @@ class _$ReportTearOff {
       from: from,
       createdAt: createdAt,
       image: image,
+      experience: experience,
+      logFileData: logFileData,
     );
   }
 
@@ -55,6 +59,8 @@ mixin _$Report {
   String get from => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   String get image => throw _privateConstructorUsedError;
+  String? get experience => throw _privateConstructorUsedError;
+  String? get logFileData => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -71,7 +77,9 @@ abstract class $ReportCopyWith<$Res> {
       String content,
       String from,
       DateTime createdAt,
-      String image});
+      String image,
+      String? experience,
+      String? logFileData});
 }
 
 /// @nodoc
@@ -90,6 +98,8 @@ class _$ReportCopyWithImpl<$Res> implements $ReportCopyWith<$Res> {
     Object? from = freezed,
     Object? createdAt = freezed,
     Object? image = freezed,
+    Object? experience = freezed,
+    Object? logFileData = freezed,
   }) {
     return _then(_value.copyWith(
       id: id == freezed
@@ -116,6 +126,14 @@ class _$ReportCopyWithImpl<$Res> implements $ReportCopyWith<$Res> {
           ? _value.image
           : image // ignore: cast_nullable_to_non_nullable
               as String,
+      experience: experience == freezed
+          ? _value.experience
+          : experience // ignore: cast_nullable_to_non_nullable
+              as String?,
+      logFileData: logFileData == freezed
+          ? _value.logFileData
+          : logFileData // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -131,7 +149,9 @@ abstract class _$ReportCopyWith<$Res> implements $ReportCopyWith<$Res> {
       String content,
       String from,
       DateTime createdAt,
-      String image});
+      String image,
+      String? experience,
+      String? logFileData});
 }
 
 /// @nodoc
@@ -151,6 +171,8 @@ class __$ReportCopyWithImpl<$Res> extends _$ReportCopyWithImpl<$Res>
     Object? from = freezed,
     Object? createdAt = freezed,
     Object? image = freezed,
+    Object? experience = freezed,
+    Object? logFileData = freezed,
   }) {
     return _then(_Report(
       id: id == freezed
@@ -177,6 +199,14 @@ class __$ReportCopyWithImpl<$Res> extends _$ReportCopyWithImpl<$Res>
           ? _value.image
           : image // ignore: cast_nullable_to_non_nullable
               as String,
+      experience: experience == freezed
+          ? _value.experience
+          : experience // ignore: cast_nullable_to_non_nullable
+              as String?,
+      logFileData: logFileData == freezed
+          ? _value.logFileData
+          : logFileData // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -190,7 +220,9 @@ class _$_Report implements _Report {
       required this.content,
       required this.from,
       required this.createdAt,
-      required this.image});
+      required this.image,
+      this.experience,
+      required this.logFileData});
 
   factory _$_Report.fromJson(Map<String, dynamic> json) =>
       _$$_ReportFromJson(json);
@@ -207,10 +239,14 @@ class _$_Report implements _Report {
   final DateTime createdAt;
   @override
   final String image;
+  @override
+  final String? experience;
+  @override
+  final String? logFileData;
 
   @override
   String toString() {
-    return 'Report(id: $id, title: $title, content: $content, from: $from, createdAt: $createdAt, image: $image)';
+    return 'Report(id: $id, title: $title, content: $content, from: $from, createdAt: $createdAt, image: $image, experience: $experience, logFileData: $logFileData)';
   }
 
   @override
@@ -223,7 +259,11 @@ class _$_Report implements _Report {
             const DeepCollectionEquality().equals(other.content, content) &&
             const DeepCollectionEquality().equals(other.from, from) &&
             const DeepCollectionEquality().equals(other.createdAt, createdAt) &&
-            const DeepCollectionEquality().equals(other.image, image));
+            const DeepCollectionEquality().equals(other.image, image) &&
+            const DeepCollectionEquality()
+                .equals(other.experience, experience) &&
+            const DeepCollectionEquality()
+                .equals(other.logFileData, logFileData));
   }
 
   @override
@@ -234,7 +274,9 @@ class _$_Report implements _Report {
       const DeepCollectionEquality().hash(content),
       const DeepCollectionEquality().hash(from),
       const DeepCollectionEquality().hash(createdAt),
-      const DeepCollectionEquality().hash(image));
+      const DeepCollectionEquality().hash(image),
+      const DeepCollectionEquality().hash(experience),
+      const DeepCollectionEquality().hash(logFileData));
 
   @JsonKey(ignore: true)
   @override
@@ -254,7 +296,9 @@ abstract class _Report implements Report {
       required String content,
       required String from,
       required DateTime createdAt,
-      required String image}) = _$_Report;
+      required String image,
+      String? experience,
+      required String? logFileData}) = _$_Report;
 
   factory _Report.fromJson(Map<String, dynamic> json) = _$_Report.fromJson;
 
@@ -270,6 +314,10 @@ abstract class _Report implements Report {
   DateTime get createdAt;
   @override
   String get image;
+  @override
+  String? get experience;
+  @override
+  String? get logFileData;
   @override
   @JsonKey(ignore: true)
   _$ReportCopyWith<_Report> get copyWith => throw _privateConstructorUsedError;

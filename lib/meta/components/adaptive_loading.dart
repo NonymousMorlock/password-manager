@@ -8,14 +8,15 @@ class AdaptiveLoading extends StatelessWidget {
   const AdaptiveLoading({
     Key? key,
     this.strokeWidth,
+    this.size,
   }) : super(key: key);
-  final double? strokeWidth;
+  final double? strokeWidth, size;
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: squareWidget(
-        20,
+        size ?? 20,
         child:
             CircularProgressIndicator.adaptive(strokeWidth: strokeWidth ?? 2),
       ),

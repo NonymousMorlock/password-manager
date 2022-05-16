@@ -15,8 +15,8 @@ import '../../core/services/app.service.dart';
 import '../../meta/components/adaptive_loading.dart';
 import '../../meta/components/change_propic.dart';
 import '../../meta/components/forms/report.form.dart';
-import '../../meta/components/settings/settings_category.dart';
-import '../../meta/components/settings/settings_tile.dart';
+import '../../meta/components/settings/category.settings.dart';
+import '../../meta/components/settings/tile.settings.dart';
 import '../../meta/components/sync_indicator.dart';
 import '../../meta/components/toast.dart';
 import '../../meta/extensions/logger.ext.dart';
@@ -303,8 +303,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                                   await _localAuth.authenticate(
                                                 localizedReason:
                                                     'Authenticate to enable fingerprint',
-                                                biometricOnly: true,
-                                                stickyAuth: true,
                                               );
                                               if (_authenticated) {
                                                 setState(() {

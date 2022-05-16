@@ -2,7 +2,6 @@
 import 'dart:io';
 
 // 🐦 Flutter imports:
-import 'package:flutter/foundation.dart';
 
 // 📦 Package imports:
 import 'package:at_utils/at_logger.dart';
@@ -22,8 +21,7 @@ class AppLogger extends AtSignLogger {
 
   void _writeToFile(String level, Object message,
           [Object? error, StackTrace? stackTrace]) =>
-      !kDebugMode
-          ? File(p.join(logPath,
+      File(p.join(logPath,
                   'passman_${DateFormat('yyyy-MM-dd').format(DateTime.now())}.log'))
               .writeAsStringSync(
               level.toUpperCase() +
@@ -31,8 +29,7 @@ class AppLogger extends AtSignLogger {
                   (error != null ? '$error\n' : '') +
                   (stackTrace != null ? '$stackTrace\n' : ''),
               mode: FileMode.append,
-            )
-          : null;
+            );
 
   @override
   void shout(dynamic message, [Object? error, StackTrace? stackTrace]) {

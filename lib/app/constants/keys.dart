@@ -8,6 +8,7 @@ class Keys {
     key: 'profilepic',
     isPublic: false,
     isHidden: true,
+    createdDate: DateTime.now(),
     value: Value(
       isHidden: true,
       labelName: 'Profile pic',
@@ -19,6 +20,7 @@ class Keys {
     key: 'name',
     isPublic: false,
     isHidden: true,
+    createdDate: DateTime.now(),
     value: Value(
       labelName: 'Username',
       isHidden: true,
@@ -30,6 +32,7 @@ class Keys {
     key: 'masterpassimg',
     isPublic: false,
     isHidden: true,
+    createdDate: DateTime.now(),
     value: Value(
       labelName: 'Master password image',
       isHidden: true,
@@ -40,6 +43,7 @@ class Keys {
   static final PassKey passwordKey = PassKey(
     isPublic: false,
     isHidden: true,
+    createdDate: DateTime.now(),
     value: Value(
       labelName: 'Password',
       isHidden: true,
@@ -50,6 +54,7 @@ class Keys {
   static final PassKey cardsKey = PassKey(
     isPublic: false,
     isHidden: true,
+    createdDate: DateTime.now(),
     value: Value(
       labelName: 'Cards',
       isHidden: true,
@@ -60,6 +65,7 @@ class Keys {
   static final PassKey imagesKey = PassKey(
     isPublic: false,
     isHidden: true,
+    createdDate: DateTime.now(),
     value: Value(
       labelName: 'Images',
       isHidden: true,
@@ -70,6 +76,7 @@ class Keys {
   static final PassKey fingerprintKey = PassKey(
     isPublic: false,
     key: 'fingerprint',
+    createdDate: DateTime.now(),
     isHidden: true,
     value: Value(
       labelName: 'Fingerprint',

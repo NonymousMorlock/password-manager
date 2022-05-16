@@ -26,12 +26,14 @@ class _$ImagesTearOff {
       {required String folderId,
       required String folderName,
       required int imageCount,
-      required Map<int, String> images}) {
+      required Set<String> images,
+      required DateTime createdAt}) {
     return _Images(
       folderId: folderId,
       folderName: folderName,
       imageCount: imageCount,
       images: images,
+      createdAt: createdAt,
     );
   }
 
@@ -48,7 +50,8 @@ mixin _$Images {
   String get folderId => throw _privateConstructorUsedError;
   String get folderName => throw _privateConstructorUsedError;
   int get imageCount => throw _privateConstructorUsedError;
-  Map<int, String> get images => throw _privateConstructorUsedError;
+  Set<String> get images => throw _privateConstructorUsedError;
+  DateTime get createdAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -63,7 +66,8 @@ abstract class $ImagesCopyWith<$Res> {
       {String folderId,
       String folderName,
       int imageCount,
-      Map<int, String> images});
+      Set<String> images,
+      DateTime createdAt});
 }
 
 /// @nodoc
@@ -80,6 +84,7 @@ class _$ImagesCopyWithImpl<$Res> implements $ImagesCopyWith<$Res> {
     Object? folderName = freezed,
     Object? imageCount = freezed,
     Object? images = freezed,
+    Object? createdAt = freezed,
   }) {
     return _then(_value.copyWith(
       folderId: folderId == freezed
@@ -97,7 +102,11 @@ class _$ImagesCopyWithImpl<$Res> implements $ImagesCopyWith<$Res> {
       images: images == freezed
           ? _value.images
           : images // ignore: cast_nullable_to_non_nullable
-              as Map<int, String>,
+              as Set<String>,
+      createdAt: createdAt == freezed
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
     ));
   }
 }
@@ -111,7 +120,8 @@ abstract class _$ImagesCopyWith<$Res> implements $ImagesCopyWith<$Res> {
       {String folderId,
       String folderName,
       int imageCount,
-      Map<int, String> images});
+      Set<String> images,
+      DateTime createdAt});
 }
 
 /// @nodoc
@@ -129,6 +139,7 @@ class __$ImagesCopyWithImpl<$Res> extends _$ImagesCopyWithImpl<$Res>
     Object? folderName = freezed,
     Object? imageCount = freezed,
     Object? images = freezed,
+    Object? createdAt = freezed,
   }) {
     return _then(_Images(
       folderId: folderId == freezed
@@ -146,7 +157,11 @@ class __$ImagesCopyWithImpl<$Res> extends _$ImagesCopyWithImpl<$Res>
       images: images == freezed
           ? _value.images
           : images // ignore: cast_nullable_to_non_nullable
-              as Map<int, String>,
+              as Set<String>,
+      createdAt: createdAt == freezed
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
     ));
   }
 }
@@ -158,7 +173,8 @@ class _$_Images implements _Images {
       {required this.folderId,
       required this.folderName,
       required this.imageCount,
-      required this.images});
+      required this.images,
+      required this.createdAt});
 
   factory _$_Images.fromJson(Map<String, dynamic> json) =>
       _$$_ImagesFromJson(json);
@@ -170,11 +186,13 @@ class _$_Images implements _Images {
   @override
   final int imageCount;
   @override
-  final Map<int, String> images;
+  final Set<String> images;
+  @override
+  final DateTime createdAt;
 
   @override
   String toString() {
-    return 'Images(folderId: $folderId, folderName: $folderName, imageCount: $imageCount, images: $images)';
+    return 'Images(folderId: $folderId, folderName: $folderName, imageCount: $imageCount, images: $images, createdAt: $createdAt)';
   }
 
   @override
@@ -187,7 +205,8 @@ class _$_Images implements _Images {
                 .equals(other.folderName, folderName) &&
             const DeepCollectionEquality()
                 .equals(other.imageCount, imageCount) &&
-            const DeepCollectionEquality().equals(other.images, images));
+            const DeepCollectionEquality().equals(other.images, images) &&
+            const DeepCollectionEquality().equals(other.createdAt, createdAt));
   }
 
   @override
@@ -196,7 +215,8 @@ class _$_Images implements _Images {
       const DeepCollectionEquality().hash(folderId),
       const DeepCollectionEquality().hash(folderName),
       const DeepCollectionEquality().hash(imageCount),
-      const DeepCollectionEquality().hash(images));
+      const DeepCollectionEquality().hash(images),
+      const DeepCollectionEquality().hash(createdAt));
 
   @JsonKey(ignore: true)
   @override
@@ -214,7 +234,8 @@ abstract class _Images implements Images {
       {required String folderId,
       required String folderName,
       required int imageCount,
-      required Map<int, String> images}) = _$_Images;
+      required Set<String> images,
+      required DateTime createdAt}) = _$_Images;
 
   factory _Images.fromJson(Map<String, dynamic> json) = _$_Images.fromJson;
 
@@ -225,7 +246,9 @@ abstract class _Images implements Images {
   @override
   int get imageCount;
   @override
-  Map<int, String> get images;
+  Set<String> get images;
+  @override
+  DateTime get createdAt;
   @override
   @JsonKey(ignore: true)
   _$ImagesCopyWith<_Images> get copyWith => throw _privateConstructorUsedError;

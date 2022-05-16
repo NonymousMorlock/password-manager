@@ -13,6 +13,8 @@ _$_Report _$$_ReportFromJson(Map<String, dynamic> json) => _$_Report(
       from: json['from'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
       image: json['image'] as String,
+      experience: json['experience'] as String?,
+      logFileData: json['logFileData'] as String?,
     );
 
 Map<String, dynamic> _$$_ReportToJson(_$_Report instance) => <String, dynamic>{
@@ -22,4 +24,6 @@ Map<String, dynamic> _$$_ReportToJson(_$_Report instance) => <String, dynamic>{
       'from': instance.from,
       'createdAt': instance.createdAt.toIso8601String(),
       'image': instance.image,
+      'experience': instance.experience,
+      'logFileData': instance.logFileData,
     };
