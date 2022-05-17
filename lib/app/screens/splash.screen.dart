@@ -18,6 +18,7 @@ import '../../core/services/passman.env.dart';
 import '../../core/services/sdk.services.dart';
 import '../../meta/components/toast.dart';
 import '../../meta/extensions/logger.ext.dart';
+import '../../meta/notifiers/theme.dart';
 import '../../meta/notifiers/user_data.dart';
 import '../constants/assets.dart';
 import '../constants/page_route.dart';
@@ -68,6 +69,7 @@ class _SplashScreenState extends State<SplashScreen> {
           while (context.read<UserData>().syncStatus != SyncStatus.success) {
             await Future<void>.delayed(Duration.zero);
           }
+          context.read<AppThemeNotifier>().isDarkTheme = await _sdk.getTheme();
           String? _profilePic = await _sdk.getProPic();
           if (_profilePic != null) {
             await AppServices.getProfilePic();

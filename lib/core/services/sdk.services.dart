@@ -11,6 +11,7 @@ import 'package:at_server_status/at_server_status.dart';
 import 'package:at_client/src/service/notification_service.dart';
 
 // 🌎 Project imports:
+import '../../app/constants/keys.dart';
 import '../../meta/extensions/logger.ext.dart';
 import '../../meta/models/key.model.dart';
 import 'app.service.dart';
@@ -123,6 +124,26 @@ class SdkServices {
 
   String? get currentAtSign => atClientManager.atClient.getCurrentAtSign();
 
+  Future<bool> getTheme() async {
+    _logger.finer('Checking the app theme...');
+    ScanVerbBuilder verb = ScanVerbBuilder()
+      ..auth = true
+      ..regex = Keys.themeKey.key
+      ..sharedBy = currentAtSign;
+    String? _data = await atClientManager.atClient
+        .getRemoteSecondary()!
+        .executeAndParse(verb);
+    if (_data == '[]') {
+      await put(Keys.themeKey..value!.value = false);
+      _logger.warning('Current theme set to light mode');
+      return false;
+    } else {
+      bool _theme = await get(PassKey(key: Keys.themeKey.key));
+      _logger.finer('Current Theme is ${_theme ? 'dark' : 'light'}');
+      return _theme;
+    }
+  }
+
   Future<String?> getProPic() async {
     try {
       List<AtKey> list = await atClientManager.atClient
@@ -151,7 +172,10 @@ class SdkServices {
         .getRemoteSecondary()!
         .executeAndParse(verb);
     if (_data == '[]') {
-      _logger.warning('User is not admin');
+      await put(Keys.adminKey
+        ..value!.value = currentAtSign == PassmanEnv.reportAtsign);
+      _logger.warning(
+          'User is ${currentAtSign == PassmanEnv.reportAtsign ? '' : 'not '}admin');
       return false;
     } else {
       bool _isAdmin = await get(PassKey(key: 'admin'));
@@ -206,22 +230,31 @@ class SdkServices {
 
   Future<String?> getName() async {
     _logger.finer('Getting name');
-    ScanVerbBuilder verb = ScanVerbBuilder()
-      ..auth = true
-      ..regex = 'name'
-      ..sharedBy = currentAtSign;
-    String? _data = await atClientManager.atClient
-        .getRemoteSecondary()!
-        .executeAndParse(verb);
-    if (_data == '[]') {
-      _logger.warning('No name key found');
+    try {
+      ScanVerbBuilder verb = ScanVerbBuilder()
+        ..auth = true
+        ..regex = 'name'
+        ..sharedBy = currentAtSign;
+      String? _data = await atClientManager.atClient
+          .getRemoteSecondary()!
+          .executeAndParse(verb);
+      if (_data == '[]') {
+        _logger.warning('No name key found');
+        return null;
+      } else {
+        List<AtKey> _names =
+            await getAllKeys(regex: 'name.${PassmanEnv.appNamespace}');
+        if (_names.isNotEmpty) {
+          String? name = await get(
+            PassKey.fromAtKey(_names.first),
+          );
+          return name;
+        }
+        return null;
+      }
+    } on Exception catch (e, s) {
+      _logger.severe('Error getting name', e, s);
       return null;
-    } else {
-      _logger.finer('Name key found: $_data');
-      String? name = await get(
-        PassKey.fromAtKey((await getAllKeys(regex: 'name')).first),
-      );
-      return name;
     }
   }
 
@@ -272,7 +305,7 @@ class SdkServices {
     }
   }
 
-  Future<bool> delete(String key) async {
+  Future<bool> delete(String key, [Function? onSyncDone]) async {
     bool _keyDeleted = false;
     try {
       List<AtKey> a = await getAllKeys(regex: key);
@@ -288,7 +321,7 @@ class SdkServices {
       //     await atClientManager.atClient.delete(entity.toAtKey());
       if (_keyDeleted) {
         _logger.finer('$key deleted successfully');
-        AppServices.syncData();
+        AppServices.syncData(onSyncDone);
       }
       return _keyDeleted;
     } on KeyNotFoundException catch (e, s) {

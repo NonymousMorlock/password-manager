@@ -1,4 +1,5 @@
 // 🎯 Dart imports:
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
@@ -357,31 +358,29 @@ class AppServices {
     }
   }
 
+  /// Delete AtKeys file from download path
+  static Future<bool> deleteAtKeysFiles(String dirPath) async {
+    try {
+      for (FileSystemEntity atKeysFile in Directory(dirPath).listSync()) {
+        if (atKeysFile.path.endsWith('.atkeys')) {
+          await atKeysFile.delete();
+        }
+      }
+      return true;
+    } on FileSystemException catch (e) {
+      _logger.severe(e.message);
+      return false;
+    }
+  }
+
   /// Function to logout the user
   static Future<bool> logout() async {
     AtClientPreference? _pref =
         sdkServices.atClientManager.atClient.getPreferences();
     if (_pref != null) {
-      List<String> _paths = <String>[
-        _pref.hiveStoragePath!,
-        _pref.downloadPath!,
-        _pref.commitLogPath!,
-      ];
       try {
-        for (String _path in _paths) {
-          Directory _dir = Directory(_path);
-          if (_dir.existsSync()) {
-            List<FileSystemEntity> _files =
-                await _dir.list(recursive: true).toList();
-            for (FileSystemEntity _file in _files) {
-              if (_file is File) {
-                await _file.delete();
-              } else if (_file is Directory) {
-                await _file.delete(recursive: true);
-              }
-            }
-          }
-        }
+        _logger.finer('Stopping app notification monitor');
+        sdkServices.atClientManager.notificationService.stopAllSubscriptions();
         await KeyChainManager.getInstance().clearKeychainEntries();
         return true;
       } on Exception catch (e, s) {
@@ -438,10 +437,17 @@ class AppServices {
   }
 
   /// Sync the data to the server
-  static void syncData() {
+  static void syncData([Function? onSyncDone]) {
+    Future<void> _onSyncData(SyncResult synRes) async {
+      await _onSuccessCallback(synRes);
+      if (onSyncDone != null) {
+        onSyncDone();
+      }
+    }
+
     _userData.setSyncStatus = SyncStatus.started;
-    sdkServices.atClientManager.syncService.setOnDone(_onSuccessCallback);
-    sdkServices.atClientManager.syncService.sync(onDone: _onSuccessCallback);
+    sdkServices.atClientManager.syncService.setOnDone(_onSyncData);
+    sdkServices.atClientManager.syncService.sync(onDone: _onSyncData);
   }
 
   /// Function to be called when sync is done

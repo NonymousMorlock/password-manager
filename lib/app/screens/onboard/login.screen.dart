@@ -110,7 +110,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 Assets.getRandomAvatar());
             await showModalBottomSheet(
               backgroundColor: Colors.white,
-              isScrollControlled: true,
+              isScrollControlled: false,
+              isDismissible: false,
+              enableDrag: false,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -121,7 +123,6 @@ class _LoginScreenState extends State<LoginScreen> {
             );
           }
           setState(() => _isLoading = false);
-          
           await Navigator.pushReplacementNamed(
               context,
               _masterImgKeyExists
@@ -359,7 +360,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Positioned(
               child: IconButton(
                 icon: const Icon(TablerIcons.qrcode),
-                onPressed: () =>
+                onPressed: () async =>
                     Navigator.pushNamed(context, PageRouteNames.qrScreen),
                 splashRadius: 0.01,
               ),

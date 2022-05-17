@@ -37,6 +37,7 @@ import 'core/development/dev_err_screen.dart';
 import 'core/services/app.service.dart';
 import 'core/services/passman.env.dart';
 import 'meta/extensions/logger.ext.dart';
+import 'meta/notifiers/theme.dart';
 import 'meta/notifiers/user_data.dart';
 
 Future<void> main() async {
@@ -101,110 +102,111 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'P@ssman',
-      theme: ThemeData(
-        scaffoldBackgroundColor: Colors.white,
-        highlightColor: Colors.transparent,
-        splashFactory: NoSplash.splashFactory,
-        splashColor: Colors.transparent,
-        hoverColor: Colors.transparent,
-        canvasColor: Colors.transparent,
-        focusColor: Colors.transparent,
-        primarySwatch: Colors.lightGreen,
-      ),
-      builder: (BuildContext context, Widget? child) => SecureApplication(
-        nativeRemoveDelay: 800,
-        onNeedUnlock:
-            (SecureApplicationController? secureApplicationController) async {
-          bool authResult = await _authentication.authenticate(
-            localizedReason: 'Authenticate to unlock',
-          );
-          if (authResult) {
-            secureApplicationController?.authSuccess(unlock: true);
-          } else {
-            secureApplicationController?.authFailed(unlock: false);
-            secureApplicationController?.open();
-          }
-          return null;
-        },
-        child: child!,
-      ),
-      initialRoute: PageRouteNames.splashScreen,
-      onGenerateRoute: (RouteSettings settings) {
-        _logger.finer('Navigating to ${settings.name}');
-        switch (settings.name) {
-          case PageRouteNames.splashScreen:
-            return pageTransition(
-              settings,
-              const SplashScreen(),
+    return ChangeNotifierProvider<AppThemeNotifier>.value(
+      value: context.watch<AppThemeNotifier>(),
+      builder: (BuildContext context, _) {
+        return Consumer<AppThemeNotifier>(
+          builder: (BuildContext context, AppThemeNotifier value, Widget? _) {
+            return MaterialApp(
+              title: 'P@ssman',
+              theme: value.currentTheme,
+              builder: (BuildContext context, Widget? child) =>
+                  SecureApplication(
+                nativeRemoveDelay: 800,
+                onNeedUnlock: (SecureApplicationController?
+                    secureApplicationController) async {
+                  bool authResult = await _authentication.authenticate(
+                    localizedReason: 'Authenticate to unlock',
+                  );
+                  if (authResult) {
+                    secureApplicationController?.authSuccess(unlock: true);
+                  } else {
+                    secureApplicationController?.authFailed(unlock: false);
+                    secureApplicationController?.open();
+                  }
+                  return null;
+                },
+                child: child!,
+              ),
+              initialRoute: PageRouteNames.splashScreen,
+              onGenerateRoute: (RouteSettings settings) {
+                _logger.finer('Navigating to ${settings.name}');
+                switch (settings.name) {
+                  case PageRouteNames.splashScreen:
+                    return pageTransition(
+                      settings,
+                      const SplashScreen(),
+                    );
+                  case PageRouteNames.loginScreen:
+                    return pageTransition(
+                      settings,
+                      const LoginScreen(),
+                    );
+                  case PageRouteNames.registerScreen:
+                    return pageTransition(
+                      settings,
+                      const GetAtSignScreen(),
+                    );
+                  case PageRouteNames.setMasterPassword:
+                    return pageTransition(
+                      settings,
+                      const SetMasterPasswordScreen(),
+                    );
+                  case PageRouteNames.masterPassword:
+                    return pageTransition(
+                      settings,
+                      const MasterPasswordScreen(),
+                    );
+                  case PageRouteNames.qrScreen:
+                    return pageTransition(
+                      settings,
+                      const QRScreen(),
+                    );
+                  case PageRouteNames.otpScreen:
+                    return pageTransition(
+                      settings,
+                      const OtpScreen(),
+                    );
+                  case PageRouteNames.activatingAtSign:
+                    return pageTransition(
+                      settings,
+                      const ActivateAtSignScreen(),
+                    );
+                  case PageRouteNames.settings:
+                    return pageTransition(
+                      settings,
+                      const SettingsScreen(),
+                    );
+                  case PageRouteNames.homeScreen:
+                    return pageTransition(
+                      settings,
+                      const HomeScreen(),
+                    );
+                  case PageRouteNames.reports:
+                    return pageTransition(
+                      settings,
+                      const ReportsScreen(),
+                    );
+                  case PageRouteNames.loadingScreen:
+                    return pageTransition(
+                      settings,
+                      const LoadingDataScreen(),
+                    );
+                  case PageRouteNames.mobileDeviceScreen:
+                    return pageTransition(
+                      settings,
+                      const MobileDeviceScreen(),
+                    );
+                  default:
+                    return pageTransition(
+                      settings,
+                      const UnknownRoute(),
+                    );
+                }
+              },
             );
-          case PageRouteNames.loginScreen:
-            return pageTransition(
-              settings,
-              const LoginScreen(),
-            );
-          case PageRouteNames.registerScreen:
-            return pageTransition(
-              settings,
-              const GetAtSignScreen(),
-            );
-          case PageRouteNames.setMasterPassword:
-            return pageTransition(
-              settings,
-              const SetMasterPasswordScreen(),
-            );
-          case PageRouteNames.masterPassword:
-            return pageTransition(
-              settings,
-              const MasterPasswordScreen(),
-            );
-          case PageRouteNames.qrScreen:
-            return pageTransition(
-              settings,
-              const QRScreen(),
-            );
-          case PageRouteNames.otpScreen:
-            return pageTransition(
-              settings,
-              const OtpScreen(),
-            );
-          case PageRouteNames.activatingAtSign:
-            return pageTransition(
-              settings,
-              const ActivateAtSignScreen(),
-            );
-          case PageRouteNames.settings:
-            return pageTransition(
-              settings,
-              const SettingsScreen(),
-            );
-          case PageRouteNames.homeScreen:
-            return pageTransition(
-              settings,
-              const HomeScreen(),
-            );
-          case PageRouteNames.reports:
-            return pageTransition(
-              settings,
-              const ReportsScreen(),
-            );
-          case PageRouteNames.loadingScreen:
-            return pageTransition(
-              settings,
-              const LoadingDataScreen(),
-            );
-          case PageRouteNames.mobileDeviceScreen:
-            return pageTransition(
-              settings,
-              const MobileDeviceScreen(),
-            );
-          default:
-            return pageTransition(
-              settings,
-              const UnknownRoute(),
-            );
-        }
+          },
+        );
       },
     );
   }

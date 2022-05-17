@@ -42,10 +42,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Reports'),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        shadowColor: Colors.transparent,
         actions: <Widget>[
           Padding(
             padding: const EdgeInsets.only(right: 20.0),
@@ -57,7 +53,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
         leading: IconButton(
           icon: const Icon(
             TablerIcons.chevron_left,
-            color: Colors.black,
           ),
           onPressed: () => Navigator.of(context).pop(),
         ),

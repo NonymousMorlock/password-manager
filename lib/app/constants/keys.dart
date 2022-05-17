@@ -3,6 +3,14 @@ import '../../meta/models/key.model.dart';
 import '../../meta/models/value.model.dart';
 
 class Keys {
+  /// Admin key
+  static final PassKey adminKey = PassKey(
+    key: 'admin',
+    value: Value(
+      type: 'admin',
+    ),
+  );
+
   /// Profile picture key
   static final PassKey profilePicKey = PassKey(
     key: 'profilepic',
@@ -80,6 +88,18 @@ class Keys {
     isHidden: true,
     value: Value(
       labelName: 'Fingerprint',
+      isHidden: true,
+    ),
+  );
+
+  /// App Theme key
+  static final PassKey themeKey = PassKey(
+    isPublic: false,
+    key: 'darktheme',
+    createdDate: DateTime.now(),
+    isHidden: true,
+    value: Value(
+      labelName: 'App Theme',
       isHidden: true,
     ),
   );

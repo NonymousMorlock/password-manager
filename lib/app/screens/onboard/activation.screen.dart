@@ -1,4 +1,5 @@
 // 🐦 Flutter imports:
+
 import 'package:flutter/material.dart';
 
 // 📦 Package imports:
@@ -9,6 +10,7 @@ import 'package:provider/provider.dart';
 
 // 🌎 Project imports:
 import '../../../core/services/app.service.dart';
+import '../../../core/services/passman.env.dart';
 import '../../../core/services/sdk.services.dart';
 import '../../../meta/components/toast.dart';
 import '../../../meta/extensions/logger.ext.dart';
@@ -118,21 +120,16 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
                   isError: true);
             }
             await AppServices.sdkServices.put(
-              PassKey(
-                key: 'admin',
-                value: Value(
-                  value: false,
-                  type: 'admin',
-                ),
-              ),
+              Keys.adminKey..value!.value = _atSign == PassmanEnv.reportAtsign,
             );
-            context.read<UserData>().isAdmin = false;
+            context.read<UserData>().isAdmin =
+                _atSign == PassmanEnv.reportAtsign;
             _keySaved = await AppServices.saveAtKeys(
                 _atSign,
                 context.read<UserData>().atOnboardingPreference.downloadPath!,
                 MediaQuery.of(context).size);
             setState(() {});
-            Future<void>.delayed(
+            await Future<void>.delayed(
               const Duration(milliseconds: 2500),
               () async {
                 if (mounted) {
@@ -142,6 +139,10 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
                           ? 'AtKeys saved successfully'
                           : 'Failed to save atKeys file.',
                       isError: !_keySaved);
+                  await AppServices.deleteAtKeysFiles(context
+                      .read<UserData>()
+                      .atOnboardingPreference
+                      .downloadPath!);
                 }
                 await AppServices.startMonitor();
 

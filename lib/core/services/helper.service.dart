@@ -2,10 +2,13 @@
 import 'dart:typed_data';
 
 // 🐦 Flutter imports:
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 // 🌎 Project imports:
 import '../../meta/extensions/logger.ext.dart';
+import '../../meta/notifiers/theme.dart';
 
 final AppLogger _logger = AppLogger('Helper services');
 
@@ -78,3 +81,8 @@ Uint16List expandMessage(Uint16List msg) {
   }
   return expanded;
 }
+
+Color iconThemedColor(BuildContext context, Color color) =>
+    context.watch<AppThemeNotifier>().isDarkTheme
+        ? color.withOpacity(0.8)
+        : color;
