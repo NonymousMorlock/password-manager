@@ -6,9 +6,9 @@ import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 
 // 🌎 Project imports:
-import '../../meta/notifiers/new_user.dart';
-import '../../meta/notifiers/theme.dart';
-import '../../meta/notifiers/user_data.dart';
+import '../../meta/notifiers/new_user.notifier.dart';
+import '../../meta/notifiers/theme.notifier.dart';
+import '../../meta/notifiers/user_data.notifier.dart';
 
 class MultiProviders extends StatelessWidget {
   final Widget? child;

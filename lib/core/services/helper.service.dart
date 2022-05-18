@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 
 // 🌎 Project imports:
 import '../../meta/extensions/logger.ext.dart';
-import '../../meta/notifiers/theme.dart';
+import '../../meta/notifiers/theme.notifier.dart';
 
 final AppLogger _logger = AppLogger('Helper services');
 

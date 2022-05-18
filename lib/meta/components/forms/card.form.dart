@@ -16,10 +16,9 @@ import '../../../app/constants/keys.dart';
 import '../../../app/constants/theme.dart';
 import '../../../core/services/app.service.dart';
 import '../../extensions/card_num_formatter.ext.dart';
-import '../../extensions/string.ext.dart';
 import '../../models/freezed/card.model.dart';
 import '../../models/key.model.dart';
-import '../../notifiers/user_data.dart';
+import '../../notifiers/user_data.notifier.dart';
 import '../flip_widget.dart';
 import '../glassmorphic.dart';
 import '../toast.dart';
@@ -55,7 +54,7 @@ class _CardsFormState extends State<CardsForm> {
       duration: const Duration(milliseconds: 300),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
-        color: Colors.white,
+        color: Theme.of(context).bottomSheetTheme.modalBackgroundColor,
       ),
       child: Padding(
         padding: MediaQuery.of(context).viewInsets,
@@ -67,7 +66,7 @@ class _CardsFormState extends State<CardsForm> {
               duration: const Duration(milliseconds: 300),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
-                color: Colors.white,
+                color: Colors.transparent,
               ),
               child: Stack(
                 children: <Widget>[
@@ -268,15 +267,16 @@ class _CardsFormState extends State<CardsForm> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
-        margin: EdgeInsets.zero,
         elevation: 0,
+        margin: const EdgeInsets.all(0),
         shadowColor: Colors.transparent,
         color: Colors.transparent,
         child: SizedBox(
-          height: 200,
-          width: 310,
+          height: 240,
+          width: 350,
           child: Column(
             children: <Widget>[
+              vSpacer(15),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 20.0),
                 child: Container(
@@ -284,6 +284,7 @@ class _CardsFormState extends State<CardsForm> {
                   color: Colors.indigo,
                 ),
               ),
+              vSpacer(15),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
@@ -317,7 +318,7 @@ class _CardsFormState extends State<CardsForm> {
                             FilteringTextInputFormatter.digitsOnly,
                           ],
                           backgroundCursorColor: Colors.transparent,
-                          cursorColor: AppTheme.primary,
+                          cursorColor: Theme.of(context).primaryColor,
                           focusNode: _cvvFocusNode,
                         ),
                       ),
@@ -325,7 +326,7 @@ class _CardsFormState extends State<CardsForm> {
                   ),
                 ],
               ),
-              const Spacer(),
+              vSpacer(30),
               Row(
                 children: <Widget>[
                   const Padding(
@@ -361,9 +362,8 @@ class _CardsFormState extends State<CardsForm> {
                               ),
                             ),
                             onChanged: (_) {
-                              if (int.parse(_) > 12) {
-                                setState(
-                                    () => _cardExpMController.text.clear());
+                              if (_.isNotEmpty && int.parse(_) > 12) {
+                                setState(() => _cardExpMController.clear());
                               }
                             },
                             style: const TextStyle(
@@ -372,12 +372,24 @@ class _CardsFormState extends State<CardsForm> {
                             inputFormatters: <TextInputFormatter>[
                               LengthLimitingTextInputFormatter(2),
                               FilteringTextInputFormatter.digitsOnly,
+                              // allow only 1-12 numbers
+                              // FilteringTextInputFormatter.allow(
+                              //     RegExp('[1-12]')),
                             ],
                           ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
-                          child: TextField(
+                          child: TextFormField(
+                            validator: (String? value) {
+                              if (value!.isEmpty) {
+                                return 'Please enter expiry year';
+                              } else if (int.parse(value) <
+                                  DateTime.now().year) {
+                                return 'Please enter a valid year';
+                              }
+                              return null;
+                            },
                             keyboardType: TextInputType.number,
                             controller: _cardExpYController,
                             decoration: InputDecoration(
@@ -387,7 +399,13 @@ class _CardsFormState extends State<CardsForm> {
                                 color: AppTheme.disabled,
                               ),
                             ),
-                            onChanged: (_) => setState(() {}),
+                            onChanged: (_) {
+                              setState(() {});
+                              if (_.length == 4 &&
+                                  int.parse(_) < DateTime.now().year) {
+                                setState(() => _cardExpYController.clear());
+                              }
+                            },
                             style: const TextStyle(
                               fontWeight: FontWeight.w600,
                             ),

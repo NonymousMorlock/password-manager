@@ -92,10 +92,22 @@ class Keys {
     ),
   );
 
+  /// App dark Theme key
+  static final PassKey isDarkTheme = PassKey(
+    isPublic: false,
+    key: 'darktheme',
+    createdDate: DateTime.now(),
+    isHidden: true,
+    value: Value(
+      labelName: 'Is dark theme',
+      isHidden: true,
+    ),
+  );
+
   /// App Theme key
   static final PassKey themeKey = PassKey(
     isPublic: false,
-    key: 'darktheme',
+    key: 'themecolor',
     createdDate: DateTime.now(),
     isHidden: true,
     value: Value(

@@ -6,7 +6,7 @@ import 'package:at_client_mobile/at_client_mobile.dart';
 import 'package:provider/provider.dart';
 
 // 🌎 Project imports:
-import '../notifiers/user_data.dart';
+import '../notifiers/user_data.notifier.dart';
 
 class SyncIndicator extends StatelessWidget {
   SyncIndicator({

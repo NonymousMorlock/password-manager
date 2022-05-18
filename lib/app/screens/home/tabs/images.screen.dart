@@ -8,12 +8,14 @@ import 'package:flutter/material.dart';
 
 // 📦 Package imports:
 import 'package:at_base2e15/at_base2e15.dart';
+import 'package:provider/provider.dart';
 import 'package:tabler_icons/tabler_icons.dart';
 
 // 🌎 Project imports:
 import '../../../../core/services/app.service.dart';
 import '../../../../meta/models/freezed/image.model.dart';
-import '../../../../meta/notifiers/user_data.dart';
+import '../../../../meta/notifiers/theme.notifier.dart';
+import '../../../../meta/notifiers/user_data.notifier.dart';
 import '../../../constants/theme.dart';
 import '../../../provider/listeners/user_data.listener.dart';
 
@@ -37,13 +39,14 @@ class _ImagesPageState extends State<ImagesPage> {
     return Stack(
       children: <Widget>[
         RefreshIndicator(
-          backgroundColor: Colors.white,
+          backgroundColor: Theme.of(context).backgroundColor,
+          color: context.read<AppThemeNotifier>().primary,
           onRefresh: () async => AppServices.getImages(),
           child: UserDataListener(
             builder: (BuildContext context, UserData userData) {
               return userData.images.isEmpty
                   ? const Center(
-                      child: Text('Not implemented yet'),
+                      child: Text('Not images saved yet'),
                     )
                   : Wrap(
                       children: userData.images.map(
@@ -51,7 +54,7 @@ class _ImagesPageState extends State<ImagesPage> {
                           return Container(
                             margin: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: AppTheme.grey[300],
+                              color: Colors.grey.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Column(

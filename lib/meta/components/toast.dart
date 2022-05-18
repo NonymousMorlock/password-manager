@@ -3,6 +3,9 @@ import 'dart:io';
 
 // 🐦 Flutter imports:
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../notifiers/theme.notifier.dart';
 
 void showToast(BuildContext? context, String msg,
         {double? width, bool isError = false}) =>
@@ -22,7 +25,9 @@ void showToast(BuildContext? context, String msg,
             ? null
             : EdgeInsets.symmetric(
                 horizontal: MediaQuery.of(context).size.width * 0.2),
-        backgroundColor: isError ? Colors.red[700] : Colors.green,
+        backgroundColor: isError
+            ? Colors.red[700]
+            : context.read<AppThemeNotifier>().primary,
         padding: const EdgeInsets.all(10),
         width: width,
         behavior: SnackBarBehavior.floating,

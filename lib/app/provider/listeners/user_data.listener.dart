@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 // 🌎 Project imports:
-import '../../../meta/notifiers/user_data.dart';
+import '../../../meta/notifiers/user_data.notifier.dart';
 
 class UserDataListener extends StatelessWidget {
   const UserDataListener({

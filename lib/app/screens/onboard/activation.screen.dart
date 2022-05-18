@@ -16,11 +16,10 @@ import '../../../meta/components/toast.dart';
 import '../../../meta/extensions/logger.ext.dart';
 import '../../../meta/models/key.model.dart';
 import '../../../meta/models/value.model.dart';
-import '../../../meta/notifiers/new_user.dart';
-import '../../../meta/notifiers/user_data.dart';
+import '../../../meta/notifiers/new_user.notifier.dart';
+import '../../../meta/notifiers/user_data.notifier.dart';
 import '../../constants/keys.dart';
 import '../../constants/page_route.dart';
-import '../../constants/theme.dart';
 
 class ActivateAtSignScreen extends StatefulWidget {
   const ActivateAtSignScreen({Key? key}) : super(key: key);
@@ -277,12 +276,12 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
 
   Color get waveColors => status?.serverStatus == ServerStatus.ready ||
           status?.serverStatus == ServerStatus.activated
-      ? AppTheme.primary.withOpacity(
-          _alphaAnimation.value.clamp(
-            0.0,
-            1.0,
-          ),
-        )
+      ? Theme.of(context).primaryColor.withOpacity(
+            _alphaAnimation.value.clamp(
+              0.0,
+              1.0,
+            ),
+          )
       : status?.serverStatus == ServerStatus.teapot
           ? Colors.yellow[800]!.withOpacity(
               _alphaAnimation.value.clamp(
@@ -297,10 +296,10 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
                     1.0,
                   ),
                 )
-              : AppTheme.primary.withOpacity(
-                  _alphaAnimation.value.clamp(
-                    0.0,
-                    1.0,
-                  ),
-                );
+              : Theme.of(context).primaryColor.withOpacity(
+                    _alphaAnimation.value.clamp(
+                      0.0,
+                      1.0,
+                    ),
+                  );
 }

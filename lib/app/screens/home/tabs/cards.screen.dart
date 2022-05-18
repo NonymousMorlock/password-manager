@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 
 // 📦 Package imports:
 import 'package:at_base2e15/at_base2e15.dart';
+import 'package:provider/provider.dart';
 
 // 🌎 Project imports:
 import '../../../../core/services/app.service.dart';
 import '../../../../meta/components/banking_card.dart';
-import '../../../../meta/notifiers/user_data.dart';
+import '../../../../meta/notifiers/theme.notifier.dart';
+import '../../../../meta/notifiers/user_data.notifier.dart';
 import '../../../provider/listeners/user_data.listener.dart';
 
 class CardsPage extends StatefulWidget {
@@ -24,7 +26,8 @@ class _CardsPageState extends State<CardsPage> {
   Widget build(BuildContext context) {
     return Center(
       child: RefreshIndicator(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).backgroundColor,
+        color: context.read<AppThemeNotifier>().primary,
         onRefresh: () async => AppServices.getCards(),
         child: UserDataListener(
           builder: (BuildContext context, UserData userData) {

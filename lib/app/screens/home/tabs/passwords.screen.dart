@@ -4,12 +4,14 @@ import 'package:flutter/services.dart';
 
 // 📦 Package imports:
 import 'package:at_base2e15/at_base2e15.dart';
+import 'package:provider/provider.dart';
 import 'package:tabler_icons/tabler_icons.dart';
 
 // 🌎 Project imports:
 import '../../../../core/services/app.service.dart';
 import '../../../../meta/components/toast.dart';
-import '../../../../meta/notifiers/user_data.dart';
+import '../../../../meta/notifiers/theme.notifier.dart';
+import '../../../../meta/notifiers/user_data.notifier.dart';
 import '../../../constants/global.dart';
 import '../../../constants/theme.dart';
 import '../../../provider/listeners/user_data.listener.dart';
@@ -25,12 +27,13 @@ class _PasswordsPageState extends State<PasswordsPage> {
   Widget build(BuildContext context) {
     return Center(
       child: RefreshIndicator(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).backgroundColor,
+        color: context.read<AppThemeNotifier>().primary,
         onRefresh: () async => AppServices.getPasswords(),
         child: UserDataListener(
           builder: (BuildContext context, UserData userData) {
             return userData.passwords.isEmpty
-                ? const Text('No passwords')
+                ? const Text('No passwords saved yet')
                 : ListView.builder(
                     physics: const BouncingScrollPhysics(),
                     itemCount: userData.passwords.length,
@@ -69,6 +72,10 @@ class _PasswordsPageState extends State<PasswordsPage> {
                             child: SizedBox(
                               height: 70,
                               child: Card(
+                                color:
+                                    context.read<AppThemeNotifier>().isDarkTheme
+                                        ? const Color(0xff1E2228)
+                                        : Colors.white,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),

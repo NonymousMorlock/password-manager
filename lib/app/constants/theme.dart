@@ -6,7 +6,7 @@ class AppTheme {
   static MaterialColor primary = Colors.green;
 
   /// Disabled content color
-  static MaterialColor disabled = Colors.grey;
+  static Color disabled = const Color(0xFF464646);
 
   static MaterialColor grey = Colors.grey;
 
@@ -15,12 +15,26 @@ class AppTheme {
     highlightColor: Colors.transparent,
     splashFactory: NoSplash.splashFactory,
     splashColor: Colors.transparent,
+    bottomSheetTheme: const BottomSheetThemeData(
+      modalBackgroundColor: Colors.white,
+    ),
+    buttonTheme: ButtonThemeData(
+      buttonColor: primary,
+      splashColor: Colors.transparent,
+      textTheme: ButtonTextTheme.primary,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(5),
+      ),
+    ),
     appBarTheme: const AppBarTheme(
       color: Colors.transparent,
       elevation: 0,
       centerTitle: true,
       shadowColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
+      iconTheme: IconThemeData(
+        color: Colors.black,
+      ),
     ),
     iconTheme: const IconThemeData(color: Colors.black),
     hoverColor: Colors.transparent,
@@ -30,21 +44,35 @@ class AppTheme {
   );
 
   static ThemeData darkTheme = ThemeData.dark().copyWith(
-    scaffoldBackgroundColor: const Color(0xFF272c35),
+    scaffoldBackgroundColor: const Color(0xFF272C35),
     highlightColor: Colors.transparent,
     splashFactory: NoSplash.splashFactory,
+    bottomSheetTheme: const BottomSheetThemeData(
+      modalBackgroundColor: Color(0xFF272C35),
+    ),
+    buttonTheme: ButtonThemeData(
+      buttonColor: primary,
+      splashColor: Colors.transparent,
+      textTheme: ButtonTextTheme.primary,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(5),
+      ),
+    ),
     appBarTheme: const AppBarTheme(
       color: Colors.transparent,
       elevation: 0,
       centerTitle: true,
       shadowColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
+      iconTheme: IconThemeData(
+        color: Colors.white,
+      ),
     ),
     iconTheme: const IconThemeData(color: Colors.white),
     splashColor: Colors.transparent,
     hoverColor: Colors.transparent,
     canvasColor: Colors.transparent,
     focusColor: Colors.transparent,
-    primaryColor: Colors.lightGreen,
+    primaryColor: Colors.green,
   );
 }

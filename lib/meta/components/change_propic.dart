@@ -17,7 +17,7 @@ import '../../app/constants/keys.dart';
 import '../../core/services/app.service.dart';
 import '../models/key.model.dart';
 import '../models/value.model.dart';
-import '../notifiers/user_data.dart';
+import '../notifiers/user_data.notifier.dart';
 import 'adaptive_loading.dart';
 import 'toast.dart';
 

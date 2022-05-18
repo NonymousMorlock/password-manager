@@ -6,7 +6,6 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:file_picker/file_picker.dart';
 
 // 🌎 Project imports:
-import '../../app/constants/theme.dart';
 import '../../core/services/app.service.dart';
 import 'adaptive_loading.dart';
 
@@ -54,12 +53,13 @@ class FileUploadSpace extends StatelessWidget {
             dashPattern: const <double>[10, 10],
             strokeCap: StrokeCap.round,
             strokeWidth: 3,
-            color: boxColor ?? Colors.green.shade400,
+            color: boxColor ?? Theme.of(context).primaryColor,
             child: Container(
               width: size?.width ?? 300,
               height: size?.height ?? 150,
               decoration: BoxDecoration(
-                color: boxColor ?? AppTheme.primary.withOpacity(.2),
+                color:
+                    boxColor ?? Theme.of(context).primaryColor.withOpacity(.2),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Column(
@@ -85,7 +85,7 @@ class FileUploadSpace extends StatelessWidget {
                           style: messageStyle ??
                               TextStyle(
                                 fontSize: 13,
-                                color: AppTheme.primary,
+                                color: Theme.of(context).primaryColor,
                               ),
                         ),
                 ],

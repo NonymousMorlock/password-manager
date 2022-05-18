@@ -51,9 +51,12 @@ class SettingsCard extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
+                vSpacer(3),
                 if (subLable != null)
                   Text(
                     subLable!,
+                    maxLines: 2,
+                    softWrap: true,
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,

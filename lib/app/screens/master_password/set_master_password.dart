@@ -27,12 +27,11 @@ import '../../../meta/extensions/logger.ext.dart';
 import '../../../meta/extensions/plots.ext.dart';
 import '../../../meta/models/freezed/plots.model.dart';
 import '../../../meta/models/key.model.dart';
-import '../../../meta/notifiers/new_user.dart';
-import '../../../meta/notifiers/user_data.dart';
+import '../../../meta/notifiers/new_user.notifier.dart';
+import '../../../meta/notifiers/user_data.notifier.dart';
 import '../../constants/global.dart';
 import '../../constants/keys.dart';
 import '../../constants/page_route.dart';
-import '../../constants/theme.dart';
 
 class SetMasterPasswordScreen extends StatefulWidget {
   const SetMasterPasswordScreen({Key? key}) : super(key: key);
@@ -98,7 +97,7 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                         },
                         child: Icon(
                           TablerIcons.upload,
-                          color: AppTheme.primary,
+                          color: Theme.of(context).primaryColor,
                           size: 30,
                         ),
                         uploadMessage:
@@ -140,7 +139,7 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                                 border: _imgSaved
                                     ? null
                                     : Border.all(
-                                        color: AppTheme.primary,
+                                        color: Theme.of(context).primaryColor,
                                         width: 3,
                                       ),
                               ),
@@ -196,7 +195,7 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                               child: Text(
                                 'Change Image',
                                 style: TextStyle(
-                                  color: AppTheme.primary,
+                                  color: Theme.of(context).primaryColor,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -376,8 +375,8 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                           color: Colors.white,
                         ),
                   backgroundColor: (_plots!.isEmpty || _plots!.length < 4)
-                      ? AppTheme.primary
-                      : AppTheme.primary,
+                      ? Theme.of(context).primaryColor
+                      : Theme.of(context).primaryColor,
                 )
               : null
           : null,

@@ -41,8 +41,8 @@ import '../../meta/models/freezed/plots.model.dart';
 import '../../meta/models/freezed/qr.model.dart';
 import '../../meta/models/freezed/report.model.dart';
 import '../../meta/models/key.model.dart';
-import '../../meta/notifiers/new_user.dart';
-import '../../meta/notifiers/user_data.dart';
+import '../../meta/notifiers/new_user.notifier.dart';
+import '../../meta/notifiers/user_data.notifier.dart';
 import 'dec/decode.dart';
 import 'dec/decryption.dart';
 import 'enc/encryption.dart';
@@ -479,15 +479,10 @@ class AppServices {
   }
 
   /// Fetches the master image key from secondary.
-  static Future<void> getProfilePic() async {
+  static void setProfilePic(String data) {
     _logger.finer('Fetching profile pic');
-    PassKey _proPicKey = Keys.profilePicKey
-      ..sharedBy = sdkServices.currentAtSign;
     try {
-      AtValue value =
-          await sdkServices.atClientManager.atClient.get(_proPicKey.toAtKey());
-      _userData.currentProfilePic = Uint8List.fromList(
-          Base2e15.decode(json.decode(value.value)['value']));
+      _userData.currentProfilePic = Uint8List.fromList(Base2e15.decode(data));
       _logger.finer('Fetched profile picture successfully');
     } on Exception catch (e, s) {
       _logger.severe('Error getting profile picture', e, s);

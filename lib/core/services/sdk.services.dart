@@ -12,6 +12,7 @@ import 'package:at_client/src/service/notification_service.dart';
 
 // 🌎 Project imports:
 import '../../app/constants/keys.dart';
+import '../../app/constants/theme.dart';
 import '../../meta/extensions/logger.ext.dart';
 import '../../meta/models/key.model.dart';
 import 'app.service.dart';
@@ -124,24 +125,44 @@ class SdkServices {
 
   String? get currentAtSign => atClientManager.atClient.getCurrentAtSign();
 
-  Future<bool> getTheme() async {
+  Future<Map<String, dynamic>> getTheme() async {
     _logger.finer('Checking the app theme...');
-    ScanVerbBuilder verb = ScanVerbBuilder()
+    Map<String, dynamic> _data = <String, dynamic>{};
+    ScanVerbBuilder _isDarkMode = ScanVerbBuilder()
+      ..auth = true
+      ..regex = Keys.isDarkTheme.key
+      ..sharedBy = currentAtSign;
+    ScanVerbBuilder _themeColor = ScanVerbBuilder()
       ..auth = true
       ..regex = Keys.themeKey.key
       ..sharedBy = currentAtSign;
-    String? _data = await atClientManager.atClient
+    String? _darkData = await atClientManager.atClient
         .getRemoteSecondary()!
-        .executeAndParse(verb);
-    if (_data == '[]') {
-      await put(Keys.themeKey..value!.value = false);
+        .executeAndParse(_isDarkMode);
+    String? _themeData = await atClientManager.atClient
+        .getRemoteSecondary()!
+        .executeAndParse(_themeColor);
+    if (_darkData == '[]') {
+      await put(Keys.isDarkTheme..value!.value = false);
+      _data['isDarkTheme'] = false;
       _logger.warning('Current theme set to light mode');
-      return false;
     } else {
-      bool _theme = await get(PassKey(key: Keys.themeKey.key));
-      _logger.finer('Current Theme is ${_theme ? 'dark' : 'light'}');
-      return _theme;
+      bool _isDarkThemeSet = await get(PassKey(key: Keys.isDarkTheme.key));
+      _data['isDarkTheme'] = _isDarkThemeSet;
+      _logger.finer('Current Theme is ${_isDarkThemeSet ? 'dark' : 'light'}');
     }
+    if (_themeData == '[]') {
+      String defaultColor =
+          AppTheme.primary.value.toRadixString(16).padLeft(8, '0');
+      await put(Keys.themeKey..value!.value = defaultColor);
+      _data['themeHex'] = defaultColor;
+      _logger.finer('Current Theme color is Color(0x$defaultColor)');
+    } else {
+      String _theme = await get(PassKey(key: Keys.themeKey.key));
+      _data['themeHex'] = _theme;
+      _logger.finer('Current Theme color is Color(0x$_theme)');
+    }
+    return _data;
   }
 
   Future<String?> getProPic() async {

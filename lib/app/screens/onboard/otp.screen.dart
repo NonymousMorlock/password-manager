@@ -9,11 +9,10 @@ import '../../../core/services/app.service.dart';
 import '../../../meta/components/forms/otp.form.dart';
 import '../../../meta/components/toast.dart';
 import '../../../meta/models/freezed/qr.model.dart';
-import '../../../meta/notifiers/new_user.dart';
-import '../../../meta/notifiers/user_data.dart';
+import '../../../meta/notifiers/new_user.notifier.dart';
+import '../../../meta/notifiers/user_data.notifier.dart';
 import '../../constants/global.dart';
 import '../../constants/page_route.dart';
-import '../../constants/theme.dart';
 
 // 📦 Package imports:
 
@@ -117,8 +116,8 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                     child: CircularProgressIndicator(
                       value: progress,
                       strokeWidth: 3,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(AppTheme.primary),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                          Theme.of(context).primaryColor),
                     ),
                   )
                 ],

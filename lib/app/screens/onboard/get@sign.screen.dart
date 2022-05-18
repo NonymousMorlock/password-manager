@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import '../../../core/services/app.service.dart';
 import '../../../meta/components/adaptive_loading.dart';
 import '../../../meta/components/toast.dart';
-import '../../../meta/notifiers/new_user.dart';
+import '../../../meta/notifiers/new_user.notifier.dart';
 import '../../constants/page_route.dart';
 import '../../constants/theme.dart';
 
@@ -101,7 +101,7 @@ class _GetAtSignScreenState extends State<GetAtSignScreen> {
                   child: Text(
                     'Refresh',
                     style: TextStyle(
-                      color: AppTheme.primary,
+                      color: Theme.of(context).primaryColor,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -173,7 +173,9 @@ class _GetAtSignScreenState extends State<GetAtSignScreen> {
         focusElevation: 0,
         enableFeedback: true,
         tooltip: 'Next',
-        backgroundColor: _isLoading ? AppTheme.primary : AppTheme.primary,
+        backgroundColor: _isLoading
+            ? Theme.of(context).primaryColor
+            : Theme.of(context).primaryColor,
         elevation: 0,
         child: _processing
             ? const AdaptiveLoading()

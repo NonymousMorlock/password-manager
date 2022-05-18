@@ -1,15 +1,12 @@
 // 🎯 Dart imports:
 import 'dart:developer';
 import 'dart:io';
-import 'dart:typed_data';
 
 // 🐦 Flutter imports:
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 // 📦 Package imports:
-import 'package:at_base2e15/at_base2e15.dart';
-import 'package:at_client_mobile/at_client_mobile.dart';
 import 'package:at_onboarding_flutter/services/onboarding_service.dart';
 import 'package:at_onboarding_flutter/utils/response_status.dart';
 import 'package:at_server_status/at_server_status.dart';
@@ -20,17 +17,16 @@ import 'package:tabler_icons/tabler_icons.dart';
 import 'package:path/path.dart' as p;
 // 🌎 Project imports:
 import '../../../core/services/app.service.dart';
-import '../../../core/services/passman.env.dart';
 import '../../../core/services/sdk.services.dart';
 import '../../../meta/components/adaptive_loading.dart';
 import '../../../meta/components/file_upload_space.dart';
 import '../../../meta/components/filled_text_field.dart';
-import '../../../meta/components/set_propic.dart';
 import '../../../meta/components/toast.dart';
 import '../../../meta/extensions/input_formatter.ext.dart';
 import '../../../meta/extensions/logger.ext.dart';
 import '../../../meta/extensions/string.ext.dart';
-import '../../../meta/notifiers/user_data.dart';
+import '../../../meta/notifiers/theme.notifier.dart';
+import '../../../meta/notifiers/user_data.notifier.dart';
 import '../../constants/assets.dart';
 import '../../constants/constants.dart';
 import '../../constants/global.dart';
@@ -58,12 +54,14 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     _atSignController = TextEditingController();
     Future<void>.delayed(Duration.zero, () async {
+      context.read<AppThemeNotifier>().primary = AppTheme.primary;
       String _path = (await getApplicationSupportDirectory()).path;
       String _downloadsPath = p.join(_path, 'downloads');
       if (!await Directory(_downloadsPath).exists()) {
         await Directory(_downloadsPath).create(recursive: true);
         _logger.finer('Created downloads directory at $_downloadsPath');
       }
+      context.read<UserData>().disposeUser();
     });
     super.initState();
   }
@@ -89,39 +87,9 @@ class _LoginScreenState extends State<LoginScreen> {
         context.read<UserData>().authenticated = status.name == 'authSuccess';
         if (status.name == 'authSuccess') {
           _atKeysData.clear();
-          context.read<UserData>().currentAtSign = _atSign!;
-          await AtClientManager.getInstance().setCurrentAtSign(
-              context.read<UserData>().currentAtSign,
-              PassmanEnv.appNamespace,
-              context.read<UserData>().atOnboardingPreference);
-          _list.clear();
           bool _masterImgKeyExists = await _sdk.checkMasterImageKey();
-          AppServices.syncData();
-          while (context.read<UserData>().syncStatus != SyncStatus.success) {
-            await Future<void>.delayed(Duration.zero);
-          }
-          context.read<UserData>().isAdmin = await _sdk.isAdmin();
-          String? _profilePic = await _sdk.getProPic();
-          if (_profilePic != null) {
-            context.read<UserData>().currentProfilePic =
-                Base2e15.decode(_profilePic);
-          } else {
-            Uint8List _avatar = await AppServices.readLocalfilesAsBytes(
-                Assets.getRandomAvatar());
-            await showModalBottomSheet(
-              backgroundColor: Colors.white,
-              isScrollControlled: false,
-              isDismissible: false,
-              enableDrag: false,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              context: context,
-              builder: (_) {
-                return SetProPic(_avatar);
-              },
-            );
-          }
+          context.read<UserData>().currentAtSign = _atSign!;
+          _list.clear();
           setState(() => _isLoading = false);
           await Navigator.pushReplacementNamed(
               context,
@@ -240,7 +208,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: <Widget>[
                         Image.asset(
                           Assets.atLogo,
-                          color: AppTheme.primary,
+                          color: Theme.of(context).primaryColor,
                           height: 120,
                         ),
                         vSpacer(50),
@@ -282,7 +250,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 prefix: Text(
                                   '@ ',
                                   style: TextStyle(
-                                    color: AppTheme.primary,
+                                    color: Theme.of(context).primaryColor,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -308,8 +276,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 color: _checkedAtSign &&
                                         _isValidAtSign &&
                                         _list.isEmpty
-                                    ? AppTheme.primary
-                                    : AppTheme.primary,
+                                    ? Theme.of(context).primaryColor
+                                    : Theme.of(context).primaryColor,
                                 elevation: 0,
                                 highlightElevation: 0,
                                 hoverElevation: 0,
@@ -344,7 +312,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Text(
                             'Get an @sign',
                             style: TextStyle(
-                              color: AppTheme.primary,
+                              color: Theme.of(context).primaryColor,
                               fontWeight: FontWeight.w500,
                             ),
                           ),

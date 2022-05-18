@@ -3,6 +3,7 @@
 import 'package:at_client_mobile/at_client_mobile.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:tabler_icons/tabler_icons.dart';
 import 'package:at_base2e15/at_base2e15.dart';
 import 'package:file_saver/file_saver.dart';
@@ -12,7 +13,8 @@ import '../../meta/components/adaptive_loading.dart';
 import '../../meta/components/report/stats.report.dart';
 import '../../meta/components/sync_indicator.dart';
 import '../../meta/components/toast.dart';
-import '../../meta/notifiers/user_data.dart';
+import '../../meta/notifiers/theme.notifier.dart';
+import '../../meta/notifiers/user_data.notifier.dart';
 import '../../meta/models/freezed/report.model.dart';
 import '../provider/listeners/user_data.listener.dart';
 
@@ -41,7 +43,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Reports'),
+        title: Text(
+          'Reports',
+          style: Theme.of(context).textTheme.titleLarge!,
+        ),
         actions: <Widget>[
           Padding(
             padding: const EdgeInsets.only(right: 20.0),
@@ -51,14 +56,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
           ),
         ],
         leading: IconButton(
-          icon: const Icon(
-            TablerIcons.chevron_left,
-          ),
+          icon: Icon(TablerIcons.chevron_left,
+              color: Theme.of(context).iconTheme.color),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: RefreshIndicator(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).backgroundColor,
+        color: context.read<AppThemeNotifier>().primary,
         onRefresh: () async {
           AppServices.syncData();
           await AppServices.getReports();
@@ -79,6 +84,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                   if (userData.reports.isNotEmpty)
                     ...userData.reports.map(
                       (Report report) => Card(
+                        color: context.read<AppThemeNotifier>().isDarkTheme
+                            ? const Color(0xff1E2228)
+                            : Colors.white,
                         child: ListTile(
                           title: Text(
                             report.title,
@@ -101,13 +109,13 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                   fontStyle: FontStyle.italic,
                                 ),
                               ),
-                              // Text(
-                              //   DateFormat().add_yMd().format(report.createdAt),
-                              //   style: const TextStyle(
-                              //     fontSize: 12,
-                              //     fontStyle: FontStyle.italic,
-                              //   ),
-                              // ),
+                              Text(
+                                DateFormat().add_yMd().format(report.createdAt),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
                             ],
                           ),
                           leading: Image.memory(
@@ -119,7 +127,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
                           onTap: () async {
                             await showDialog(
                               context: context,
-                              barrierDismissible: false,
                               builder: (_) {
                                 return ReportStats(report);
                               },
@@ -129,10 +136,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
                             icon: const Icon(TablerIcons.file_download),
                             onPressed: () async {
                               String data = await FileSaver.instance.saveFile(
-                                  'report_${report.from} _${DateFormat().add_yMd().format(report.createdAt).replaceAll('/', '-')}',
+                                  'report_${report.from}_${DateFormat().add_yMd().format(report.createdAt).replaceAll('/', '-')}',
                                   Base2e15.decode(report.logFileData!),
                                   'log');
                               showToast(context, 'Log file saved to $data');
+                              print('Log file saved to $data');
                             },
                           ),
                         ),

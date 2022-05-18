@@ -21,17 +21,17 @@ import '../../meta/components/forms/report.form.dart';
 import '../../meta/components/settings/category.settings.dart';
 import '../../meta/components/settings/tile.settings.dart';
 import '../../meta/components/sync_indicator.dart';
+import '../../meta/components/theme/theme_picker.dart';
 import '../../meta/components/toast.dart';
 import '../../meta/extensions/logger.ext.dart';
 import '../../meta/models/key.model.dart';
 import '../../meta/models/value.model.dart';
-import '../../meta/notifiers/theme.dart';
-import '../../meta/notifiers/user_data.dart';
+import '../../meta/notifiers/theme.notifier.dart';
+import '../../meta/notifiers/user_data.notifier.dart';
 import '../constants/assets.dart';
 import '../constants/global.dart';
 import '../constants/keys.dart';
 import '../constants/page_route.dart';
-import '../constants/theme.dart';
 import '../provider/listeners/user_data.listener.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -108,6 +108,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: Text(
+          'Profile',
+          style: Theme.of(context).textTheme.titleLarge!,
+        ),
         leading: IconButton(
           splashRadius: 0.01,
           icon: Icon(_editing ? TablerIcons.x : TablerIcons.chevron_left,
@@ -130,7 +134,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ? InkWell(
                     splashFactory: NoSplash.splashFactory,
                     onTap: setUserName,
-                    child: const Icon(TablerIcons.check),
+                    child: Icon(TablerIcons.check,
+                        color: Theme.of(context).iconTheme.color),
                   )
                 : UserDataListener(
                     builder: (_, __) => SyncIndicator(size: 15),
@@ -196,14 +201,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                         EditableText(
                                           controller: _userNameController,
                                           focusNode: _nameFocusNode,
-                                          // style: TextStyle(
-                                          //   fontSize: 20,
-                                          //   color: Theme.of(context)
-                                          //       .textTheme
-                                          //       .labelLarge!
-                                          //       .color,
-                                          //   fontWeight: FontWeight.bold,
-                                          // ),
                                           style: Theme.of(context)
                                               .textTheme
                                               .titleLarge!
@@ -234,7 +231,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                             _nameFocusNode.unfocus();
                                           },
                                           cursorOpacityAnimates: true,
-                                          cursorColor: AppTheme.primary,
+                                          cursorColor:
+                                              Theme.of(context).primaryColor,
                                           backgroundCursorColor:
                                               Colors.transparent,
                                         ),
@@ -262,8 +260,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               height: 60,
                               leading: Icon(
                                 TablerIcons.file,
-                                color:
-                                    iconThemedColor(context, AppTheme.primary),
+                                color: iconThemedColor(context, Colors.green),
                               ),
                               lable: 'Backup keys file',
                               subLable: 'Backup your keys file to a safe place',
@@ -368,28 +365,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 TablerIcons.paint,
                                 color: iconThemedColor(context, Colors.purple),
                               ),
-                              onTap: null,
+                              onTap: () async {
+                                await showModalBottomSheet(
+                                  isScrollControlled: true,
+                                  backgroundColor: Colors.transparent,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(20),
+                                      topRight: Radius.circular(20),
+                                    ),
+                                  ),
+                                  context: context,
+                                  builder: (_) {
+                                    return const ThemePicker();
+                                  },
+                                );
+                              },
                               lable: 'Change Theme',
                               subLable: 'Pick a theme for your app',
-                              trailing: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10.0),
-                                child: Switch.adaptive(
-                                  value: context
-                                      .watch<AppThemeNotifier>()
-                                      .isDarkTheme,
-                                  onChanged: (_) async {
-                                    context
-                                        .read<AppThemeNotifier>()
-                                        .isDarkTheme = _;
-                                    PassKey _theme = Keys.themeKey
-                                      ..value?.value = context
-                                          .read<AppThemeNotifier>()
-                                          .isDarkTheme;
-                                    await AppServices.sdkServices.put(_theme);
-                                  },
-                                ),
-                              ),
                             ),
                             if (context.watch<UserData>().isAdmin)
                               const Divider(
@@ -456,8 +449,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 }
                               },
                               lable: 'Reset',
-                              subLable:
-                                  'Reset all your data and removes all your data',
+                              subLable: 'Reset and removes all your data',
+                              trailing: const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 10.0),
+                                child: Text('(Beta)'),
+                              ),
                             ),
                           ],
                         ),
@@ -505,7 +501,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               height: 60,
                               lable: 'Logout',
                               subLable:
-                                  'Logout ${context.read<UserData>().currentAtSign}',
+                                  'Logout ${context.read<UserData>().currentAtSign.isEmpty ? 'no user' : context.read<UserData>().currentAtSign}',
                               leading: Icon(
                                 TablerIcons.power,
                                 color: iconThemedColor(context, Colors.red),
@@ -529,7 +525,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       child: Text(
                         'Made with \u{1F49A} by Minnu',
                         style: TextStyle(
-                          color: AppTheme.disabled,
+                          color: Theme.of(context).textTheme.caption?.color,
                         ),
                       ),
                     ),
@@ -538,7 +534,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       child: Text(
                         'Version : ${packageInfo?.version}',
                         style: TextStyle(
-                          color: AppTheme.disabled,
+                          color: Theme.of(context).textTheme.caption?.color,
                         ),
                       ),
                     ),
@@ -562,7 +558,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> reportSheet(BuildContext context) async {
     await showModalBottomSheet(
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.transparent,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20),

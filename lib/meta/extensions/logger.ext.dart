@@ -22,14 +22,14 @@ class AppLogger extends AtSignLogger {
   void _writeToFile(String level, Object message,
           [Object? error, StackTrace? stackTrace]) =>
       File(p.join(logPath,
-                  'passman_${DateFormat('yyyy-MM-dd').format(DateTime.now())}.log'))
-              .writeAsStringSync(
-              level.toUpperCase() +
-                  ' | ${DateTime.now()} | ${logger.name} | $message\n' +
-                  (error != null ? '$error\n' : '') +
-                  (stackTrace != null ? '$stackTrace\n' : ''),
-              mode: FileMode.append,
-            );
+              'passman_${DateFormat('yyyy-MM-dd').format(DateTime.now())}.log'))
+          .writeAsStringSync(
+        level.toUpperCase() +
+            ' | ${DateTime.now()} | ${logger.name} | $message\n' +
+            (error != null ? '$error\n' : '') +
+            (stackTrace != null ? '$stackTrace\n' : ''),
+        mode: FileMode.append,
+      );
 
   @override
   void shout(dynamic message, [Object? error, StackTrace? stackTrace]) {

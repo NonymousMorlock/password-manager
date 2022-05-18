@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 // 🌎 Project imports:
 import '../../../app/constants/global.dart';
 import '../../../app/constants/theme.dart';
-import '../../notifiers/new_user.dart';
+import '../../notifiers/new_user.notifier.dart';
 import '../adaptive_loading.dart';
 import '../toast.dart';
 
@@ -134,7 +134,9 @@ class _OtpFormState extends State<OtpForm> {
                   ? const AdaptiveLoading()
                   : MaterialButton(
                       mouseCursor: SystemMouseCursors.click,
-                      color: _resending ? AppTheme.primary : AppTheme.primary,
+                      color: _resending
+                          ? Theme.of(context).primaryColor
+                          : Theme.of(context).primaryColor,
                       elevation: 0,
                       highlightElevation: 0,
                       hoverElevation: 0,
@@ -185,8 +187,8 @@ class _OtpFormState extends State<OtpForm> {
                         'Resend',
                         style: TextStyle(
                           color: widget.resend
-                              ? AppTheme.primary
-                              : AppTheme.primary,
+                              ? Theme.of(context).primaryColor
+                              : Theme.of(context).primaryColor,
                           fontWeight: FontWeight.w500,
                         ),
                       ),

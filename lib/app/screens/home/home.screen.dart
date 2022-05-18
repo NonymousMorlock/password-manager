@@ -14,9 +14,8 @@ import '../../../meta/components/forms/image.form.dart';
 import '../../../meta/components/forms/password.form.dart';
 import '../../../meta/components/sync_indicator.dart';
 import '../../../meta/components/tab_indicator.dart';
-import '../../../meta/notifiers/user_data.dart';
+import '../../../meta/notifiers/user_data.notifier.dart';
 import '../../constants/page_route.dart';
-import '../../constants/theme.dart';
 import '../../provider/listeners/user_data.listener.dart';
 import 'tabs/cards.screen.dart';
 import 'tabs/images.screen.dart';
@@ -33,6 +32,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   TabController? _tabController;
+  String _title = 'Passwords';
   @override
   void initState() {
     _tabController = TabController(vsync: this, length: 3, initialIndex: 0);
@@ -45,17 +45,39 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   @override
+  void didChangeDependencies() {
+    setState(() {});
+    super.didChangeDependencies();
+  }
+
+  @override
   void dispose() {
     _tabController?.dispose();
     super.dispose();
   }
 
   @override
+  void setState(VoidCallback fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: Text(
+          _title,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
         leading: IconButton(
-          icon: const Icon(TablerIcons.chevron_left),
+          icon: Icon(
+            TablerIcons.chevron_left,
+            color: Theme.of(context).appBarTheme.iconTheme!.color,
+          ),
           onPressed: () {
             Navigator.pushReplacementNamed(
                 context, PageRouteNames.masterPassword);
@@ -127,22 +149,37 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: TabBar(
                   controller: _tabController!,
-                  labelColor: AppTheme.primary,
+                  labelColor: Theme.of(context).primaryColor,
                   indicator: CircleTabIndicator(
-                    color: AppTheme.primary,
+                    color: Theme.of(context).primaryColor,
                     radius: 3,
                   ),
+                  onTap: (_) {
+                    setState(() {
+                      _ == 0
+                          ? _title = 'Passwords'
+                          : _ == 1
+                              ? _title = 'Images'
+                              : _title = 'Cards';
+                    });
+                  },
                   physics: const BouncingScrollPhysics(),
-                  unselectedLabelColor: AppTheme.disabled,
+                  unselectedLabelColor: Theme.of(context).iconTheme.color,
                   tabs: const <Widget>[
                     Tab(
-                      icon: Icon(TablerIcons.key),
+                      icon: Icon(
+                        TablerIcons.key,
+                      ),
                     ),
                     Tab(
-                      icon: Icon(TablerIcons.photo),
+                      icon: Icon(
+                        TablerIcons.photo,
+                      ),
                     ),
                     Tab(
-                      icon: Icon(TablerIcons.credit_card),
+                      icon: Icon(
+                        TablerIcons.credit_card,
+                      ),
                     ),
                   ],
                 ),
@@ -152,7 +189,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               height: 50,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
-                color: AppTheme.primary,
+                color: Theme.of(context).primaryColor,
               ),
               child: Center(
                 child: IconButton(
@@ -160,8 +197,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   onPressed: () async {
                     await showModalBottomSheet(
                       isScrollControlled: true,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                      backgroundColor: Colors.transparent,
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20),
+                        ),
                       ),
                       context: context,
                       builder: (_) {

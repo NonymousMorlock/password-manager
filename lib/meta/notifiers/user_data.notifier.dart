@@ -6,13 +6,16 @@ import 'package:flutter/material.dart';
 
 // 📦 Package imports:
 import 'package:at_client_mobile/at_client_mobile.dart';
+import 'package:provider/provider.dart';
 
 // 🌎 Project imports:
+import '../../app/constants/theme.dart';
 import '../extensions/logger.ext.dart';
 import '../models/freezed/card.model.dart';
 import '../models/freezed/image.model.dart';
 import '../models/freezed/password.model.dart';
 import '../models/freezed/report.model.dart';
+import 'theme.notifier.dart';
 
 class UserData extends ChangeNotifier {
   final AppLogger _logger = AppLogger('UserData');
@@ -81,7 +84,7 @@ class UserData extends ChangeNotifier {
   String? _currentAtSign;
 
   /// Get current @sign
-  String get currentAtSign => _currentAtSign!;
+  String get currentAtSign => _currentAtSign ?? '';
 
   /// Set current @sign
   set currentAtSign(String value) {
@@ -188,6 +191,24 @@ class UserData extends ChangeNotifier {
   set reports(List<Report> value) {
     _logger.finer('Total reports: ${value.length}');
     _reports = value;
+    notifyListeners();
+  }
+
+  void disposeUser({BuildContext? context}) {
+    _reports.clear();
+    _images.clear();
+    _cards.clear();
+    _passwords.clear();
+    _syncStatus = SyncStatus.notStarted;
+    _masterImage = Uint8List(0);
+    _currentProfilePic = Uint8List(0);
+    _currentAtSign = null;
+    _name = null;
+    _isAdmin = false;
+    if (context != null) {
+      context.read<AppThemeNotifier>().isDarkTheme = false;
+      context.read<AppThemeNotifier>().primary = AppTheme.primary;
+    }
     notifyListeners();
   }
 }

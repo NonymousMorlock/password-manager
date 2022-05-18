@@ -13,11 +13,10 @@ import '../../../core/services/app.service.dart';
 import '../../../meta/components/toast.dart';
 import '../../../meta/extensions/logger.ext.dart';
 import '../../../meta/models/freezed/qr.model.dart';
-import '../../../meta/notifiers/new_user.dart';
-import '../../../meta/notifiers/user_data.dart';
+import '../../../meta/notifiers/new_user.notifier.dart';
+import '../../../meta/notifiers/user_data.notifier.dart';
 import '../../constants/assets.dart';
 import '../../constants/page_route.dart';
-import '../../constants/theme.dart';
 
 class QRScreen extends StatefulWidget {
   const QRScreen({Key? key}) : super(key: key);
@@ -169,7 +168,9 @@ class _QRScreenState extends State<QRScreen> {
               splashRadius: 0.01,
               icon: Icon(
                 flash ? const TablerIconData(0xea38) : TablerIcons.bolt_off,
-                color: flash ? Colors.black : AppTheme.primary.withOpacity(0.3),
+                color: flash
+                    ? Colors.black
+                    : Theme.of(context).primaryColor.withOpacity(0.3),
                 size: 30,
               ),
             ),

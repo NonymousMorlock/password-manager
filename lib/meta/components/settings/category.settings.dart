@@ -38,7 +38,7 @@ class _SettingsCategoryState extends State<SettingsCategory> {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
-              color: Colors.grey[350]!.withOpacity(0.35),
+              color: Colors.grey.withOpacity(0.1),
             ),
             child: Column(
               children: <Widget>[

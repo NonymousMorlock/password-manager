@@ -14,10 +14,9 @@ import '../../../meta/components/mark.paint.dart';
 import '../../../meta/components/sync_indicator.dart';
 import '../../../meta/components/toast.dart';
 import '../../../meta/models/freezed/plots.model.dart';
-import '../../../meta/notifiers/user_data.dart';
+import '../../../meta/notifiers/user_data.notifier.dart';
 import '../../constants/global.dart';
 import '../../constants/page_route.dart';
-import '../../constants/theme.dart';
 
 class MasterPasswordScreen extends StatefulWidget {
   const MasterPasswordScreen({Key? key}) : super(key: key);
@@ -32,7 +31,7 @@ class _MasterPasswordScreenState extends State<MasterPasswordScreen> {
   void initState() {
     _plots = <Plots>[];
     Future<void>.microtask(() async {
-        await AppServices.startMonitor();
+      await AppServices.startMonitor();
       if (!await AppServices.sdkServices.atClientManager.syncService
           .isInSync()) {
         AppServices.syncData();
@@ -90,7 +89,7 @@ class _MasterPasswordScreenState extends State<MasterPasswordScreen> {
                                         ),
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(
-                                    color: AppTheme.primary,
+                                    color: Theme.of(context).primaryColor,
                                     width: 3,
                                   ),
                                 ),
@@ -131,14 +130,14 @@ class _MasterPasswordScreenState extends State<MasterPasswordScreen> {
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w500,
-                            color: AppTheme.primary,
+                            color: Theme.of(context).primaryColor,
                           ),
                         ),
                       ),
                 vSpacer(50),
                 MaterialButton(
                   mouseCursor: SystemMouseCursors.click,
-                  color: AppTheme.primary,
+                  color: Theme.of(context).primaryColor,
                   elevation: 0,
                   highlightElevation: 0,
                   hoverElevation: 0,
@@ -241,8 +240,8 @@ class _MasterPasswordScreenState extends State<MasterPasswordScreen> {
                 color: Colors.white,
               ),
               backgroundColor: (_plots!.isEmpty || _plots!.length < 4)
-                  ? AppTheme.primary
-                  : AppTheme.primary,
+                  ? Theme.of(context).primaryColor
+                  : Theme.of(context).primaryColor,
             ),
     );
   }

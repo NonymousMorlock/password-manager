@@ -14,7 +14,6 @@ import 'package:tabler_icons/tabler_icons.dart';
 import '../../../app/constants/constants.dart';
 import '../../../app/constants/global.dart';
 import '../../../app/constants/keys.dart';
-import '../../../app/constants/theme.dart';
 import '../../../core/services/app.service.dart';
 import '../../models/freezed/image.model.dart';
 import '../../models/key.model.dart';
@@ -41,127 +40,137 @@ class _ImagesFormState extends State<ImagesForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: MediaQuery.of(context).viewInsets,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              color: Colors.white,
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 22.0),
-              child: Column(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 22.0),
-                    child: EditableText(
-                      textAlign: TextAlign.center,
-                      autocorrect: false,
-                      controller: _folderNameController,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
+    return Material(
+      color: Theme.of(context).bottomSheetTheme.modalBackgroundColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: Padding(
+        padding: MediaQuery.of(context).viewInsets,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: Colors.transparent,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 22.0),
+                child: Column(
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 22.0),
+                      child: EditableText(
+                        textAlign: TextAlign.center,
+                        autocorrect: false,
+                        controller: _folderNameController,
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color:
+                                Theme.of(context).textTheme.bodyText1?.color),
+                        onChanged: (String value) => setState(() {}),
+                        onSubmitted: (String value) =>
+                            setState(_folderNameFocusNode.unfocus),
+                        backgroundCursorColor: Colors.transparent,
+                        cursorColor: Theme.of(context).primaryColor,
+                        focusNode: _folderNameFocusNode,
                       ),
-                      onChanged: (String value) => setState(() {}),
-                      onSubmitted: (String value) =>
-                          setState(_folderNameFocusNode.unfocus),
-                      backgroundCursorColor: Colors.transparent,
-                      cursorColor: AppTheme.primary,
-                      focusNode: _folderNameFocusNode,
                     ),
-                  ),
-                  vSpacer(40),
-                  if (_images.isNotEmpty)
-                    Wrap(
-                      children: <Widget>[
-                        for (final PlatformFile image in _images)
-                          GestureDetector(
-                            onLongPress: () =>
-                                setState(() => _images.remove(image)),
-                            child: Container(
-                              height: 50,
-                              width: 50,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                image: DecorationImage(
-                                  image: FileImage(File(image.path!)),
-                                  fit: BoxFit.cover,
+                    vSpacer(40),
+                    if (_images.isNotEmpty)
+                      Wrap(
+                        children: <Widget>[
+                          for (final PlatformFile image in _images)
+                            GestureDetector(
+                              onLongPress: () =>
+                                  setState(() => _images.remove(image)),
+                              child: Container(
+                                height: 50,
+                                width: 50,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  image: DecorationImage(
+                                    image: FileImage(File(image.path!)),
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                      ],
+                        ],
+                      ),
+                    if (_images.isNotEmpty) vSpacer(40),
+                    FileUploadSpace(
+                      uploadMessage: 'Upload your images',
+                      multipleFiles: true,
+                      child: Icon(
+                        TablerIcons.photo,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      fileType: FileType.image,
+                      onTap: (Set<PlatformFile> _imgs) {
+                        setState(() {
+                          _images.addAll(_imgs);
+                        });
+                      },
                     ),
-                  if (_images.isNotEmpty) vSpacer(40),
-                  FileUploadSpace(
-                    uploadMessage: 'Upload your images',
-                    multipleFiles: true,
-                    child: Icon(
-                      TablerIcons.photo,
-                      color: AppTheme.primary,
-                    ),
-                    fileType: FileType.image,
-                    onTap: (Set<PlatformFile> _imgs) {
-                      setState(() {
-                        _images.addAll(_imgs);
-                      });
-                    },
-                  ),
-                  vSpacer(40),
-                  _put
-                      ? const AdaptiveLoading(
-                          size: 40,
-                        )
-                      : MaterialButton(
-                          onPressed: (_folderNameController.text.isEmpty ||
-                                  _folderNameController.text == 'Folder Name')
-                              ? null
-                              : () async {
-                                  setState(() => _put = false);
-                                  Set<String> _imagesData = <String>{};
-                                  for (int i = 0; i < _images.length; i++) {
-                                    Uint8List _bytes =
-                                        await AppServices.readFilesAsBytes(
-                                            _images.elementAt(i).path!);
-                                    _imagesData.add(Base2e15.encode(_bytes));
-                                  }
-                                  String _id = Constants.uuid;
-                                  Images _imgData = Images(
-                                    folderId:
-                                        _folderNameController.text + '_' + _id,
-                                    folderName: _folderNameController.text,
-                                    images: _imagesData,
-                                    imageCount: _images.length,
-                                    createdAt: DateTime.now(),
-                                  );
-                                  PassKey _imgKeys = Keys.imagesKey
-                                    ..key = 'images_' + _id
-                                    ..value?.value = _imgData.toJson();
-                                  bool _isPut = await AppServices.sdkServices
-                                      .put(_imgKeys);
-                                  if (_isPut) {
-                                    await AppServices.getImages();
+                    vSpacer(40),
+                    _put
+                        ? const AdaptiveLoading(
+                            size: 40,
+                          )
+                        : MaterialButton(
+                            onPressed: (_folderNameController.text.isEmpty ||
+                                    _folderNameController.text == 'Folder Name')
+                                ? null
+                                : () async {
                                     setState(() => _put = false);
-                                    _folderNameController.clear();
-                                    _imagesData.clear();
-                                    _images.clear();
-                                    Navigator.pop(
-                                        context, _folderNameController.text);
-                                  }
-                                },
-                          child: const Text('Save'),
-                        ),
-                  vSpacer(20),
-                ],
+                                    Set<String> _imagesData = <String>{};
+                                    for (int i = 0; i < _images.length; i++) {
+                                      Uint8List _bytes =
+                                          await AppServices.readFilesAsBytes(
+                                              _images.elementAt(i).path!);
+                                      _imagesData.add(Base2e15.encode(_bytes));
+                                    }
+                                    String _id = Constants.uuid;
+                                    Images _imgData = Images(
+                                      folderId: _folderNameController.text +
+                                          '_' +
+                                          _id,
+                                      folderName: _folderNameController.text,
+                                      images: _imagesData,
+                                      imageCount: _images.length,
+                                      createdAt: DateTime.now(),
+                                    );
+                                    PassKey _imgKeys = Keys.imagesKey
+                                      ..key = 'images_' + _id
+                                      ..value?.value = _imgData.toJson();
+                                    bool _isPut = await AppServices.sdkServices
+                                        .put(_imgKeys);
+                                    if (_isPut) {
+                                      await AppServices.getImages();
+                                      setState(() => _put = false);
+                                      _folderNameController.clear();
+                                      _imagesData.clear();
+                                      _images.clear();
+                                      Navigator.pop(
+                                          context, _folderNameController.text);
+                                    }
+                                  },
+                            child: const Text('Save'),
+                          ),
+                    vSpacer(20),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
