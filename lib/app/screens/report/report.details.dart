@@ -41,7 +41,10 @@ class _ReportDetailsState extends State<ReportDetails> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Report Details'),
+        title: Text(
+          'Report Details',
+          style: Theme.of(context).textTheme.titleLarge!,
+        ),
         actions: <Widget>[
           Padding(
             padding: const EdgeInsets.only(right: 20.0),
