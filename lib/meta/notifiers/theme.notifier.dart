@@ -1,5 +1,7 @@
+// 🐦 Flutter imports:
 import 'package:flutter/material.dart';
 
+// 🌎 Project imports:
 import '../../app/constants/theme.dart';
 
 class AppThemeNotifier extends ChangeNotifier {
@@ -19,6 +21,12 @@ class AppThemeNotifier extends ChangeNotifier {
   Color get primary => _primaryColor;
   set primary(Color color) {
     _primaryColor = color;
+    notifyListeners();
+  }
+
+  void resetTheme() {
+    _darkTheme = false;
+    _primaryColor = AppTheme.primary;
     notifyListeners();
   }
 }

@@ -11,10 +11,11 @@ import 'package:at_onboarding_flutter/services/onboarding_service.dart';
 import 'package:at_onboarding_flutter/utils/response_status.dart';
 import 'package:at_server_status/at_server_status.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:tabler_icons/tabler_icons.dart';
-import 'package:path/path.dart' as p;
+
 // 🌎 Project imports:
 import '../../../core/services/app.service.dart';
 import '../../../core/services/sdk.services.dart';
@@ -43,6 +44,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final AppLogger _logger = AppLogger('LoginScreen');
   late TextEditingController _atSignController;
+  late FocusNode _focusNode;
   String? fileName, _atSign;
   bool _isValidAtSign = false,
       _checkedAtSign = false,
@@ -52,6 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final SdkServices _sdk = SdkServices.getInstance();
   @override
   void initState() {
+    _focusNode = FocusNode();
     _atSignController = TextEditingController();
     Future<void>.delayed(Duration.zero, () async {
       context.read<AppThemeNotifier>().primary = AppTheme.primary;
@@ -61,7 +64,6 @@ class _LoginScreenState extends State<LoginScreen> {
         await Directory(_downloadsPath).create(recursive: true);
         _logger.finer('Created downloads directory at $_downloadsPath');
       }
-      context.read<UserData>().disposeUser();
     });
     super.initState();
   }
@@ -75,6 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     setState(() => _isLoading = true);
     try {
+      context.read<UserData>().disposeUser();
       bool _alreadyExists = await _alreadyLoggedin();
       if (_alreadyExists) {
         showToast(context, 'User account already exists.', isError: true);
@@ -152,6 +155,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _checkAtSign() async {
+    _focusNode.unfocus();
     setState(() => _isLoading = true);
     await SdkServices.getInstance()
         .getAtSignStatus(
@@ -245,6 +249,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 }),
                               )
                             : FilledTextField(
+                                focusNode: _focusNode,
                                 controller: _atSignController,
                                 hint: '@sign',
                                 prefix: Text(
@@ -254,6 +259,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
+                                onFieldSubmitted: (_) {
+                                  _focusNode.unfocus();
+                                },
                                 onChanged: (_) {
                                   setState(() {
                                     _atSign =

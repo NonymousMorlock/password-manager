@@ -190,7 +190,7 @@ class _GetAtSignScreenState extends State<GetAtSignScreen> {
   Future<AlertDialog?> emailDialog(BuildContext context) {
     return showDialog<AlertDialog>(
       context: context,
-      barrierDismissible: false,
+      barrierDismissible: true,
       barrierLabel: 'Enter your email',
       builder: (_) {
         return AlertDialog(

@@ -4,6 +4,7 @@ import 'dart:io';
 
 // 🐦 Flutter imports:
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 // 📦 Package imports:
 import 'package:at_onboarding_flutter/services/onboarding_service.dart';
@@ -29,7 +30,8 @@ import 'app/screens/onboard/loading.screen.dart';
 import 'app/screens/onboard/login.screen.dart';
 import 'app/screens/onboard/otp.screen.dart';
 import 'app/screens/onboard/qr.screen.dart';
-import 'app/screens/reports.screen.dart';
+import 'app/screens/report/report.details.dart';
+import 'app/screens/report/reports.screen.dart';
 import 'app/screens/settings.screen.dart';
 import 'app/screens/splash.screen.dart';
 import 'app/screens/unknown.screen.dart';
@@ -43,6 +45,8 @@ import 'meta/notifiers/user_data.notifier.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppLogger.rootLevel = 'finer';
+  await SystemChrome.setPreferredOrientations(
+      <DeviceOrientation>[DeviceOrientation.portraitUp]);
   ErrorWidget.builder = codeErrorScreenBuilder;
   String _logsPath =
       p.join((await getApplicationSupportDirectory()).path, 'logs');
@@ -69,12 +73,16 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final AppLogger _logger = AppLogger('MyApp');
+
   @override
   void initState() {
     _logger.finer('Started initializing the app...');
     Future<void>.microtask(
       () async {
-        await AppServices.init(context.read<UserData>());
+        await AppServices.init(context.read<UserData>(), () async {
+          await Navigator.pushNamed(context, PageRouteNames.reports);
+          return;
+        });
         String _path = (await getApplicationSupportDirectory()).path;
         String _downloadsPath = p.join(_path, 'downloads');
         if (!await Directory(_downloadsPath).exists()) {
@@ -196,6 +204,11 @@ class _MyAppState extends State<MyApp> {
                   return pageTransition(
                     settings,
                     const MobileDeviceScreen(),
+                  );
+                case PageRouteNames.reportDetails:
+                  return pageTransition(
+                    settings,
+                    const ReportDetails(),
                   );
                 default:
                   return pageTransition(

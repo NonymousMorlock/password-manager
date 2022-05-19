@@ -1,8 +1,6 @@
 // 🎯 Dart imports:
 import 'dart:io';
 
-// 🐦 Flutter imports:
-
 // 📦 Package imports:
 import 'package:at_utils/at_logger.dart';
 import 'package:intl/intl.dart';
@@ -10,6 +8,8 @@ import 'package:path/path.dart' as p;
 
 // 🌎 Project imports:
 import '../../app/constants/global.dart';
+
+// 🐦 Flutter imports:
 
 class AppLogger extends AtSignLogger {
   AppLogger(String name) : super(name);
@@ -46,7 +46,7 @@ class AppLogger extends AtSignLogger {
   @override
   void warning(dynamic message, [Object? error, StackTrace? stackTrace]) {
     super.warning(message, error, stackTrace);
-    _writeToFile('WARNING', message, null, stackTrace);
+    _writeToFile('WARNING', message);
   }
 
   @override

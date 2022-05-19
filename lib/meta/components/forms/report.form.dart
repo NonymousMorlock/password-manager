@@ -1,14 +1,19 @@
+// 🎯 Dart imports:
 import 'dart:io';
 import 'dart:typed_data';
 
+// 🐦 Flutter imports:
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
+// 📦 Package imports:
+import 'package:at_base2e15/at_base2e15.dart';
+import 'package:intl/intl.dart';
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:at_base2e15/at_base2e15.dart';
-import 'package:path/path.dart' as p;
 
+// 🌎 Project imports:
 import '../../../app/constants/constants.dart';
 import '../../../app/constants/global.dart';
 import '../../../app/constants/theme.dart';
@@ -41,7 +46,8 @@ class _ReportFormState extends State<ReportForm> {
       _emoji2 = false,
       _emoji3 = false,
       _emoji4 = false,
-      _emoji5 = false;
+      _emoji5 = false,
+      _shareLogs = true;
   String? _experience;
   @override
   void initState() {
@@ -248,9 +254,40 @@ class _ReportFormState extends State<ReportForm> {
             ),
             vSpacer(15),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Row(
+                children: <Widget>[
+                  // checkbox
+                  Checkbox(
+                    value: _shareLogs,
+                    activeColor: Theme.of(context).primaryColor,
+                    splashRadius: 0,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(4),
+                      ),
+                    ),
+                    onChanged: (bool? value) {
+                      setState(() {
+                        _shareLogs = value!;
+                      });
+                    },
+                  ),
+                  Text(
+                    'Share my device info and logs file.\n(Check this if you are reporting an issue)',
+                    overflow: TextOverflow.visible,
+                    maxLines: 3,
+                    textAlign: TextAlign.start,
+                    style: Theme.of(context).textTheme.subtitle2,
+                  ),
+                ],
+              ),
+            ),
+            vSpacer(15),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 0.0),
               child: _isReporting
-                  ? const AdaptiveLoading()
+                  ? squareWidget(48, child: const AdaptiveLoading())
                   : TextButton(
                       child: Text(
                         'Send',
@@ -263,7 +300,9 @@ class _ReportFormState extends State<ReportForm> {
                         _reportContentFocus.unfocus();
                         if (_titleController.text.isEmpty ||
                             _titleController.text.toLowerCase() ==
-                                'title of the report') {
+                                'title of the report' ||
+                            _titleController.text.toLowerCase() ==
+                                'change me...') {
                           _logger.severe('Title is empty');
                           setState(() {
                             _titleController.text = 'Change me...';
@@ -274,37 +313,51 @@ class _ReportFormState extends State<ReportForm> {
                           return;
                         }
                         setState(() => _isReporting = true);
-                        String _id = Constants.uuid;
-                        String _logsPath = p.join(
-                            (await getApplicationSupportDirectory()).path,
-                            'logs');
                         Uint8List? _logFileBytes;
-                        String date =
-                            DateFormat('yyyy-MM-dd').format(DateTime.now());
-                        for (FileSystemEntity a
-                            in Directory(_logsPath).listSync()) {
-                          if (a is File) {
-                            if (a.path.split(Platform.pathSeparator).last ==
-                                'passman_$date.log') {
-                              _logFileBytes = await File(a.path).readAsBytes();
+                        Map<String, dynamic> _deviceInfo = <String, dynamic>{};
+                        String _id = Constants.uuid;
+                        if (_shareLogs) {
+                          DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+                          Map<String, dynamic> _dd =
+                              (await deviceInfo.deviceInfo).toMap();
+                          _deviceInfo.clear();
+                          _deviceInfo['Device Name'] = _dd['name'];
+                          _deviceInfo['Device Model'] = _dd['model'];
+                          _deviceInfo['Operating system'] = _dd['systemName'];
+                          _deviceInfo['OS Version'] = _dd['systemVersion'];
+                          _deviceInfo['Device Architecture'] =
+                              _dd['utsname']['machine'];
+                          _deviceInfo['Is physical device'] =
+                              _dd['isPhysicalDevice'];
+                          String _logsPath = p.join(
+                              (await getApplicationSupportDirectory()).path,
+                              'logs');
+                          String date =
+                              DateFormat('yyyy-MM-dd').format(DateTime.now());
+                          for (FileSystemEntity a
+                              in Directory(_logsPath).listSync()) {
+                            if (a is File) {
+                              if (a.path.split(Platform.pathSeparator).last ==
+                                  'passman_$date.log') {
+                                _logFileBytes =
+                                    await File(a.path).readAsBytes();
+                              }
                             }
                           }
                         }
-                        await AppServices.readFilesAsBytes(
-                            p.join(_logsPath, 'passman_$date.log'));
                         Report _report = Report(
-                          id: _id,
-                          title: _titleController.text,
-                          content: _reportController.text,
-                          createdAt: DateTime.now(),
-                          from: context.read<UserData>().currentAtSign,
-                          image: Base2e15.encode(
-                              context.read<UserData>().currentProfilePic),
-                          experience: _experience,
-                          logFileData: _logFileBytes == null
-                              ? null
-                              : Base2e15.encode(_logFileBytes),
-                        );
+                            id: _id,
+                            title: _titleController.text,
+                            content: _reportController.text,
+                            createdAt: DateTime.now(),
+                            from: context.read<UserData>().currentAtSign,
+                            image: Base2e15.encode(
+                                context.read<UserData>().currentProfilePic),
+                            experience: _experience,
+                            logFileData: _logFileBytes == null
+                                ? null
+                                : Base2e15.encode(_logFileBytes),
+                            deviceInfo: _deviceInfo);
                         PassKey _reportKey = PassKey(
                           key: 'report_' + _id,
                           sharedBy: AppServices.sdkServices.currentAtSign,

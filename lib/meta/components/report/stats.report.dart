@@ -1,5 +1,10 @@
+// 🐦 Flutter imports:
 import 'package:flutter/material.dart';
+
+// 📦 Package imports:
 import 'package:at_base2e15/at_base2e15.dart';
+
+// 🌎 Project imports:
 import '../../../app/constants/global.dart';
 import '../../models/freezed/report.model.dart';
 
@@ -70,6 +75,18 @@ class _ReportStatsState extends State<ReportStats> {
                       Text(
                         'Experience: ${widget.report.experience}',
                         style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Divider(
+                        height: 20,
+                        thickness: 1,
+                        color: Theme.of(context).dividerColor,
+                      ),
+                      const Text(
+                        'Device Info',
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                         ),

@@ -1,5 +1,6 @@
 // 🐦 Flutter imports:
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class AppTheme {
   /// App primary color
@@ -27,6 +28,7 @@ class AppTheme {
       ),
     ),
     appBarTheme: const AppBarTheme(
+      systemOverlayStyle: SystemUiOverlayStyle.dark,
       color: Colors.transparent,
       elevation: 0,
       centerTitle: true,
@@ -60,6 +62,7 @@ class AppTheme {
     ),
     appBarTheme: const AppBarTheme(
       color: Colors.transparent,
+      systemOverlayStyle: SystemUiOverlayStyle.light,
       elevation: 0,
       centerTitle: true,
       shadowColor: Colors.transparent,

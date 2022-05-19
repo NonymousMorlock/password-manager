@@ -1,13 +1,13 @@
 // 🐦 Flutter imports:
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 // 📦 Package imports:
-// import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter_qr_reader/flutter_qr_reader.dart';
 import 'package:provider/provider.dart';
 import 'package:tabler_icons/icon_data.dart';
 import 'package:tabler_icons/tabler_icons.dart';
+
 // 🌎 Project imports:
 import '../../../core/services/app.service.dart';
 import '../../../meta/components/toast.dart';
@@ -17,6 +17,9 @@ import '../../../meta/notifiers/new_user.notifier.dart';
 import '../../../meta/notifiers/user_data.notifier.dart';
 import '../../constants/assets.dart';
 import '../../constants/page_route.dart';
+
+// 📦 Package imports:
+// import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 class QRScreen extends StatefulWidget {
   const QRScreen({Key? key}) : super(key: key);

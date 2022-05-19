@@ -631,3 +631,4 @@ hs_err_pid*
 *.atKeys
 .DS_Store
 .metadata
+*.freezed.dart

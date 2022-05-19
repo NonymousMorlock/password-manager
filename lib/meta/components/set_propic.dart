@@ -1,10 +1,16 @@
+// 🎯 Dart imports:
 import 'dart:typed_data';
 
-import 'package:file_picker/file_picker.dart';
+// 🐦 Flutter imports:
 import 'package:flutter/material.dart';
+
+// 📦 Package imports:
+import 'package:at_base2e15/at_base2e15.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:tabler_icons/tabler_icons.dart';
-import 'package:at_base2e15/at_base2e15.dart';
+
+// 🌎 Project imports:
 import '../../app/constants/assets.dart';
 import '../../app/constants/global.dart';
 import '../../app/constants/keys.dart';

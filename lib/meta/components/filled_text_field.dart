@@ -15,6 +15,7 @@ class FilledTextField extends StatelessWidget {
     this.onFieldSubmitted,
     this.prefix,
     this.width,
+    this.focusNode,
     this.textStyle,
     this.validator,
     this.enableInteractiveSelection = true,
@@ -35,6 +36,7 @@ class FilledTextField extends StatelessWidget {
   final bool enableInteractiveSelection;
   final FormFieldValidator<String>? validator;
   final ToolbarOptions? toolbarOptions;
+  final FocusNode? focusNode;
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +51,7 @@ class FilledTextField extends StatelessWidget {
         controller: controller,
         obscureText: obsecureText,
         autocorrect: false,
+        focusNode: focusNode,
         validator: validator,
         enableInteractiveSelection: enableInteractiveSelection,
         toolbarOptions: toolbarOptions,

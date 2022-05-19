@@ -12,10 +12,12 @@ dependencies:
   at_client_mobile: ^3.1.14
   at_onboarding_flutter: ^4.0.2
   cupertino_icons: ^1.0.4
+  device_info_plus: ^3.2.3
   dotted_border: ^2.0.0+2
   file_picker: ^4.5.1
   flutter:
     sdk: flutter
+  flutter_dotenv: ^5.0.2
   flutter_launcher_icons: ^0.9.2
   flutter_local_notifications: ^9.5.3+1
   flutter_qr_reader: ^1.0.5
@@ -39,18 +41,18 @@ dependency_overrides:
   at_client: ^3.0.23
   test: ^1.21.1
   test_api: ^0.4.9
+  file_saver:
+    git:
+      url: https://github.com/incrediblezayed/file_saver.git
+      ref: main
 # at_lookup: ^3.0.14
 # at_commons: ^3.0.13
-# git:
-#   url: https://github.com/atsign-foundation/at_client_sdk.git
-#   ref: trunk
-#   path: at_client
 dev_dependencies:
   build_runner: ^2.1.10
-  lints: ^1.0.1
   freezed: ^2.0.3+1
   import_sorter: ^4.6.0
   json_serializable: ^6.2.0
+  lints: ^1.0.1
 
 flutter:
   uses-material-design: true
@@ -60,7 +62,7 @@ flutter:
     - assets/images/
     - assets/images/cards/
     - assets/lottie/
-    - assets/config/
+    - .env
 
 flutter_icons:
   image_path: "assets/images/logo.png"

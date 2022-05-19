@@ -17,8 +17,12 @@ class AdaptiveLoading extends StatelessWidget {
     return Center(
       child: squareWidget(
         size ?? 20,
-        child:
-            CircularProgressIndicator.adaptive(strokeWidth: strokeWidth ?? 2),
+        child: CircularProgressIndicator.adaptive(
+          strokeWidth: strokeWidth ?? 2,
+          valueColor: AlwaysStoppedAnimation<Color>(
+            Theme.of(context).primaryColor,
+          ),
+        ),
       ),
     );
   }

@@ -1,9 +1,9 @@
 // 🎯 Dart imports:
 
-// 🐦 Flutter imports:
+// 🎯 Dart imports:
 import 'dart:async';
 
-import 'package:at_commons/src/keystore/at_key.dart';
+// 🐦 Flutter imports:
 import 'package:flutter/material.dart';
 
 // 📦 Package imports:
@@ -46,12 +46,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _reportController = TextEditingController(),
       _titleController = TextEditingController(text: 'Title of the report');
   final FocusNode _nameFocusNode = FocusNode(), _titleFocusNode = FocusNode();
-  bool _editing = false, _saving = false, _enableFingerprint = false;
+  bool _editing = false,
+      _saving = false,
+      _enableFingerprint = false,
+      _logsSaving = false;
   final AppLogger _logger = AppLogger('Settings screen');
   final PassKey _nameKey = Keys.nameKey
     ..sharedBy = AppServices.sdkServices.currentAtSign;
   final LocalAuthentication _localAuth = LocalAuthentication();
-  bool _isLoading = false;
+  final bool _isLoading = false;
   PackageInfo? packageInfo;
   @override
   void initState() {
@@ -150,6 +153,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Stack(
           children: <Widget>[
             SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
               child: Center(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -393,66 +397,115 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               SettingsCard(
                                 height: 60,
                                 leading: Icon(
-                                  TablerIcons.user_plus,
-                                  color:
-                                      iconThemedColor(context, Colors.black54),
+                                  TablerIcons.file,
+                                  color: iconThemedColor(context, Colors.cyan),
                                 ),
-                                onTap: null,
-                                lable: 'Add admins',
-                                subLable: 'Add someone as admins',
-                                trailing: const Padding(
-                                  padding:
-                                      EdgeInsets.symmetric(horizontal: 10.0),
-                                  child: Text('(Only Admins)'),
+                                onTap: () async {
+                                  setState(() => _logsSaving = true);
+                                  bool _saved = await AppServices.saveReports(
+                                      MediaQuery.of(context).size);
+                                  setState(() => _logsSaving = false);
+                                  showToast(
+                                      context,
+                                      _saved
+                                          ? 'Logs saved'
+                                          : 'Failed to save logs',
+                                      isError: !_saved);
+                                },
+                                lable: 'Get Reports',
+                                subLable: 'Get logs',
+                                trailing: _logsSaving
+                                    ? Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 20.0),
+                                        child: squareWidget(
+                                          20,
+                                          child: const AdaptiveLoading(),
+                                        ),
+                                      )
+                                    : const Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 10.0),
+                                        child: Text('(Admins)'),
+                                      ),
+                              ),
+                            if (context.watch<UserData>().isAdmin)
+                              const Divider(
+                                height: 0,
+                                thickness: 1,
+                              ),
+                            if (context.watch<UserData>().isAdmin)
+                              Opacity(
+                                opacity: 0.3,
+                                child: SettingsCard(
+                                  height: 60,
+                                  leading: Icon(
+                                    TablerIcons.user_plus,
+                                    color: iconThemedColor(
+                                        context, Colors.black54),
+                                  ),
+                                  onTap: null,
+                                  lable: 'Add admins',
+                                  subLable: 'Add someone as admins',
+                                  trailing: const Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 10.0),
+                                    child: Text('(Only Admins)'),
+                                  ),
                                 ),
                               ),
                             const Divider(
                               height: 0,
                               thickness: 1,
                             ),
-                            SettingsCard(
-                              height: 60,
-                              leading: Icon(
-                                TablerIcons.ghost,
-                                color: iconThemedColor(context, Colors.red),
-                              ),
-                              onTap: () async {
-                                Future<void> _waitForSync(
-                                    {Function? onDone}) async {
-                                  while (AppServices.sdkServices.atClientManager
-                                      .syncService.isSyncInProgress) {
-                                    await Future<void>.delayed(
-                                        const Duration(milliseconds: 100));
-                                  }
-                                  setState(() => _isLoading = false);
-                                  if (onDone != null) {
-                                    onDone();
-                                  }
-                                }
+                            Opacity(
+                              opacity: 0.3,
+                              child: SettingsCard(
+                                height: 60,
+                                leading: Icon(
+                                  TablerIcons.ghost,
+                                  color: iconThemedColor(context, Colors.red),
+                                ),
+                                // onTap: () async {
+                                //   Future<void> _waitForSync(
+                                //       {Function? onDone}) async {
+                                //     while (AppServices.sdkServices.atClientManager
+                                //         .syncService.isSyncInProgress) {
+                                //       await Future<void>.delayed(
+                                //           const Duration(milliseconds: 100));
+                                //     }
+                                //     setState(() => _isLoading = false);
+                                //     if (onDone != null) {
+                                //       onDone();
+                                //     }
+                                //   }
 
-                                setState(() => _isLoading = true);
-                                List<AtKey> allKeys = await AppServices
-                                    .sdkServices
-                                    .getAllKeys(regex: 'passman');
-                                for (AtKey atKey in allKeys) {
-                                  if (atKey.key != null) {
-                                    await AppServices.sdkServices
-                                        .delete(atKey.key!, () async {
-                                      await _waitForSync(onDone: () async {
-                                        if (await AppServices.logout()) {
-                                          await Navigator.pushReplacementNamed(
-                                              context, '/login');
-                                        }
-                                      });
-                                    });
-                                  }
-                                }
-                              },
-                              lable: 'Reset',
-                              subLable: 'Reset and removes all your data',
-                              trailing: const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 10.0),
-                                child: Text('(Beta)'),
+                                //   setState(() => _isLoading = true);
+                                //   List<AtKey> allKeys = await AppServices
+                                //       .sdkServices
+                                //       .getAllKeys(regex: 'passman');
+                                //   for (AtKey atKey in allKeys) {
+                                //     if (atKey.key != null) {
+                                //       await AppServices.sdkServices
+                                //           .delete(atKey.key!, () async {
+                                //         await _waitForSync(onDone: () async {
+                                //           if (await AppServices.logout()) {
+                                //             await Navigator.pushReplacementNamed(
+                                //                 context, '/login');
+                                //           }
+                                //         });
+                                //       });
+                                //     }
+                                //   }
+                                // },
+                                onTap: null,
+                                lable: 'Reset',
+                                subLable: 'Reset and removes all your data',
+                                trailing: const Padding(
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: 10.0),
+                                  child: Text('(Beta)'),
+                                ),
                               ),
                             ),
                           ],
@@ -538,6 +591,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       ),
                     ),
+                    vSpacer(20),
                   ],
                 ),
               ),

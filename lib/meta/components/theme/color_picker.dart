@@ -1,5 +1,7 @@
+// 🐦 Flutter imports:
 import 'package:flutter/material.dart';
 
+// 🌎 Project imports:
 import '../../../app/constants/global.dart';
 
 class ColorPicker extends StatefulWidget {

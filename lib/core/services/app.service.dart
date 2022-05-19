@@ -6,6 +6,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 // 🐦 Flutter imports:
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -15,15 +16,17 @@ import 'package:at_client_mobile/at_client_mobile.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_onboarding_flutter/services/onboarding_service.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
+import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zxing2/qrcode.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 // 🌎 Project imports:
 import '../../app/constants/assets.dart';
@@ -61,7 +64,8 @@ class AppServices {
   /// [SdkServices] instance
   static final SdkServices sdkServices = SdkServices.getInstance();
 
-  static Future<void> init(UserData userData) async {
+  static Future<void> init(
+      UserData userData, Function onNotificationTap) async {
     try {
       _userData = userData;
       _notificationsPlugin = FlutterLocalNotificationsPlugin();
@@ -77,12 +81,18 @@ class AppServices {
             );
       }
       await _notificationsPlugin.initialize(
-        const InitializationSettings(
-          android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+        InitializationSettings(
+          android: const AndroidInitializationSettings('@mipmap/ic_launcher'),
           iOS: IOSInitializationSettings(
             requestAlertPermission: true,
             requestBadgePermission: true,
             requestSoundPermission: true,
+            onDidReceiveLocalNotification:
+                (int id, String? title, String? body, String? payload) async {
+              _logger
+                  .finer('id $id, title $title, body $body, payload $payload');
+              onNotificationTap();
+            },
           ),
         ),
         onSelectNotification: (String? payload) async {
@@ -431,7 +441,10 @@ class AppServices {
 
     if (atNotification.key.contains('report')) {
       await _notificationsPlugin.show(
-          0, 'Report', atNotification.value, platformChannelSpecifics,
+          0,
+          'Report',
+          atNotification.from + ' submitted feedback.',
+          platformChannelSpecifics,
           payload: jsonEncode(atNotification.toJson()));
     }
   }
@@ -614,10 +627,6 @@ class AppServices {
       List<Report> _reports = <Report>[];
       List<AtKey> _reportKeys = await sdkServices.getAllKeys(regex: 'report_');
       for (AtKey _key in _reportKeys) {
-        if (!_key.metadata!.isCached) {
-          _userData.reports = _reports;
-          return;
-        }
         dynamic _value = await sdkServices.get(PassKey.fromAtKey(_key));
         if (_value != null) {
           Report _report = Report.fromJson(_value);
@@ -631,5 +640,17 @@ class AppServices {
       _logger.severe('Error fetching reports', e, s);
       return;
     }
+  }
+
+  /// Save the reports - (Only for admins)
+  static Future<bool> saveReports(Size size) async {
+    String _logsPath =
+        p.join((await getApplicationSupportDirectory()).path, 'logs');
+    String date = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    ShareResult shareResult = await Share.shareFilesWithResult(
+        <String>[p.join(_logsPath, 'passman_$date.log')],
+        sharePositionOrigin: Rect.fromLTWH(0, 0, size.width, size.height / 2));
+    bool _saved = shareResult.status == ShareResultStatus.success;
+    return _saved;
   }
 }

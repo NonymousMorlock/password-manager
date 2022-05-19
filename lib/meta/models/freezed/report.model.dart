@@ -1,3 +1,4 @@
+// 📦 Package imports:
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'report.model.freezed.dart';
@@ -14,6 +15,7 @@ class Report with _$Report {
     required String image,
     String? experience,
     required String? logFileData,
+    required Map<String, dynamic>? deviceInfo,
   }) = _Report;
 
   factory Report.fromJson(Map<String, dynamic> json) => _$ReportFromJson(json);
