@@ -9,8 +9,10 @@ class AdaptiveLoading extends StatelessWidget {
     Key? key,
     this.strokeWidth,
     this.size,
+    this.color,
   }) : super(key: key);
   final double? strokeWidth, size;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +22,7 @@ class AdaptiveLoading extends StatelessWidget {
         child: CircularProgressIndicator.adaptive(
           strokeWidth: strokeWidth ?? 2,
           valueColor: AlwaysStoppedAnimation<Color>(
-            Theme.of(context).primaryColor,
+            color ?? Theme.of(context).primaryColor,
           ),
         ),
       ),

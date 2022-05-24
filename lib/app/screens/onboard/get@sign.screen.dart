@@ -178,7 +178,9 @@ class _GetAtSignScreenState extends State<GetAtSignScreen> {
             : Theme.of(context).primaryColor,
         elevation: 0,
         child: _processing
-            ? const AdaptiveLoading()
+            ? const AdaptiveLoading(
+                color: Colors.white,
+              )
             : Icon(
                 Icons.adaptive.arrow_forward_rounded,
                 color: Colors.white,

@@ -38,19 +38,20 @@ class _ImagesPageState extends State<ImagesPage> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        RefreshIndicator(
-          backgroundColor: Theme.of(context).backgroundColor,
-          color: context.read<AppThemeNotifier>().primary,
-          onRefresh: () async => AppServices.getImages(),
-          child: UserDataListener(
-            builder: (BuildContext context, UserData userData) {
-              return userData.images.isEmpty
-                  ? const Center(
-                      child: Text('Not images saved yet'),
-                    )
-                  : Wrap(
-                      children: userData.images.map(
-                        (Images image) {
+        Center(
+          child: RefreshIndicator(
+            backgroundColor: Theme.of(context).backgroundColor,
+            color: context.read<AppThemeNotifier>().primary,
+            onRefresh: () async => AppServices.getImages(),
+            child: UserDataListener(
+              builder: (BuildContext context, UserData userData) {
+                List<Images> images = userData.images;
+                return userData.images.isEmpty
+                    ? const Text('Not images saved yet')
+                    : ListView.builder(
+                        itemCount: images.length,
+                        physics: const BouncingScrollPhysics(),
+                        itemBuilder: (BuildContext context, int i) {
                           return Container(
                             margin: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
@@ -63,7 +64,7 @@ class _ImagesPageState extends State<ImagesPage> {
                                   padding: const EdgeInsets.symmetric(
                                       vertical: 15.0),
                                   child: Text(
-                                    image.folderName,
+                                    images[i].folderName,
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -79,7 +80,7 @@ class _ImagesPageState extends State<ImagesPage> {
                                       vertical: 20.0),
                                   child: Wrap(
                                     children: <Widget>[
-                                      for (String img in image.images)
+                                      for (String img in images[i].images)
                                         GestureDetector(
                                           onTap: () {
                                             setState(() => _img = img);
@@ -103,10 +104,9 @@ class _ImagesPageState extends State<ImagesPage> {
                               ],
                             ),
                           );
-                        },
-                      ).toList(),
-                    );
-            },
+                        });
+              },
+            ),
           ),
         ),
         if (_img != null)

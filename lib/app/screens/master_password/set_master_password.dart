@@ -302,6 +302,7 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                       : () async {
                           setState(() => _saving = true);
                           PassKey _passkey = Keys.masterImgKey
+                            ..sharedWith = AppServices.sdkServices.currentAtSign
                             ..sharedBy = AppServices.sdkServices.currentAtSign;
                           try {
                             Uint8List _pickedImage =
@@ -325,8 +326,13 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                                     'Error occured while encoding data into image');
                                 return;
                               }
-                              _passkey.value?.value =
-                                  Base2e15.encode(encryptedData.toList());
+                              _passkey
+                                ..sharedBy =
+                                    AppServices.sdkServices.currentAtSign
+                                ..sharedWith =
+                                    AppServices.sdkServices.currentAtSign
+                                ..value?.value =
+                                    Base2e15.encode(encryptedData.toList());
                               bool _isPut =
                                   await AppServices.sdkServices.put(_passkey);
                               if (_isPut) {

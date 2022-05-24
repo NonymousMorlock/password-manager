@@ -1,4 +1,5 @@
 // 🌎 Project imports:
+import '../../core/services/app.service.dart';
 import '../../meta/models/key.model.dart';
 import '../../meta/models/value.model.dart';
 
@@ -6,6 +7,8 @@ class Keys {
   /// Admin key
   static final PassKey adminKey = PassKey(
     key: 'admin',
+    sharedBy: AppServices.sdkServices.currentAtSign,
+    sharedWith: AppServices.sdkServices.currentAtSign,
     value: Value(
       type: 'admin',
     ),
@@ -40,6 +43,8 @@ class Keys {
     key: 'masterpassimg',
     isPublic: false,
     isHidden: true,
+    sharedBy: AppServices.sdkServices.currentAtSign,
+    sharedWith: AppServices.sdkServices.currentAtSign,
     createdDate: DateTime.now(),
     value: Value(
       labelName: 'Master password image',
@@ -51,6 +56,8 @@ class Keys {
   static final PassKey passwordKey = PassKey(
     isPublic: false,
     isHidden: true,
+    sharedBy: AppServices.sdkServices.currentAtSign,
+    sharedWith: AppServices.sdkServices.currentAtSign,
     createdDate: DateTime.now(),
     value: Value(
       labelName: 'Password',
@@ -62,6 +69,8 @@ class Keys {
   static final PassKey cardsKey = PassKey(
     isPublic: false,
     isHidden: true,
+    sharedBy: AppServices.sdkServices.currentAtSign,
+    sharedWith: AppServices.sdkServices.currentAtSign,
     createdDate: DateTime.now(),
     value: Value(
       labelName: 'Cards',
@@ -73,6 +82,8 @@ class Keys {
   static final PassKey imagesKey = PassKey(
     isPublic: false,
     isHidden: true,
+    sharedBy: AppServices.sdkServices.currentAtSign,
+    sharedWith: AppServices.sdkServices.currentAtSign,
     createdDate: DateTime.now(),
     value: Value(
       labelName: 'Images',
@@ -96,6 +107,8 @@ class Keys {
   static final PassKey isDarkTheme = PassKey(
     isPublic: false,
     key: 'darktheme',
+    sharedBy: AppServices.sdkServices.currentAtSign,
+    sharedWith: AppServices.sdkServices.currentAtSign,
     createdDate: DateTime.now(),
     isHidden: true,
     value: Value(
@@ -108,6 +121,8 @@ class Keys {
   static final PassKey themeKey = PassKey(
     isPublic: false,
     key: 'themecolor',
+    sharedBy: AppServices.sdkServices.currentAtSign,
+    sharedWith: AppServices.sdkServices.currentAtSign,
     createdDate: DateTime.now(),
     isHidden: true,
     value: Value(

@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 // 🌎 Project imports:
 import '../../app/constants/theme.dart';
 import '../extensions/logger.ext.dart';
+import '../models/freezed/admin.model.dart';
 import '../models/freezed/card.model.dart';
 import '../models/freezed/image.model.dart';
 import '../models/freezed/password.model.dart';
@@ -124,7 +125,7 @@ class UserData extends ChangeNotifier {
 
   /// Set master image
   set masterImage(Uint8List value) {
-    _logger.finer('Setting current profile pic');
+    _logger.finer('Setting current master image');
     _masterImage = value;
     notifyListeners();
   }
@@ -209,6 +210,15 @@ class UserData extends ChangeNotifier {
       context.read<AppThemeNotifier>().isDarkTheme = false;
       context.read<AppThemeNotifier>().primary = AppTheme.primary;
     }
+    notifyListeners();
+  }
+
+  List<Admin> _admins = <Admin>[];
+
+  List<Admin> get admins => _admins;
+
+  set admins(List<Admin> value) {
+    _admins = value;
     notifyListeners();
   }
 }

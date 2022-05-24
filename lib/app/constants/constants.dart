@@ -35,6 +35,13 @@ class Constants {
     'Content-Type': 'application/json',
   };
 
+  static String get adminHost => 'passman-admins.herokuapp.com';
+
+  static String get adminPath => 'admins';
+  static Map<String, String> get adminHeader => <String, String>{
+        'key': PassmanEnv.adminApiKey,
+      };
+
   /// Get a new UUID
   static String get uuid => const Uuid().v4();
 

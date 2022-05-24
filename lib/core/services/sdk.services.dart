@@ -4,15 +4,16 @@ import 'dart:convert';
 // 📦 Package imports:
 import 'package:at_client/src/service/notification_service.dart';
 import 'package:at_client_mobile/at_client_mobile.dart';
-import 'package:at_commons/at_builders.dart';
 import 'package:at_commons/at_commons.dart';
 import 'package:at_onboarding_flutter/services/onboarding_service.dart';
 import 'package:at_onboarding_flutter/utils/response_status.dart';
 import 'package:at_server_status/at_server_status.dart';
+import 'package:at_utils/at_utils.dart';
 import 'package:flutter/widgets.dart';
 
 // 🌎 Project imports:
 import '../../app/constants/keys.dart';
+import '../../app/constants/theme.dart';
 import '../../meta/extensions/logger.ext.dart';
 import '../../meta/models/key.model.dart';
 import 'app.service.dart';
@@ -123,50 +124,41 @@ class SdkServices {
     }
   }
 
-  String? get currentAtSign => atClientManager.atClient.getCurrentAtSign();
+  String? get currentAtSign =>
+      AtUtils.formatAtSign(atClientManager.atClient.getCurrentAtSign());
 
   Future<Map<String, dynamic>> getTheme([Size? size]) async {
     _logger.finer('Checking the app theme...');
     Map<String, dynamic> _data = <String, dynamic>{};
-    // ScanVerbBuilder _isDarkMode = ScanVerbBuilder()
-    //   ..auth = true
-    //   ..regex = Keys.isDarkTheme.key
-    //   ..sharedBy = currentAtSign;
-    // ScanVerbBuilder _themeColor = ScanVerbBuilder()
-    //   ..auth = true
-    //   ..regex = Keys.themeKey.key
-    //   ..sharedBy = currentAtSign;
-    // String? _darkData = await atClientManager.atClient
-    //     .getRemoteSecondary()!
-    //     .executeAndParse(_isDarkMode);
-    // String? _themeData = await atClientManager.atClient
-    //     .getRemoteSecondary()!
-    //     .executeAndParse(_themeColor);
-    // if (_darkData == '[]') {
-    //   await put(Keys.isDarkTheme..value!.value = false);
-    //   _data['isDarkTheme'] = false;
-    //   _logger.warning('Current theme set to light mode');
-    // } else {
-    bool _isDarkThemeSet = await get(PassKey(key: Keys.isDarkTheme.key));
-    _data['isDarkTheme'] = _isDarkThemeSet;
-    _logger.finer('Current Theme is ${_isDarkThemeSet ? 'dark' : 'light'}');
-    // }
-    // if (_themeData == '[]') {
-    //   String defaultColor =
-    //       AppTheme.primary.value.toRadixString(16).padLeft(8, '0');
-    //   await put(Keys.themeKey..value!.value = defaultColor);
-    //   _data['themeHex'] = defaultColor;
-    //   _logger.finer('Current Theme color is Color(0x$defaultColor)');
-    // } else {
-    String _theme = await get(PassKey(key: Keys.themeKey.key));
-    _data['themeHex'] = _theme;
-    _logger.finer('Current Theme color is Color(0x$_theme)');
-    // }
-
+    try {
+      bool? _isDarkThemeSet = await get(PassKey(key: Keys.isDarkTheme.key));
+      if (_isDarkThemeSet == null) {
+        _data['isDarkTheme'] = false;
+        await put(Keys.isDarkTheme..value!.value = false);
+        _logger.finer('Current Theme is light');
+      } else {
+        _data['isDarkTheme'] = _isDarkThemeSet;
+        _logger.finer('Current Theme is ${_isDarkThemeSet ? 'dark' : 'light'}');
+      }
+      String? _theme = await get(PassKey(key: Keys.themeKey.key));
+      if (_theme == null) {
+        String _defaultCode =
+            AppTheme.primary.value.toRadixString(16).padLeft(8, '0');
+        _data['themeHex'] = _defaultCode;
+        _logger.finer('Current Theme color is Color(0x$_defaultCode)');
+      } else {
+        _data['themeHex'] = _theme;
+        _logger.finer('Current Theme color is Color(0x$_theme)');
+      }
+    } on Exception catch (e, s) {
+      _logger.severe('Error while checking the app theme', e, s);
+      print(s);
+    }
     return _data;
   }
 
   Future<String?> getProPic() async {
+    _logger.finer('Fetching profile pic');
     try {
       List<AtKey> list = await atClientManager.atClient
           .getAtKeys(regex: 'profilepic', sharedBy: currentAtSign);
@@ -174,106 +166,67 @@ class SdkServices {
         if (key.key == 'profilepic' &&
             key.namespace == PassmanEnv.appNamespace) {
           AtValue img = await atClientManager.atClient.get(key);
+          _logger.finer('Got profile pic value');
           return json.decode(img.value)['value'];
         }
       }
+      _logger.warning('Cannot get profile pic value');
       return null;
     } on Exception catch (e, s) {
-      _logger.warning('Error getting profile pic', e, s);
+      _logger.severe('Error getting profile pic', e, s);
       return null;
     }
   }
 
   Future<bool> isAdmin() async {
     _logger.finer('Checking if user is admin...');
-    ScanVerbBuilder verb = ScanVerbBuilder()
-      ..auth = true
-      ..regex = 'admin'
-      ..sharedBy = currentAtSign;
-    String? _data = await atClientManager.atClient
-        .getRemoteSecondary()!
-        .executeAndParse(verb);
-    if (_data == '[]') {
-      await put(Keys.adminKey
-        ..value!.value = currentAtSign == PassmanEnv.reportAtsign);
-      _logger.warning(
-          'User is ${currentAtSign == PassmanEnv.reportAtsign ? '' : 'not '}admin');
-      return false;
-    } else {
-      bool _isAdmin = await get(PassKey(key: 'admin'));
-      _isAdmin
-          ? _logger.warning('User is admin')
-          : _logger.finer('User is not admin');
-      return _isAdmin;
-    }
+    bool _isAdmin = await get(PassKey(key: 'admin')) ?? false;
+    _isAdmin
+        ? _logger.warning('User is admin')
+        : _logger.finer('User is not admin');
+    return _isAdmin;
   }
 
   /// Checks if master image exists or not in remote secondary returns the result.
-  Future<bool> checkMasterImageKey() async {
+  Future<String?> checkMasterImageKey() async {
     _logger.finer('Getting master image key');
-    ScanVerbBuilder verb = ScanVerbBuilder()
-      ..auth = true
-      ..regex = 'masterpassimg'
-      ..sharedBy = currentAtSign;
-    String? _data = await atClientManager.atClient
-        .getRemoteSecondary()!
-        .executeAndParse(verb);
-    if (_data == '[]') {
-      _logger.warning('No master image key found');
-      return false;
-    } else {
-      _logger.finer('Master image key found: $_data');
-      return true;
+    List<AtKey> allKeys = await getAllKeys(regex: Keys.masterImgKey.key);
+    for (AtKey masterImgKey in allKeys) {
+      String? _imgData = await get(PassKey.fromAtKey(masterImgKey));
+      if (_imgData == null || _imgData.isEmpty) {
+        _logger.warning('No master image key found');
+      } else {
+        _logger.finer('Master image key found');
+        return _imgData;
+      }
     }
+    return null;
   }
 
   /// Checks if master image exists or not in remote secondary returns the result.
   Future<bool> checkFingerprint() async {
     _logger.finer('Checking fingerprint');
-    ScanVerbBuilder verb = ScanVerbBuilder()
-      ..auth = true
-      ..regex = 'fingerprint'
-      ..sharedBy = currentAtSign;
-    String? _data = await atClientManager.atClient
-        .getRemoteSecondary()!
-        .executeAndParse(verb);
-    if (_data == '[]') {
+    bool _enabled = await get(PassKey(key: 'fingerprint')) ?? false;
+    if (!_enabled) {
       _logger.warning('No fingerprint key found');
-      return false;
     } else {
-      _logger.finer('Fingerprint key found: $_data');
-      bool _enabled = await get(
-        PassKey.fromAtKey((await getAllKeys(regex: 'fingerprint')).first),
-      );
       _logger.finer('Fingerprint enabled : $_enabled');
-      return _enabled;
     }
+    return _enabled;
   }
 
   Future<String?> getName() async {
     _logger.finer('Getting name');
     try {
-      ScanVerbBuilder verb = ScanVerbBuilder()
-        ..auth = true
-        ..regex = 'name'
-        ..sharedBy = currentAtSign;
-      String? _data = await atClientManager.atClient
-          .getRemoteSecondary()!
-          .executeAndParse(verb);
-      if (_data == '[]') {
-        _logger.warning('No name key found');
-        return null;
-      } else {
-        List<AtKey> _names =
-            await getAllKeys(regex: 'name.${PassmanEnv.appNamespace}');
-        if (_names.isNotEmpty) {
-          String? name = await get(
-            PassKey.fromAtKey(_names.first),
-          );
-          return name;
-        }
-        return null;
+      List<AtKey> _names =
+          await getAllKeys(regex: 'name.${PassmanEnv.appNamespace}');
+      if (_names.isNotEmpty) {
+        String? name = await get(
+          PassKey.fromAtKey(_names.first),
+        );
+        return name;
       }
+      return null;
     } on Exception catch (e, s) {
       _logger.severe('Error getting name', e, s);
       return null;
@@ -308,7 +261,8 @@ class SdkServices {
       }
       return putResult;
     } catch (e, s) {
-      _logger.severe('Error while putting data', e, s);
+      _logger.severe('Error while putting data: $e', e, s);
+      print(s);
       return false;
     }
   }
@@ -319,10 +273,10 @@ class SdkServices {
       AtValue _value = await atClientManager.atClient.get(entity.toAtKey());
       return jsonDecode(_value.value)['value'];
     } on KeyNotFoundException catch (e, s) {
-      _logger.warning('Key not found with message ${e.message}', e, s);
+      _logger.severe('Key not found with message ${e.message}', e, s);
       return null;
     } on FormatException catch (e, s) {
-      _logger.warning('FormatError: $e', e, s);
+      _logger.severe('FormatError: $e', e, s);
     } on Exception catch (e, s) {
       _logger.severe('Error while getting data, Error: $e', e, s);
       return null;

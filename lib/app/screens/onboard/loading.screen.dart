@@ -17,6 +17,7 @@ import '../../../core/services/passman.env.dart';
 import '../../../core/services/sdk.services.dart';
 import '../../../meta/components/adaptive_loading.dart';
 import '../../../meta/components/set_propic.dart';
+import '../../../meta/components/sync_indicator.dart';
 import '../../../meta/components/toast.dart';
 import '../../../meta/extensions/logger.ext.dart';
 import '../../../meta/notifiers/theme.notifier.dart';
@@ -24,6 +25,7 @@ import '../../../meta/notifiers/user_data.notifier.dart';
 import '../../constants/assets.dart';
 import '../../constants/global.dart';
 import '../../constants/page_route.dart';
+import '../../provider/listeners/user_data.listener.dart';
 
 class LoadingDataScreen extends StatefulWidget {
   const LoadingDataScreen({Key? key}) : super(key: key);
@@ -50,9 +52,12 @@ class _LoadingDataScreenState extends State<LoadingDataScreen> {
           context.read<UserData>().atOnboardingPreference);
       setState(() => _message = 'Syncing data, Please wait...');
       AppServices.syncData();
-      while (AppServices
-          .sdkServices.atClientManager.syncService.isSyncInProgress) {
-        await Future<void>.delayed(const Duration(milliseconds: 100));
+      while (true) {
+        if (context.read<UserData>().syncStatus == SyncStatus.started) {
+          await Future<void>.delayed(const Duration(milliseconds: 100));
+        } else {
+          break;
+        }
       }
       setState(() => _message = 'Applying theme...');
       Map<String, dynamic> themeData =
@@ -60,7 +65,6 @@ class _LoadingDataScreenState extends State<LoadingDataScreen> {
       context.read<AppThemeNotifier>().isDarkTheme = themeData['isDarkTheme'];
       context.read<AppThemeNotifier>().primary =
           Color(int.parse('0x${themeData['themeHex']}'));
-      setState(() => _message = 'Syncing data...');
       setState(() => _message = 'Fetching your data...');
       context.read<UserData>().isAdmin = await _sdk.isAdmin();
       String? _profilePic = await _sdk.getProPic();
@@ -69,7 +73,7 @@ class _LoadingDataScreenState extends State<LoadingDataScreen> {
             Base2e15.decode(_profilePic);
       } else {
         Uint8List _avatar =
-            await AppServices.readLocalfilesAsBytes(Assets.getRandomAvatar());
+            await AppServices.readLocalfilesAsBytes(Assets.getRandomAvatar);
         await showModalBottomSheet(
           backgroundColor: Colors.transparent,
           isScrollControlled: false,
@@ -90,7 +94,11 @@ class _LoadingDataScreenState extends State<LoadingDataScreen> {
       } else {
         context.read<UserData>().name = 'Your Name';
       }
-      _masterImgKeyExists = await _sdk.checkMasterImageKey();
+      String? _imgData = await _sdk.checkMasterImageKey();
+      if (_imgData != null && _imgData.isNotEmpty) {
+        _masterImgKeyExists = true;
+        context.read<UserData>().masterImage = Base2e15.decode(_imgData);
+      }
       _fingerPrint = await _sdk.checkFingerprint();
       context.read<UserData>().fingerprintAuthEnabled = _fingerPrint;
       if (_fingerPrint) {
@@ -106,12 +114,15 @@ class _LoadingDataScreenState extends State<LoadingDataScreen> {
           );
         }
         if (_fingerAuthApproved) {
-          await Future<void>.delayed(const Duration(seconds: 2));
+          await Future<void>.delayed(const Duration(milliseconds: 500));
         }
       }
       setState(() => _message = 'Starting monitor...');
       await Future<void>.delayed(const Duration(milliseconds: 500));
       await AppServices.startMonitor();
+      setState(() => _message = 'Fetching master image...');
+      await Future<void>.delayed(const Duration(milliseconds: 500));
+      await AppServices.getMasterImage();
       setState(() => _message = 'Fetching passwords...');
       await Future<void>.delayed(const Duration(milliseconds: 500));
       await AppServices.getPasswords();
@@ -121,9 +132,14 @@ class _LoadingDataScreenState extends State<LoadingDataScreen> {
       setState(() => _message = 'Fetching cards...');
       await Future<void>.delayed(const Duration(milliseconds: 500));
       await AppServices.getCards();
-      setState(() => _message = 'Fetching reports...');
-      await Future<void>.delayed(const Duration(milliseconds: 500));
-      await AppServices.getReports();
+      if (context.read<UserData>().isAdmin) {
+        setState(() => _message = 'Fetching reports...');
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+        await AppServices.getReports();
+        setState(() => _message = 'Fetching admins...');
+        await Future<void>.delayed(const Duration(milliseconds: 500));
+        await AppServices.getAdmins();
+      }
       setState(() => _loading = false);
       setState(() => _message = 'Done \u{1F643}');
       Future<void>.delayed(const Duration(milliseconds: 1200), () {
@@ -161,19 +177,37 @@ class _LoadingDataScreenState extends State<LoadingDataScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            if (_loading) const AdaptiveLoading(),
-            if (_loading) vSpacer(30),
-            Text(
-              _message,
-              style:
-                  Theme.of(context).textTheme.bodyText1!.copyWith(fontSize: 18),
+      body: Stack(
+        children: <Widget>[
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                if (_loading) const AdaptiveLoading(),
+                if (_loading) vSpacer(30),
+                Text(
+                  _message,
+                  style: _message.startsWith('Done')
+                      ? Theme.of(context)
+                          .textTheme
+                          .bodyText1!
+                          .copyWith(fontSize: 24)
+                      : Theme.of(context)
+                          .textTheme
+                          .bodyText1!
+                          .copyWith(fontSize: 18),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+          Positioned(
+            top: 60,
+            right: 20,
+            child: UserDataListener(
+              builder: (_, __) => SyncIndicator(size: 15),
+            ),
+          ),
+        ],
       ),
     );
   }

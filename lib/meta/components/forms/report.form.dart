@@ -88,6 +88,13 @@ class _ReportFormState extends State<ReportForm> {
               child: EditableText(
                 textAlign: TextAlign.center,
                 textCapitalization: TextCapitalization.sentences,
+                smartDashesType: SmartDashesType.enabled,
+                smartQuotesType: SmartQuotesType.enabled,
+                autocorrect: true,
+                autocorrectionTextRectColor: Colors.red,
+                enableSuggestions: true,
+                maxLines: 1,
+                selectionColor: Theme.of(context).primaryColor,
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 20,
@@ -321,12 +328,24 @@ class _ReportFormState extends State<ReportForm> {
                           Map<String, dynamic> _dd =
                               (await deviceInfo.deviceInfo).toMap();
                           _deviceInfo.clear();
-                          _deviceInfo['Device Name'] = _dd['name'];
-                          _deviceInfo['Device Model'] = _dd['model'];
-                          _deviceInfo['Operating system'] = _dd['systemName'];
-                          _deviceInfo['OS Version'] = _dd['systemVersion'];
+                          _deviceInfo['Device Name'] =
+                              _dd['name'] ?? 'Can\'t retrive';
+                          _deviceInfo['Device Model'] = Platform.isAndroid
+                              ? _dd['model'] + ' (${_dd['manufacturer']})'
+                              : _dd['model'];
+                          _deviceInfo['Operating system'] = Platform.isAndroid
+                              ? 'Android'
+                              : _dd['systemName'];
+                          _deviceInfo['OS Version'] = Platform.isAndroid
+                              ? 'Android ' + _dd['version']['release']
+                              : _dd['systemVersion'];
                           _deviceInfo['Device Architecture'] =
-                              _dd['utsname']['machine'];
+                              Platform.isAndroid
+                                  ? _dd['supportedAbis']
+                                      .toString()
+                                      .replaceAll('[', '')
+                                      .replaceAll(']', '')
+                                  : _dd['utsname']['machine'];
                           _deviceInfo['Is physical device'] =
                               _dd['isPhysicalDevice'];
                           String _logsPath = p.join(

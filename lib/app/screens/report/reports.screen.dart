@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 
 // 📦 Package imports:
-import 'package:at_client_mobile/at_client_mobile.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:tabler_icons/tabler_icons.dart';
@@ -10,7 +9,6 @@ import 'package:at_base2e15/at_base2e15.dart';
 
 // 🌎 Project imports:
 import '../../../core/services/app.service.dart';
-import '../../../meta/components/adaptive_loading.dart';
 import '../../../meta/components/sync_indicator.dart';
 import '../../../meta/components/toast.dart';
 import '../../../meta/models/freezed/report.model.dart';
@@ -33,9 +31,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
       bool _inSync =
           await AppServices.sdkServices.atClientManager.syncService.isInSync();
       if (!_inSync) {
-        AppServices.syncData();
+        AppServices.syncData(AppServices.getReports);
+      } else {
+        await AppServices.getReports();
       }
-      await AppServices.getReports();
     });
     super.initState();
   }
@@ -66,19 +65,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
         backgroundColor: Theme.of(context).backgroundColor,
         color: context.read<AppThemeNotifier>().primary,
         onRefresh: () async {
-          AppServices.syncData();
-          await AppServices.getReports();
+          AppServices.syncData(AppServices.getReports);
         },
         child: UserDataListener(
           builder: (BuildContext context, UserData userData) {
             if (userData.reports.isEmpty) {
-              if (userData.syncStatus != SyncStatus.success) {
-                return const AdaptiveLoading();
-              } else {
-                return const Center(
-                  child: Text('No reports found.'),
-                );
-              }
+              return const Center(child: Text('No reports saved yet'));
             } else {
               return ListView.builder(
                   physics: const BouncingScrollPhysics(),
@@ -132,11 +124,20 @@ class _ReportsScreenState extends State<ReportsScreen> {
                               fontStyle: FontStyle.italic,
                             ),
                           ),
-                          leading: Image.memory(
-                            Base2e15.decode(report.image),
-                            height: 50,
-                            width: 50,
-                            fit: BoxFit.cover,
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(50),
+                            child: Hero(
+                              tag: 'report_image_${report.id}',
+                              child: Image(
+                                height: 50,
+                                width: 50,
+                                fit: BoxFit.cover,
+                                gaplessPlayback: true,
+                                image: Image.memory(
+                                  Base2e15.decode(report.image),
+                                ).image,
+                              ),
+                            ),
                           ),
                           trailing: report.experience == null
                               ? null

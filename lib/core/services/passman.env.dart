@@ -40,4 +40,8 @@ class PassmanEnv {
 
   /// Returns the app reporting @sign from the environment.
   static final String reportAtsign = dotenv.env['REPORT_ATSIGN'] ?? '@';
+
+  /// Returns the app api key from the environment.
+  static final String adminApiKey =
+      dotenv.env['ADMIN_KEY']!;
 }

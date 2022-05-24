@@ -108,7 +108,11 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
           ),
           if (msg != null) vSpacer(30),
-          if (msg != null) Text(msg!),
+          if (msg != null)
+            Text(
+              msg!,
+              style: Theme.of(context).textTheme.bodyText1!,
+            ),
         ],
       ),
     );

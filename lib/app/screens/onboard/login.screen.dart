@@ -14,6 +14,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:at_base2e15/at_base2e15.dart';
 import 'package:tabler_icons/tabler_icons.dart';
 
 // 🌎 Project imports:
@@ -90,7 +91,12 @@ class _LoginScreenState extends State<LoginScreen> {
         context.read<UserData>().authenticated = status.name == 'authSuccess';
         if (status.name == 'authSuccess') {
           _atKeysData.clear();
-          bool _masterImgKeyExists = await _sdk.checkMasterImageKey();
+          String? _imgData = await _sdk.checkMasterImageKey();
+          bool _masterImgKeyExists = false;
+          if (_imgData != null && _imgData.isNotEmpty) {
+            _masterImgKeyExists = true;
+            context.read<UserData>().masterImage = Base2e15.decode(_imgData);
+          }
           context.read<UserData>().currentAtSign = _atSign!;
           _list.clear();
           setState(() => _isLoading = false);

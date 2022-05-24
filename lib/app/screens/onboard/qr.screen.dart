@@ -43,7 +43,7 @@ class _QRScreenState extends State<QRScreen> {
       context.read<NewUser>()
         ..newUserData['atSign'] = data.split(':')[0]
         ..newUserData['img'] =
-            await AppServices.readLocalfilesAsBytes(Assets.getRandomAvatar())
+            await AppServices.readLocalfilesAsBytes(Assets.getRandomAvatar)
         ..setQrData =
             QrModel(atSign: data.split(':')[0], cramSecret: data.split(':')[1]);
       await Navigator.pushNamed(context, PageRouteNames.activatingAtSign);
@@ -65,7 +65,7 @@ class _QRScreenState extends State<QRScreen> {
   //     context.read<NewUser>()
   //       ..newUserData['atSign'] = scanData.code?.split(':')[0]
   //       ..newUserData['img'] =
-  //           await AppServices.readLocalfilesAsBytes(Assets.getRandomAvatar())
+  //           await AppServices.readLocalfilesAsBytes(Assets.getRandomAvatar)
   //       ..setQrData = QrModel(
   //           atSign: scanData.code?.split(':')[0] ?? '',
   //           cramSecret: scanData.code?.split(':')[1] ?? '');

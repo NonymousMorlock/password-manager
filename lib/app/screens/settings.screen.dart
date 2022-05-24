@@ -2,8 +2,10 @@
 
 // 🎯 Dart imports:
 import 'dart:async';
+import 'dart:convert';
 
 // 🐦 Flutter imports:
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 // 📦 Package imports:
@@ -11,11 +13,14 @@ import 'package:local_auth/local_auth.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:tabler_icons/tabler_icons.dart';
-
+import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
 // 🌎 Project imports:
 import '../../core/services/app.service.dart';
 import '../../core/services/helper.service.dart';
+import '../../core/services/passman.env.dart';
 import '../../meta/components/adaptive_loading.dart';
+import '../../meta/components/admin_sheet.dart';
 import '../../meta/components/change_propic.dart';
 import '../../meta/components/forms/report.form.dart';
 import '../../meta/components/settings/category.settings.dart';
@@ -29,6 +34,7 @@ import '../../meta/models/value.model.dart';
 import '../../meta/notifiers/theme.notifier.dart';
 import '../../meta/notifiers/user_data.notifier.dart';
 import '../constants/assets.dart';
+import '../constants/constants.dart';
 import '../constants/global.dart';
 import '../constants/keys.dart';
 import '../constants/page_route.dart';
@@ -43,8 +49,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final TextEditingController _userNameController = TextEditingController(),
-      _reportController = TextEditingController(),
-      _titleController = TextEditingController(text: 'Title of the report');
+      _reportController = TextEditingController();
   final FocusNode _nameFocusNode = FocusNode(), _titleFocusNode = FocusNode();
   bool _editing = false,
       _saving = false,
@@ -52,6 +57,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _logsSaving = false;
   final AppLogger _logger = AppLogger('Settings screen');
   final PassKey _nameKey = Keys.nameKey
+    ..sharedWith = AppServices.sdkServices.currentAtSign
     ..sharedBy = AppServices.sdkServices.currentAtSign;
   final LocalAuthentication _localAuth = LocalAuthentication();
   final bool _isLoading = false;
@@ -61,7 +67,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Future<void>.delayed(Duration.zero, () async {
       packageInfo = await PackageInfo.fromPlatform();
       String? _name = await AppServices.sdkServices.get(_nameKey);
-      context.read<UserData>().userName = _name;
+      context.read<UserData>().userName = _name ?? 'Your Name';
       if (mounted) _nameFocusNode.unfocus();
       setState(() {
         _userNameController.text =
@@ -82,19 +88,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
       labelName: 'User name',
     );
     bool _nameUpdated = await AppServices.sdkServices.put(_nameKey);
+    late http.Response response;
     if (_nameUpdated) {
+      response = context.read<UserData>().isAdmin
+          ? await http.patch(
+              Uri.http(Constants.adminHost, Constants.adminPath),
+              headers: Constants.adminHeader,
+              body: jsonEncode(<String, dynamic>{
+                'isSuperAdmin': context.read<UserData>().currentAtSign ==
+                    PassmanEnv.reportAtsign,
+                'atSign': context.read<UserData>().currentAtSign,
+                'name': _userNameController.text,
+              }))
+          : http.Response('', 200);
       context.read<UserData>().userName = _userNameController.text;
     }
-    showToast(context,
-        _nameUpdated ? 'Name updated successfully' : 'Failed to update name',
-        isError: !_nameUpdated);
+    showToast(
+        context,
+        (_nameUpdated && response.statusCode == 200)
+            ? 'Name updated successfully'
+            : (_nameUpdated && response.statusCode != 200)
+                ? 'Failed to update to admin server'
+                : 'Failed to update name',
+        isError: !_nameUpdated && response.statusCode != 200);
   }
 
   @override
   void dispose() {
     _userNameController.dispose();
     _reportController.dispose();
-    _titleController.dispose();
     _nameFocusNode.dispose();
     _titleFocusNode.dispose();
     super.dispose();
@@ -343,6 +365,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                         }
                                         PassKey _fingerprint = Keys
                                             .fingerprintKey
+                                          ..sharedBy = AppServices
+                                              .sdkServices.currentAtSign
+                                          ..sharedWith = AppServices
+                                              .sdkServices.currentAtSign
                                           ..value?.value = _enableFingerprint;
                                         bool _put = await AppServices
                                             .sdkServices
@@ -436,7 +462,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
                             if (context.watch<UserData>().isAdmin)
                               Opacity(
-                                opacity: 0.3,
+                                opacity: 1,
                                 child: SettingsCard(
                                   height: 60,
                                   leading: Icon(
@@ -444,13 +470,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                     color: iconThemedColor(
                                         context, Colors.black54),
                                   ),
-                                  onTap: null,
+                                  onTap: () async {
+                                    await showModalBottomSheet(
+                                      isScrollControlled: true,
+                                      backgroundColor: Colors.transparent,
+                                      shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(20),
+                                          topRight: Radius.circular(20),
+                                        ),
+                                      ),
+                                      context: context,
+                                      builder: (_) {
+                                        return const AdminSheet();
+                                      },
+                                    );
+                                  },
                                   lable: 'Add admins',
                                   subLable: 'Add someone as admins',
                                   trailing: const Padding(
                                     padding:
                                         EdgeInsets.symmetric(horizontal: 10.0),
-                                    child: Text('(Only Admins)'),
+                                    child: Text('(Admins - Beta)'),
                                   ),
                                 ),
                               ),
@@ -575,23 +616,40 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     vSpacer(50),
                     Center(
-                      child: Text(
-                        'Made with \u{1F49A} by Minnu',
+                        child: RichText(
+                      text: TextSpan(
+                        text: 'Made with \u{1F49A} by ',
                         style: TextStyle(
                           color: Theme.of(context).textTheme.caption?.color,
                         ),
+                        children: <TextSpan>[
+                          TextSpan(
+                            text: 'Minnu',
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () async {
+                                Uri _url = Uri.https('wavi.ng', '@minnu💚');
+                                if (await canLaunchUrl(_url)) {
+                                  await launchUrl(_url);
+                                }
+                              },
+                            style:
+                                Theme.of(context).textTheme.caption?.copyWith(
+                                      color: Theme.of(context).primaryColor,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                          ),
+                        ],
                       ),
-                    ),
+                    )),
                     vSpacer(10),
                     Center(
                       child: Text(
                         'Version : ${packageInfo?.version}',
-                        style: TextStyle(
-                          color: Theme.of(context).textTheme.caption?.color,
-                        ),
+                        style: Theme.of(context).textTheme.caption,
                       ),
                     ),
-                    vSpacer(20),
+                    vSpacer(10),
                   ],
                 ),
               ),

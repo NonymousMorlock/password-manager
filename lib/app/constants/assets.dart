@@ -72,5 +72,5 @@ class Assets {
     shark,
     tiger,
   ];
-  static String getRandomAvatar() => avatars[Random().nextInt(avatars.length)];
+  static String get getRandomAvatar => avatars[Random().nextInt(avatars.length)];
 }

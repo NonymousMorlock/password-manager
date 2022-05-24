@@ -74,7 +74,7 @@ class _SetProPicState extends State<SetProPic> {
                   GestureDetector(
                     onTap: () async {
                       _avatar = await AppServices.readLocalfilesAsBytes(
-                          Assets.getRandomAvatar());
+                          Assets.getRandomAvatar);
                       setState(() {});
                     },
                     child: ClipRRect(

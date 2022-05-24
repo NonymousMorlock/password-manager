@@ -37,6 +37,7 @@ import '../../meta/components/toast.dart';
 import '../../meta/extensions/logger.ext.dart';
 import '../../meta/extensions/plots.ext.dart';
 import '../../meta/extensions/string.ext.dart';
+import '../../meta/models/freezed/admin.model.dart';
 import '../../meta/models/freezed/card.model.dart';
 import '../../meta/models/freezed/image.model.dart';
 import '../../meta/models/freezed/password.model.dart';
@@ -215,7 +216,7 @@ class AppServices {
     }
     if (response.statusCode == 200) {
       atSignWithImg['atSign'] = json.decode(response.body)['data']['atsign'];
-      atSignWithImg['img'] = Assets.getRandomAvatar();
+      atSignWithImg['img'] = Assets.getRandomAvatar;
     } else {
       atSignWithImg['message'] = json.decode(response.body)['message'];
       atSignWithImg['img'] = Assets.error;
@@ -261,11 +262,11 @@ class AppServices {
           ApiRequest request = ApiRequest.get]) async =>
       request.name == 'get'
           ? http.get(
-              Uri.https(Constants.domain, Constants.apiPath + endPoint),
+              Uri.http(Constants.domain, Constants.apiPath + endPoint),
               headers: Constants.apiHeaders,
             )
           : http.post(
-              Uri.https(Constants.domain, Constants.apiPath + endPoint),
+              Uri.http(Constants.domain, Constants.apiPath + endPoint),
               body: json.encode(requestBody),
               headers: Constants.apiHeaders,
             );
@@ -327,7 +328,7 @@ class AppServices {
       context.read<NewUser>()
         ..newUserData['atSign'] = _qrData.split(':')[0]
         ..newUserData['img'] =
-            (await AppServices.readLocalfilesAsBytes(Assets.getRandomAvatar()))
+            (await AppServices.readLocalfilesAsBytes(Assets.getRandomAvatar))
                 .buffer
                 .asUint8List();
       showToast(context, 'QR code decoded successfully');
@@ -456,6 +457,7 @@ class AppServices {
       if (onSyncDone != null) {
         onSyncDone();
       }
+      if (_userData.isAdmin) await AppServices.getReports();
     }
 
     _userData.setSyncStatus = SyncStatus.started;
@@ -471,37 +473,24 @@ class AppServices {
     await HapticFeedback.lightImpact();
   }
 
-  /// Fetches the master image key from secondary.
-  static Future<void> getMasterImage() async {
-    _logger.finer('Getting master image');
-    // PassKey _masterImgKey = Keys.masterImgKey;
-    // ..sharedBy = sdkServices.currentAtSign;
-    AtKey _key = AtKey()
-      ..key = Keys.masterImgKey.key
-      ..namespace = PassmanEnv.appNamespace
-      ..sharedBy = sdkServices.currentAtSign;
-    try {
+/// Fetches the master image key from secondary.
+static Future<void> getMasterImage() async {
+  _logger.finer('Getting master image');
+  List<AtKey> _keys = await sdkServices.atClientManager.atClient
+      .getAtKeys(regex: Keys.masterImgKey.key);
+  try {
+    for (AtKey _key in _keys) {
+      print(_key);
       AtValue value = await sdkServices.atClientManager.atClient.get(_key);
       _userData.masterImage = Uint8List.fromList(
           Base2e15.decode(json.decode(value.value)['value']));
-      _logger.finer('Fetched master image successfully');
-    } on Exception catch (e, s) {
-      _logger.severe('Error getting master image', e, s);
-      return;
     }
+    _logger.finer('Fetched master image successfully');
+  } on Exception catch (e, s) {
+    _logger.severe('Error getting master image', e, s);
+    return;
   }
-
-  /// Fetches the master image key from secondary.
-  static void setProfilePic(String data) {
-    _logger.finer('Fetching profile pic');
-    try {
-      _userData.currentProfilePic = Uint8List.fromList(Base2e15.decode(data));
-      _logger.finer('Fetched profile picture successfully');
-    } on Exception catch (e, s) {
-      _logger.severe('Error getting profile picture', e, s);
-      return;
-    }
-  }
+}
 
   /// Get Cryptic keys to Encrypt/Decrypt the data
   static Future<String?> getCryptKey() async =>
@@ -539,7 +528,7 @@ class AppServices {
         .first;
     http.Response _res;
     try {
-      _res = await http.get(Uri.https(Constants.faviconDomain, url));
+      _res = await http.get(Uri.http(Constants.faviconDomain, url));
       _logger.finer('Fetched favicon.');
       if (_res.statusCode == 200 &&
           _res.headers['content-type'] == 'image/png') {
@@ -561,7 +550,7 @@ class AppServices {
           await sdkServices.getAllKeys(regex: 'password_');
       for (AtKey _key in _passwordkeys) {
         Map<String, dynamic> _value =
-            await sdkServices.get(PassKey(key: _key.key));
+            await sdkServices.get(PassKey.fromAtKey(_key));
         Password _password = Password.fromJson(_value);
         _pass.add(_password);
       }
@@ -580,7 +569,7 @@ class AppServices {
       List<AtKey> _cardkeys = await sdkServices.getAllKeys(regex: 'cards_');
       for (AtKey _key in _cardkeys) {
         Map<String, dynamic>? _value =
-            await sdkServices.get(PassKey(key: _key.key));
+            await sdkServices.get(PassKey.fromAtKey(_key));
         if (_value != null) {
           CardModel _card = CardModel.fromJson(_value);
           _cards.add(_card);
@@ -604,7 +593,7 @@ class AppServices {
       List<AtKey> _imagekeys = await sdkServices.getAllKeys(regex: 'images_');
       for (AtKey _key in _imagekeys) {
         Map<String, dynamic>? _value =
-            await sdkServices.get(PassKey(key: _key.key));
+            await sdkServices.get(PassKey.fromAtKey(_key));
         if (_value != null) {
           Images _image = Images.fromJson(_value);
           _images.add(_image);
@@ -627,6 +616,10 @@ class AppServices {
       List<Report> _reports = <Report>[];
       List<AtKey> _reportKeys = await sdkServices.getAllKeys(regex: 'report_');
       for (AtKey _key in _reportKeys) {
+        // if (!_key.metadata!.isCached) {
+        //   _userData.reports = _reports;
+        //   return;
+        // }
         dynamic _value = await sdkServices.get(PassKey.fromAtKey(_key));
         if (_value != null) {
           Report _report = Report.fromJson(_value);
@@ -652,5 +645,31 @@ class AppServices {
         sharePositionOrigin: Rect.fromLTWH(0, 0, size.width, size.height / 2));
     bool _saved = shareResult.status == ShareResultStatus.success;
     return _saved;
+  }
+
+  static Future<void> getAdmins() async {
+    _logger.finer('Fetching Admins');
+    http.Response _res = await http.get(
+        Uri.http(Constants.adminHost, Constants.adminPath),
+        headers: Constants.adminHeader);
+    if (_res.statusCode == 200) {
+      Map<String, dynamic> _jsonData = jsonDecode(_res.body);
+      List<dynamic> _admins = _jsonData['admins'];
+      List<dynamic> _superAdmins = _jsonData['superAdmins'];
+      for (dynamic _admin in _admins) {
+        _admin['isSuperAdmin'] = false;
+        Admin _adminModel = Admin.fromJson(_admin);
+        _userData.admins
+            .removeWhere((Admin _admin) => _admin.id == _adminModel.id);
+        _userData.admins.add(_adminModel);
+      }
+      for (dynamic _superAdmin in _superAdmins) {
+        _superAdmin['isSuperAdmin'] = true;
+        Admin _adminModel = Admin.fromJson(_superAdmin);
+        _userData.admins
+            .removeWhere((Admin _admin) => _admin.id == _adminModel.id);
+        _userData.admins.add(_adminModel);
+      }
+    }
   }
 }

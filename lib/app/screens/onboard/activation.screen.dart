@@ -73,6 +73,7 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
   @override
   void initState() {
     _passKey
+      ..sharedWith = context.read<NewUser>().getQrData.atSign
       ..sharedBy = context.read<NewUser>().getQrData.atSign
       ..value = Value(
         value: Base2e15.encode(context.read<NewUser>().newUserData['img']),

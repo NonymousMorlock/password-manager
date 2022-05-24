@@ -37,7 +37,7 @@ class _MasterPasswordScreenState extends State<MasterPasswordScreen> {
           .isInSync()) {
         AppServices.syncData();
       }
-      await AppServices.getMasterImage();
+      // await AppServices.getMasterImage();
     });
     super.initState();
   }

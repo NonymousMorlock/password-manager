@@ -10,6 +10,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'package:share_plus/share_plus.dart';
+import 'package:tabler_icons/tabler_icons.dart';
 import '../../../meta/components/adaptive_loading.dart';
 import '../../../meta/components/sync_indicator.dart';
 import '../../../meta/components/toast.dart';
@@ -45,6 +46,11 @@ class _ReportDetailsState extends State<ReportDetails> {
           'Report Details',
           style: Theme.of(context).textTheme.titleLarge!,
         ),
+        leading: IconButton(
+          icon: Icon(TablerIcons.chevron_left,
+              color: Theme.of(context).iconTheme.color),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         actions: <Widget>[
           Padding(
             padding: const EdgeInsets.only(right: 20.0),
@@ -65,14 +71,17 @@ class _ReportDetailsState extends State<ReportDetails> {
                         children: <Widget>[
                           ClipRRect(
                             borderRadius: BorderRadius.circular(50),
-                            child: Image(
-                              height: 100,
-                              width: 100,
-                              fit: BoxFit.cover,
-                              gaplessPlayback: true,
-                              image: Image.memory(
-                                Base2e15.decode(report!.image),
-                              ).image,
+                            child: Hero(
+                              tag: 'report_image_${report!.id}',
+                              child: Image(
+                                height: 100,
+                                width: 100,
+                                fit: BoxFit.cover,
+                                gaplessPlayback: true,
+                                image: Image.memory(
+                                  Base2e15.decode(report!.image),
+                                ).image,
+                              ),
                             ),
                           ),
                           Column(
@@ -98,11 +107,10 @@ class _ReportDetailsState extends State<ReportDetails> {
                                     ),
                                     TextSpan(
                                       text: DateFormat()
-                                          .add_yMd()
                                           .format(report!.createdAt),
                                       style: Theme.of(context)
                                           .textTheme
-                                          .bodyMedium!
+                                          .caption!
                                           .copyWith(
                                               fontWeight: FontWeight.normal),
                                     ),
@@ -137,7 +145,7 @@ class _ReportDetailsState extends State<ReportDetails> {
                               text: report!.id,
                               style: Theme.of(context)
                                   .textTheme
-                                  .bodyMedium!
+                                  .caption!
                                   .copyWith(fontWeight: FontWeight.normal),
                             ),
                           ],

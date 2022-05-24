@@ -1,0 +1,126 @@
+{
+	"name": "Flutter (Custom)",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	// Set *default* container specific settings.json values on container create.
+	"settings": {
+		"files.autoSave": "afterDelay",
+		"editor.accessibilitySupport": "off",
+		"cmake.configureOnOpen": true,
+		"editor.fontWeight": "400",
+		"editor.codeActionsOnSave": {
+			"source.fixAll": true
+		},
+		"editor.fontLigatures": true,
+		"[dart]": {
+			"editor.wordWrap": "wordWrapColumn",
+			"editor.wordWrapColumn": 250,
+			"editor.suggest.snippetsPreventQuickSuggestions": false,
+			"editor.suggestSelection": "first",
+			"editor.tabCompletion": "onlySnippets",
+			"editor.wordBasedSuggestions": false,
+			"editor.selectionHighlight": false,
+			"editor.formatOnSave": true,
+			"editor.formatOnType": true,
+			"editor.rulers": []
+		},
+		"editor.tokenColorCustomizations": {
+			"textMateRules": [
+				{
+					"scope": [
+						"comment",
+						"keyword",
+						"storage.modifier",
+						"storage.type.class.js",
+						"storage.type.js"
+					],
+					"settings": {
+						"fontStyle": "italic"
+					}
+				},
+				{
+					"scope": [
+						"keyword.control.conditional",
+						"keyword.operator"
+					],
+					"settings": {
+						"fontStyle": ""
+					}
+				}
+			]
+		},
+		"explorer.confirmDragAndDrop": false,
+		"workbench.colorTheme": "One Dark Pro Darker",
+		"workbench.startupEditor": "none",
+		"workbench.iconTheme": "material-icon-theme",
+		"dart.debugSdkLibraries": true,
+		"json.maxItemsComputed": 50000000,
+		"editor.largeFileOptimizations": false,
+		"dart.showInspectorNotificationsForWidgetErrors": false,
+		"editor.inlineSuggest.enabled": true,
+		"editor.fontSize": 16,
+		"dart.warnWhenEditingFilesOutsideWorkspace": false,
+		"git.confirmSync": false,
+		"dart.warnWhenEditingFilesInPubCache": false,
+		"explorer.confirmDelete": false,
+		"editor.unicodeHighlight.ambiguousCharacters": false,
+		"files.autoSaveDelay": 1,
+		"git.autofetch": true,
+		"git.enableSmartCommit": true,
+		"security.workspace.trust.untrustedFiles": "open",
+		"editor.overviewRulerBorder": false,
+		"dart.debugExternalPackageLibraries": true,
+		"github.copilot.enable": {
+			"markdown": true,
+			"*": true,
+			"dart": true,
+			"plaintext": true,
+			"yaml": true
+		},
+		"editor.fontFamily": "'JetBrains Mono', Monaco, 'Courier New', monospace",
+		"errorLens.fontWeight": "400",
+		"explorer.fileNesting.enabled": true,
+		"explorer.fileNesting.expand": false,
+		"explorer.fileNesting.patterns": {
+			"pubspec.yaml": ".flutter-plugins, .packages, .dart_tool, .flutter-plugins-dependencies, .metadata, .packages, pubspec.lock, build.yaml, all_lint_rules.yaml, *.iml",
+			".gitignore": ".gitattributes, .gitmodules, .gitmessage, .mailmap, .git-blame*",
+			"readme.*": "authors, backers.md, changelog*, citation*, code_of_conduct.md, codeowners, contributing.md, contributors, copying, credits, governance.md, history.md, license*, maintainers, readme*, security.md, sponsors.md",
+			"*.dart": "$(capture).g.dart, $(capture).freezed.dart"
+		},
+		"terminal.integrated.allowMnemonics": true,
+		"terminal.integrated.cursorStyle": "line",
+		"terminal.integrated.defaultProfile.osx": "zsh",
+		"terminal.integrated.macOptionIsMeta": true,
+		"terminal.integrated.macOptionClickForcesSelection": true,
+		"terminal.integrated.localEchoLatencyThreshold": 0,
+		"diffEditor.ignoreTrimWhitespace": false,
+		"diffEditor.wordWrap": "off",
+		"editor.wordWrapColumn": 300,
+		"git.enableCommitSigning": true,
+		"debug.javascript.suggestPrettyPrinting": false,
+		"editor.formatOnSave": true,
+		"editor.formatOnPaste": true,
+		"editor.formatOnType": true,
+		"githubPullRequests.createOnPublishBranch": "never"
+	},
+	// Add the IDs of extensions you want installed when the container is created.
+	"extensions": [
+		"dart-code.dart-code",
+		"dart-code.flutter",
+		"GitHub.copilot-labs",
+		"GitHub.copilot-nightly",
+		"jeroen-meijer.pubspec-assist",
+		"satoqz.yet-another-discord-presence",
+		"PKief.material-icon-theme",
+		"usernamehw.errorlens",
+		"GaetSchwartz.build-runner",
+		"eamodio.gitlens"
+	],
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "uname -a",
+	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+	"remoteUser": "vscode"
+}
