@@ -1,7 +1,7 @@
 FROM ubuntu:latest as builder
 
 ARG ANDROID_SDK_ROOT
-ARG USERNAME
+ARG USERNAME="minnu💚"
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
@@ -12,8 +12,7 @@ ARG INSTALL_ZSH="true"
 ARG UPGRADE_PACKAGES="false"
 
 RUN apt-get update && apt-get install -y curl git unzip xz-utils zip libglu1-mesa openjdk-8-jdk wget
-RUN useradd -ms /bin/bash ${USERNAME}
-USER ${USERNAME}
+
 WORKDIR /home/${USERNAME}
 
 #Installing Android SDK
@@ -43,7 +42,15 @@ ENV PUB_CACHE="/usr/local/share/pub-cache"
 ENV PUB_CACHE="/home/${USERNAME}/.pub-cache"
 ENV PATH "${PATH}:${FLUTTER_HOME}/bin:${DART_SDK}:${PUB_CACHE}/bin"
 
-RUN chmod 755 "$DART_SDK" "$DART_SDK/bin" && chmod 755 "$FLUTTER_HOME" "$FLUTTER_HOME/bin"
+RUN if ! cat /etc/group | grep -e "^pub-cache:" > /dev/null 2>&1; then groupadd -r pub-cache; fi \
+    && usermod -a -G pub-cache ${USERNAME} \
+    && umask 0002 \
+    && mkdir -p ${PUB_CACHE} \
+    && chown :pub-cache ${PUB_CACHE} \
+    && sed -i -e "s/export PATH=/export PATH=\/usr\/local\/share\/pub-cache:/" /etc/profile.d/00-restore-env.sh \
+    #
+    # Fix incorrect privs if present on directories - https://github.com/dart-lang/dart-docker/issues/62, https://github.com/dart-lang/sdk/issues/47093
+    && chmod 755 "$DART_SDK" "$DART_SDK/bin"
 
 RUN flutter channel stable
 RUN flutter config --no-analytics
