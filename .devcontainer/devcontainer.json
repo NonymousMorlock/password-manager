@@ -129,8 +129,8 @@
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "uname -a",
 	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"postCreateCommand": "adb kill-server && adb start-server",
-	"initializeCommand": "adb tcpip 5555",
+	// "postCreateCommand": "adb kill-server && adb start-server",
+	// "initializeCommand": "adb tcpip 5555",
 	"forwardPorts": [
 		5554,
 		5555,

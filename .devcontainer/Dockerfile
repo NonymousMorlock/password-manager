@@ -57,3 +57,5 @@ RUN flutter config --no-analytics
 ENV SHELL /bin/bash
 RUN flutter upgrade
 RUN flutter doctor
+RUN adb kill-server && adb start-server
+RUN adb tcpip 5555
