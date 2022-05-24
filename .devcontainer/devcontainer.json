@@ -1,7 +1,14 @@
 {
 	"name": "Flutter (Custom)",
 	"build": {
-		"dockerfile": "Dockerfile"
+		"dockerfile": "Dockerfile",
+		"args": {
+			"USERNAME": "user",
+			"ANDROID_SDK_ROOT": "/home/user/Android/sdk",
+			"USER_UID": "1000",
+			"INSTALL_ZSH": "false",
+			"UPGRADE_PACKAGES": "true"
+		}
 	},
 	// Set *default* container specific settings.json values on container create.
 	"settings": {
@@ -122,5 +129,16 @@
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "uname -a",
 	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "vscode"
+	"postCreateCommand": "adb kill-server && adb start-server",
+	"initializeCommand": "adb tcpip 5555",
+	"forwardPorts": [
+		5554,
+		5555,
+		5556,
+		5557,
+		5558,
+		5559,
+		6000
+	],
+	"remoteUser": "minnu💚"
 }
