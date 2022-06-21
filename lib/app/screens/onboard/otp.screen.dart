@@ -67,10 +67,12 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
     controller.dispose();
     super.dispose();
   }
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       body: Stack(
         children: <Widget>[
           Column(
@@ -124,6 +126,7 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
               ),
               Center(
                 child: OtpForm(
+                  context: _scaffoldKey.currentContext!,
                   onResend: () async {
                     bool mailSent =
                         await AppServices.registerWithMail(<String, String?>{
@@ -136,10 +139,10 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                       });
                       controller.reset();
                       start();
-                      showToast(context, 'Code resent successfully.');
+                      showToast(_scaffoldKey.currentContext, 'Code resent successfully.');
                     } else {
                       setState(() => resend = true);
-                      showToast(context, 'Failed to resend the code.',
+                      showToast(_scaffoldKey.currentContext, 'Failed to resend the code.',
                           isError: true);
                     }
                   },
@@ -162,11 +165,11 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                       context.read<NewUser>().setQrData = QrModel(
                           atSign: _cram.split(':')[0],
                           cramSecret: _cram.split(':')[1]);
-                      showToast(context, 'OTP verified successfully.');
+                      showToast(_scaffoldKey.currentContext, 'OTP verified successfully.');
                       await Navigator.pushNamed(
                           context, PageRouteNames.activatingAtSign);
                     } else {
-                      showToast(context, 'Invalid OTP.', isError: true);
+                      showToast(_scaffoldKey.currentContext, 'Invalid OTP.', isError: true);
                     }
                   },
                   resend: resend,

@@ -3,7 +3,6 @@ import 'dart:developer';
 
 // 🐦 Flutter imports:
 import 'package:flutter/material.dart';
-
 // 📦 Package imports:
 import 'package:image/image.dart' as imglib;
 import 'package:provider/provider.dart';
@@ -41,127 +40,134 @@ class _MasterPasswordScreenState extends State<MasterPasswordScreen> {
     });
     super.initState();
   }
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       body: Stack(
         children: <Widget>[
           Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                ChangeNotifierProvider<UserData>.value(
-                  value: context.watch<UserData>(),
-                  builder: (BuildContext context, _) {
-                    return Consumer<UserData>(
-                      builder:
-                          (BuildContext context, UserData value, Widget? _) {
-                        return GestureDetector(
-                          onPanDown: value.masterImage.isEmpty
-                              ? null
-                              : (DragDownDetails details) {
-                                  double clickX =
-                                      details.localPosition.dx.floorToDouble();
-                                  double clickY =
-                                      details.localPosition.dy.floorToDouble();
-                                  log('(${(clickX / binSize).floorToDouble()}, ${(clickY / binSize).floorToDouble()})');
-                                  _plots!.add(
-                                    Plots(
-                                      x: (clickX / binSize).floorToDouble(),
-                                      y: (clickY / binSize).floorToDouble(),
+            child: Expanded(
+              flex: 1,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  ChangeNotifierProvider<UserData>.value(
+                    value: context.watch<UserData>(),
+                    builder: (BuildContext context, _) {
+                      return Consumer<UserData>(
+                        builder:
+                            (BuildContext context, UserData value, Widget? _) {
+                          return GestureDetector(
+                            onPanDown: value.masterImage.isEmpty
+                                ? null
+                                : (DragDownDetails details) {
+                                    double clickX = details.localPosition.dx
+                                        .floorToDouble();
+                                    double clickY = details.localPosition.dy
+                                        .floorToDouble();
+                                    log('(${(clickX / binSize).floorToDouble()}, ${(clickY / binSize).floorToDouble()})');
+                                    _plots!.add(
+                                      Plots(
+                                        x: (clickX / binSize).floorToDouble(),
+                                        y: (clickY / binSize).floorToDouble(),
+                                      ),
+                                    );
+                                    setState(() {
+                                      _plots!.length;
+                                    });
+                                  },
+                            child: Stack(
+                              children: <Widget>[
+                                Container(
+                                  height: 300,
+                                  width: 300,
+                                  decoration: BoxDecoration(
+                                    image: value.masterImage.isEmpty
+                                        ? null
+                                        : DecorationImage(
+                                            image:
+                                                MemoryImage(value.masterImage),
+                                            fit: BoxFit.cover,
+                                          ),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: Theme.of(context).primaryColor,
+                                      width: 3,
                                     ),
-                                  );
-                                  setState(() {
-                                    _plots!.length;
-                                  });
-                                },
-                          child: Stack(
-                            children: <Widget>[
-                              Container(
-                                height: 300,
-                                width: 300,
-                                decoration: BoxDecoration(
-                                  image: value.masterImage.isEmpty
-                                      ? null
-                                      : DecorationImage(
-                                          image: MemoryImage(value.masterImage),
-                                          fit: BoxFit.cover,
-                                        ),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    color: Theme.of(context).primaryColor,
-                                    width: 3,
                                   ),
+                                  child: value.masterImage.isEmpty
+                                      ? Center(
+                                          child: squareWidget(
+                                            20,
+                                            child:
+                                                const CircularProgressIndicator
+                                                    .adaptive(),
+                                          ),
+                                        )
+                                      : null,
                                 ),
-                                child: value.masterImage.isEmpty
-                                    ? Center(
-                                        child: squareWidget(
-                                          20,
-                                          child: const CircularProgressIndicator
-                                              .adaptive(),
-                                        ),
-                                      )
-                                    : null,
-                              ),
-                              for (Plots pass in _plots!)
-                                Marker(
-                                  dx: pass.x * binSize,
-                                  dy: pass.y * binSize,
-                                ),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
-                vSpacer(50),
-                _plots!.isEmpty
-                    ? square(20)
-                    : GestureDetector(
-                        onLongPress: () => setState(() => _plots!.clear()),
-                        onTap: () {
-                          _plots!.removeLast();
-                          setState(() => _plots!.length);
+                                for (Plots pass in _plots!)
+                                  Marker(
+                                    dx: pass.x * binSize,
+                                    dy: pass.y * binSize,
+                                  ),
+                              ],
+                            ),
+                          );
                         },
-                        child: Text(
-                          'Undo',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w500,
-                            color: Theme.of(context).primaryColor,
+                      );
+                    },
+                  ),
+                  vSpacer(50),
+                  _plots!.isEmpty
+                      ? square(20)
+                      : GestureDetector(
+                          onLongPress: () => setState(() => _plots!.clear()),
+                          onTap: () {
+                            _plots!.removeLast();
+                            setState(() => _plots!.length);
+                          },
+                          child: Text(
+                            'Undo',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w500,
+                              color: Theme.of(context).primaryColor,
+                            ),
                           ),
                         ),
-                      ),
-                vSpacer(50),
-                MaterialButton(
-                  mouseCursor: SystemMouseCursors.click,
-                  color: Theme.of(context).primaryColor,
-                  elevation: 0,
-                  highlightElevation: 0,
-                  hoverElevation: 0,
-                  focusElevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Text(
-                    'Change image',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
+                  vSpacer(50),
+                  MaterialButton(
+                    mouseCursor: SystemMouseCursors.click,
+                    color: Theme.of(context).primaryColor,
+                    elevation: 0,
+                    highlightElevation: 0,
+                    hoverElevation: 0,
+                    focusElevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
+                    child: const Text(
+                      'Change image',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    onPressed: () async {
+                      setState(() => _plots!.clear());
+                      await Navigator.pushNamed(
+                          context, PageRouteNames.setMasterPassword,
+                          arguments: true);
+                    },
                   ),
-                  onPressed: () async {
-                    setState(() => _plots!.clear());
-                    await Navigator.pushNamed(
-                        context, PageRouteNames.setMasterPassword,
-                        arguments: true);
-                  },
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           Positioned(
@@ -225,7 +231,7 @@ class _MasterPasswordScreenState extends State<MasterPasswordScreen> {
                       bool _valid =
                           await AppServices.validatePlots(_img!, _plots!);
                       showToast(
-                          context, 'Plots are ${_valid ? 'valid' : 'invalid'}!',
+                          _scaffoldKey.currentContext, 'Plots are ${_valid ? 'valid' : 'invalid'}!',
                           isError: !_valid);
                       if (_valid) {
                         setState(() => _plots?.clear());

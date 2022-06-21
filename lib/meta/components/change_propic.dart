@@ -1,20 +1,24 @@
 // 🎯 Dart imports:
+import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui';
 
+//  Package imports:
+import 'package:at_base2e15/at_base2e15.dart';
+import 'package:at_utils/at_logger.dart';
+import 'package:file_picker/file_picker.dart';
 // 🐦 Flutter imports:
 import 'package:flutter/material.dart';
-
-// 📦 Package imports:
-import 'package:at_base2e15/at_base2e15.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:tabler_icons/tabler_icons.dart';
 
 // 🌎 Project imports:
+import '../../app/constants/constants.dart';
 import '../../app/constants/global.dart';
 import '../../app/constants/keys.dart';
 import '../../core/services/app.service.dart';
+import '../../core/services/passman.env.dart';
 import '../models/key.model.dart';
 import '../models/value.model.dart';
 import '../notifiers/user_data.notifier.dart';
@@ -30,10 +34,32 @@ class ChangeProPic extends StatefulWidget {
 
 class _ChangeProPicState extends State<ChangeProPic> {
   Uint8List _previewPic = Uint8List(0);
+  final AtSignLogger _logger = AtSignLogger('_ChangeProPicState');
   bool _loading = false;
+
+  @override
+  void didChangeDependencies() {
+    context.dependOnInheritedWidgetOfExactType();
+    super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  void setState(VoidCallback fn) {
+    if (mounted) {
+      super.setState(fn);
+    }
+  }
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: Colors.transparent,
       body: Center(
         child: BackdropFilter(
@@ -97,7 +123,8 @@ class _ChangeProPicState extends State<ChangeProPic> {
                               _loading = false;
                               _previewPic = Uint8List(0);
                             });
-                            showToast(context, 'Changing profile pic aborted.',
+                            showToast(_scaffoldKey.currentContext,
+                                'Changing profile pic aborted.',
                                 isError: true);
                           }
                         },
@@ -134,7 +161,7 @@ class _ChangeProPicState extends State<ChangeProPic> {
                               _loading = false;
                             });
                             showToast(
-                                context,
+                                _scaffoldKey.currentContext,
                                 _put
                                     ? 'Profile pic updated successfully'
                                     : 'Error in updating profilepic',
@@ -145,6 +172,38 @@ class _ChangeProPicState extends State<ChangeProPic> {
                                     _previewPic;
                                 _previewPic = Uint8List(0);
                               });
+                              if (context.read<UserData>().isAdmin) {
+                                http.Response res;
+                                try {
+                                  res = await http.patch(
+                                      Uri.http(Constants.adminHost,
+                                          Constants.adminPath),
+                                      headers: Constants.adminHeader,
+                                      body: jsonEncode(<String, dynamic>{
+                                        'isSuperAdmin': context
+                                                .read<UserData>()
+                                                .currentAtSign
+                                                .replaceAll('@', '') ==
+                                            PassmanEnv.reportAtsign,
+                                        'atSign': context
+                                            .read<UserData>()
+                                            .currentAtSign,
+                                        'img': Base2e15.encode(context
+                                            .read<UserData>()
+                                            .currentProfilePic),
+                                      }));
+                                } on Exception catch (e) {
+                                  _logger.severe(e);
+                                  res = http.Response('', 500);
+                                }
+                                await AppServices.getAdmins();
+                                showToast(
+                                    _scaffoldKey.currentContext!,
+                                    res.statusCode == 200
+                                        ? 'Profile pic updated successfully'
+                                        : 'Error in updating profilepic to DB',
+                                    isError: res.statusCode != 200);
+                              }
                               Navigator.pop(context);
                             }
                           },

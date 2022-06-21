@@ -2,14 +2,15 @@
 import 'dart:convert';
 
 // 📦 Package imports:
-import 'package:at_client/src/service/notification_service.dart';
+// ignore: implementation_imports
 import 'package:at_client_mobile/at_client_mobile.dart';
-import 'package:at_commons/at_commons.dart';
 import 'package:at_onboarding_flutter/services/onboarding_service.dart';
 import 'package:at_onboarding_flutter/utils/response_status.dart';
 import 'package:at_server_status/at_server_status.dart';
 import 'package:at_utils/at_utils.dart';
 import 'package:flutter/widgets.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 // 🌎 Project imports:
 import '../../app/constants/keys.dart';
@@ -36,6 +37,20 @@ class SdkServices {
   Future<AtStatus> getAtSignStatus(String atSign) async => AtStatusImpl(
         rootUrl: PassmanEnv.rootDomain,
       ).get(atSign);
+
+  /// Function to get [AtClientPreference].
+  Future<AtClientPreference> getAtClientPreferences() async {
+    String appDirPath = (await getApplicationDocumentsDirectory()).path;
+    return AtClientPreference()
+      ..commitLogPath = p.join(appDirPath, 'commitLog')
+      ..hiveStoragePath = p.join(appDirPath, 'hiveStorage')
+      ..downloadPath = p.join(appDirPath, 'downloads')
+      ..syncRegex = PassmanEnv.syncRegex
+      ..isLocalStoreRequired = true
+      ..syncPageLimit = 500
+      ..rootDomain = PassmanEnv.rootDomain
+      ..namespace = PassmanEnv.appNamespace;
+  }
 
   /// Onboard the app with an @sign and return the response as bool
   Future<ResponseStatus> onboardWithAtKeys(
@@ -152,7 +167,6 @@ class SdkServices {
       }
     } on Exception catch (e, s) {
       _logger.severe('Error while checking the app theme', e, s);
-      print(s);
     }
     return _data;
   }
@@ -176,15 +190,6 @@ class SdkServices {
       _logger.severe('Error getting profile pic', e, s);
       return null;
     }
-  }
-
-  Future<bool> isAdmin() async {
-    _logger.finer('Checking if user is admin...');
-    bool _isAdmin = await get(PassKey(key: 'admin')) ?? false;
-    _isAdmin
-        ? _logger.warning('User is admin')
-        : _logger.finer('User is not admin');
-    return _isAdmin;
   }
 
   /// Checks if master image exists or not in remote secondary returns the result.
@@ -246,7 +251,6 @@ class SdkServices {
       bool putResult =
           await atClientManager.atClient.put(entity.toAtKey(), value);
       if (putResult) {
-        AppServices.syncData();
         if (entity.key!.contains('report')) {
           await AppServices.sdkServices.atClientManager.notificationService
               .notify(
@@ -259,10 +263,10 @@ class SdkServices {
                   'Notification status: ${value.notificationStatusEnum.name}'));
         }
       }
+      AppServices.syncData();
       return putResult;
     } catch (e, s) {
       _logger.severe('Error while putting data: $e', e, s);
-      print(s);
       return false;
     }
   }
@@ -295,8 +299,6 @@ class SdkServices {
       for (AtKey k in a) {
         _keyDeleted = await atClientManager.atClient.delete(k);
       }
-      // bool deleteResult =
-      //     await atClientManager.atClient.delete(entity.toAtKey());
       if (_keyDeleted) {
         _logger.finer('$key deleted successfully');
         AppServices.syncData(onSyncDone);

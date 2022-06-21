@@ -56,6 +56,7 @@ Material codeErrorScreenBuilder(FlutterErrorDetails details) {
                 top: 0,
                 right: 0,
                 child: Switch.adaptive(
+                  activeColor: Theme.of(context).primaryColor,
                   value: _isDebug,
                   onChanged: (bool value) {
                     setState(() {

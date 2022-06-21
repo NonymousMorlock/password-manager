@@ -1,11 +1,11 @@
 // 🐦 Flutter imports:
-import 'package:flutter/material.dart';
-
 // 📦 Package imports:
 import 'package:at_client_mobile/at_client_mobile.dart';
+import 'package:flutter/material.dart';
 
 // 🌎 Project imports:
 import '../../app/provider/listeners/user_data.listener.dart';
+import '../../core/services/sdk.services.dart';
 import '../notifiers/user_data.notifier.dart';
 
 class SyncIndicator extends StatelessWidget {
@@ -48,7 +48,11 @@ class SyncIndicator extends StatelessWidget {
 
   Color syncColors(UserData value) => value.syncStatus == SyncStatus.notStarted
       ? Colors.lightBlueAccent
-      : value.syncStatus == SyncStatus.started
+      : SdkServices.getInstance()
+                  .atClientManager
+                  .syncService
+                  .isSyncInProgress ||
+              value.syncStatus == SyncStatus.started
           ? Colors.yellow[600]!
           : value.syncStatus == SyncStatus.success
               ? Colors.transparent

@@ -3,7 +3,6 @@
 // 🐦 Flutter imports:
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-
 // 📦 Package imports:
 import 'package:tabler_icons/tabler_icons.dart';
 
@@ -63,9 +62,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text(
           _title,
@@ -123,10 +125,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         controller: _tabController,
         physics: const NeverScrollableScrollPhysics(),
         dragStartBehavior: DragStartBehavior.start,
-        children: const <Widget>[
-          PasswordsPage(),
-          ImagesPage(),
-          CardsPage(),
+        children: <Widget>[
+          PasswordsPage(context),
+          const ImagesPage(),
+          CardsPage(context),
         ],
       ),
       bottomNavigationBar: BottomAppBar(
@@ -204,13 +206,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           topRight: Radius.circular(20),
                         ),
                       ),
-                      context: context,
+                      context: _scaffoldKey.currentContext!,
                       builder: (_) {
                         return _tabController?.index == 0
                             ? const PasswordForm()
                             : _tabController?.index == 1
                                 ? const ImagesForm()
-                                : const CardsForm();
+                                : CardsForm(_scaffoldKey.currentContext!);
                       },
                     );
                   },

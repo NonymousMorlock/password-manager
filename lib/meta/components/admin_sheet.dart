@@ -1,31 +1,38 @@
 // 🐦 Flutter imports:
-import 'dart:convert';
-
-import 'package:flutter/material.dart';
 
 // 📦 Package imports:
+
+import 'dart:convert';
+
+import 'package:at_base2e15/at_base2e15.dart';
+import 'package:at_utils/at_logger.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:tabler_icons/tabler_icons.dart';
 
 // 🌎 Project imports:
 import '../../../app/constants/global.dart';
 import '../../app/constants/assets.dart';
+import '../../app/constants/constants.dart';
 import '../../app/provider/listeners/user_data.listener.dart';
 import '../../core/services/app.service.dart';
-import '../extensions/logger.ext.dart';
-import '../models/freezed/admin.model.dart';
+import '../notifiers/theme.notifier.dart';
 import '../notifiers/user_data.notifier.dart';
+import 'toast.dart';
 
 class AdminSheet extends StatefulWidget {
-  const AdminSheet({
+  const AdminSheet(
+    this.context, {
     Key? key,
   }) : super(key: key);
-
+  final BuildContext context;
   @override
   State<AdminSheet> createState() => _AdminSheetState();
 }
 
 class _AdminSheetState extends State<AdminSheet> {
-  final AppLogger _logger = AppLogger('AdminSheet');
-
   @override
   void initState() {
     Future<void>.delayed(Duration.zero, () async => AppServices.getAdmins());
@@ -39,82 +46,108 @@ class _AdminSheetState extends State<AdminSheet> {
     }
   }
 
+  final AtSignLogger _logger = AtSignLogger('AdminSheet');
   @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Theme.of(context).bottomSheetTheme.modalBackgroundColor,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      child: Padding(
-        padding: MediaQuery.of(context).viewInsets,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            vSpacer(10),
-            Text(
-              'Add Admins',
-              style: Theme.of(context).textTheme.headline6!.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            vSpacer(10),
-            UserDataListener(
-                builder: (BuildContext context, UserData userData) {
-              return Column(
-                children: <Widget>[
-                  ...userData.admins.map((Admin a) {
-                    return ListTile(
-                      leading: a.img == null
-                          ? Image.asset(Assets.getRandomAvatar)
-                          : Image.memory(base64Decode(a.img!)),
-                      title: Text(
-                        a.name,
-                        style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+  Widget build(BuildContext _) {
+    return Container(
+      height: 350,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          vSpacer(20),
+          Text(
+            'Admins',
+            style: Theme.of(widget.context)
+                .textTheme
+                .headline6!
+                .copyWith(fontWeight: FontWeight.bold),
+          ),
+          vSpacer(20),
+          Expanded(
+            child:
+                UserDataListener(builder: (BuildContext __, UserData userData) {
+              return ListView.builder(
+                  itemCount: userData.admins.length,
+                  itemBuilder: (BuildContext ___, int index) {
+                    return Dismissible(
+                      key: Key(userData.admins[index].id),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        color: Colors.transparent,
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 30.0),
+                          child: Icon(
+                            TablerIcons.trash,
+                            color: Colors.red,
+                          ),
+                        ),
+                        alignment: Alignment.centerRight,
                       ),
-                      subtitle: Text(
-                        a.atSign,
-                        style: Theme.of(context).textTheme.caption!,
-                      ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () {},
+                      onDismissed: (DismissDirection direction) async {
+                        if (direction == DismissDirection.endToStart) {
+                          try {
+                            http.Response res = await http.delete(
+                                Uri.http(
+                                    Constants.adminHost, Constants.adminPath),
+                                headers: Constants.adminHeader,
+                                body: jsonEncode(<Map<String, dynamic>>[
+                                  <String, dynamic>{
+                                    'isSuperAdmin':
+                                        userData.admins[index].isSuperAdmin,
+                                    'atSign': userData.admins[index].atSign,
+                                  }
+                                ]));
+                            userData.admins.removeAt(index);
+                            Navigator.pop(widget.context);
+                            if (res.statusCode == 200 &&
+                                jsonDecode(res.body)['success']) {
+                              await HapticFeedback.heavyImpact();
+                              showToast(widget.context, 'Admin deleted');
+                            } else {
+                              showToast(widget.context,
+                                  'Status code ${res.statusCode} while deleting admin',
+                                  isError: true);
+                            }
+                          } on Exception catch (e) {
+                            _logger.severe('Failed to delete admin: $e');
+                            Navigator.pop(widget.context);
+                            showToast(widget.context, 'Failed to delete admin',
+                                isError: true);
+                          }
+                        }
+                      },
+                      child: Card(
+                        color: context.read<AppThemeNotifier>().isDarkTheme
+                            ? const Color(0xff1E2228)
+                            : Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: ListTile(
+                          leading: userData.admins[index].img == null
+                              ? Image.asset(Assets.getRandomAvatar)
+                              : Image.memory(
+                                  Base2e15.decode(userData.admins[index].img!)),
+                          title: Text(
+                            userData.admins[index].name,
+                            style: Theme.of(widget.context)
+                                .textTheme
+                                .bodyLarge!
+                                .copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          subtitle: Text(
+                            userData.admins[index].atSign,
+                            style: Theme.of(widget.context).textTheme.caption!,
+                          ),
+                        ),
                       ),
                     );
-                  }),
-                ],
-              );
-              // return ListView.builder(
-              //     itemCount: userData.admins.length,
-              //     itemBuilder: (BuildContext context, int index) {
-              //       return ListTile(
-              //         title: Text(
-              //           userData.admins[index].name,
-              //           style: Theme.of(context).textTheme.headline6!.copyWith(
-              //                 fontWeight: FontWeight.bold,
-              //               ),
-              //         ),
-              //         subtitle: Text(
-              //           userData.admins[index].atSign,
-              //           style: Theme.of(context).textTheme.headline6!.copyWith(
-              //                 fontWeight: FontWeight.bold,
-              //               ),
-              //         ),
-              //         trailing: IconButton(
-              //           icon: const Icon(Icons.delete),
-              //           onPressed: () {},
-              //         ),
-              //       );
-              //     });
+                  });
             }),
-            vSpacer(20),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

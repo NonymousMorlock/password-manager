@@ -2,19 +2,17 @@
 import 'dart:developer';
 import 'dart:io';
 
-// 🐦 Flutter imports:
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-
-// 📦 Package imports:
+//  Package imports:
 import 'package:at_onboarding_flutter/services/onboarding_service.dart';
 import 'package:at_onboarding_flutter/utils/response_status.dart';
 import 'package:at_server_status/at_server_status.dart';
 import 'package:file_picker/file_picker.dart';
+// 🐦 Flutter imports:
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:at_base2e15/at_base2e15.dart';
 import 'package:tabler_icons/tabler_icons.dart';
 
 // 🌎 Project imports:
@@ -75,13 +73,16 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   Future<void> _login() async {
     setState(() => _isLoading = true);
     try {
       context.read<UserData>().disposeUser();
       bool _alreadyExists = await _alreadyLoggedin();
       if (_alreadyExists) {
-        showToast(context, 'User account already exists.', isError: true);
+        showToast(_scaffoldKey.currentContext, 'User account already exists.',
+            isError: true);
       } else {
         setState(() => _isLoading = true);
         String _atKeysData =
@@ -90,32 +91,23 @@ class _LoginScreenState extends State<LoginScreen> {
             await _sdk.onboardWithAtKeys(_atSign!, _atKeysData);
         context.read<UserData>().authenticated = status.name == 'authSuccess';
         if (status.name == 'authSuccess') {
-          _atKeysData.clear();
-          String? _imgData = await _sdk.checkMasterImageKey();
-          bool _masterImgKeyExists = false;
-          if (_imgData != null && _imgData.isNotEmpty) {
-            _masterImgKeyExists = true;
-            context.read<UserData>().masterImage = Base2e15.decode(_imgData);
-          }
-          context.read<UserData>().currentAtSign = _atSign!;
           _list.clear();
-          setState(() => _isLoading = false);
+          _atKeysData.clear();
+          context.read<UserData>().currentAtSign = _atSign!;
           await Navigator.pushReplacementNamed(
-              context,
-              _masterImgKeyExists
-                  ? PageRouteNames.loadingScreen
-                  : PageRouteNames.setMasterPassword);
+              context, PageRouteNames.loadingScreen);
         } else if (status == ResponseStatus.authFailed) {
           _list.clear();
           setState(() => _isLoading = false);
-          showToast(context,
+          showToast(_scaffoldKey.currentContext,
               'Failed to authenticate. Please pick files and try again.',
               isError: true);
         } else if (status == ResponseStatus.serverNotReached ||
             status == ResponseStatus.timeOut) {
           _list.clear();
           setState(() => _isLoading = false);
-          showToast(context, 'Unable to reach server. Please try again later.',
+          showToast(_scaffoldKey.currentContext,
+              'Unable to reach server. Please try again later.',
               isError: true);
         }
       }
@@ -123,12 +115,14 @@ class _LoginScreenState extends State<LoginScreen> {
       _list.clear();
       setState(() => _isLoading = false);
       _logger.severe('FileSystemException: ${e.toString}', e, s);
-      showToast(context, e.message + '😥. Please upload the atKeys file again.',
+      showToast(_scaffoldKey.currentContext,
+          e.message + '😥. Please upload the atKeys file again.',
           isError: true);
     } catch (e, s) {
       _list.clear();
       setState(() => _isLoading = false);
-      showToast(context, 'Authentication failed', isError: true);
+      showToast(_scaffoldKey.currentContext, 'Authentication failed',
+          isError: true);
       _logger.severe('Authentication failed', e, s);
       log('Authentication failed', error: e, stackTrace: s);
     }
@@ -149,7 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
           _checkedAtSign = true;
         });
         await Navigator.pushReplacementNamed(
-            context, PageRouteNames.masterPassword);
+            context, PageRouteNames.loadingScreen);
       }
     } else {
       setState(() {
@@ -176,7 +170,7 @@ class _LoginScreenState extends State<LoginScreen> {
         });
         if (!_isValidAtSign) {
           showToast(
-            context,
+            _scaffoldKey.currentContext,
             'Can\'t find $_atSign. Please try again.',
             isError: true,
           );
@@ -192,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
         _uploading = false;
         _list = _l;
       });
-      showToast(context, 'No file selected');
+      showToast(_scaffoldKey.currentContext, 'No file selected');
       return;
     } else {
       setState(() {
@@ -206,6 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       body: SafeArea(
         child: Stack(
           children: <Widget>[
@@ -314,7 +309,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ? null
                                     : _atSign == null || _atSign!.isEmpty
                                         ? () => showToast(
-                                            context, 'Please enter your @sign',
+                                            _scaffoldKey.currentContext,
+                                            'Please enter your @sign',
                                             isError: true)
                                         : _checkedAtSign && _isValidAtSign
                                             ? _login

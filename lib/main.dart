@@ -2,13 +2,11 @@
 import 'dart:developer';
 import 'dart:io';
 
-// 🐦 Flutter imports:
+// � Package imports:
+import 'package:at_onboarding_flutter/services/onboarding_service.dart';
+// � Flutter imports:
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-// 📦 Package imports:
-import 'package:at_onboarding_flutter/services/onboarding_service.dart';
-import 'package:at_onboarding_flutter/utils/app_constants.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -89,17 +87,10 @@ class _MyAppState extends State<MyApp> {
           await Directory(_downloadsPath).create(recursive: true);
           _logger.finer('Created downloads directory at $_downloadsPath');
         }
-        AppConstants.rootDomain = PassmanEnv.rootDomain;
+        context.read<UserData>().atOnboardingPreference =
+            await AppServices.sdkServices.getAtClientPreferences();
         OnboardingService.getInstance().setAtClientPreference =
-            context.read<UserData>().atOnboardingPreference
-              ..commitLogPath = p.join(_path, 'commitLog')
-              ..hiveStoragePath = p.join(_path, 'hiveStorage')
-              ..downloadPath = _downloadsPath
-              ..syncRegex = PassmanEnv.syncRegex
-              ..isLocalStoreRequired = true
-              ..syncPageLimit = 500
-              ..rootDomain = PassmanEnv.rootDomain
-              ..namespace = PassmanEnv.appNamespace;
+            context.read<UserData>().atOnboardingPreference;
       },
     );
     _logger.finer('Initializing the app successfully completed.');
@@ -138,7 +129,6 @@ class _MyAppState extends State<MyApp> {
             ),
             initialRoute: PageRouteNames.splashScreen,
             onGenerateRoute: (RouteSettings settings) {
-              _logger.finer('Navigating to ${settings.name}');
               switch (settings.name) {
                 case PageRouteNames.splashScreen:
                   return pageTransition(

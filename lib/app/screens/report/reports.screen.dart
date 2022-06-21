@@ -1,11 +1,10 @@
 // 🐦 Flutter imports:
+import 'package:at_base2e15/at_base2e15.dart';
 import 'package:flutter/material.dart';
-
 // 📦 Package imports:
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:tabler_icons/tabler_icons.dart';
-import 'package:at_base2e15/at_base2e15.dart';
 
 // 🌎 Project imports:
 import '../../../core/services/app.service.dart';
@@ -38,10 +37,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
     });
     super.initState();
   }
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text(
           'Reports',
@@ -101,7 +102,7 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                 .removeAt(userData.reports.indexOf(report));
                             await HapticFeedback.heavyImpact();
                             await AppServices.getReports();
-                            showToast(context, 'Report deleted successfully');
+                            showToast(_scaffoldKey.currentContext, 'Report deleted successfully');
                           }
                         }
                       },

@@ -60,9 +60,12 @@ class _GetAtSignScreenState extends State<GetAtSignScreen> {
     }
   }
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       body: Stack(
         children: <Widget>[
           Center(
@@ -148,19 +151,19 @@ class _GetAtSignScreenState extends State<GetAtSignScreen> {
                         });
                         if (mailSent) {
                           Navigator.of(context).pop();
-                          showToast(context, 'Mail sent successfully');
+                          showToast(_scaffoldKey.currentContext, 'Mail sent successfully');
                           context.read<NewUser>().newUserData['email'] = _email;
                           setState(() => _processing = false);
                           await Navigator.pushNamed(
                               context, PageRouteNames.otpScreen);
                         } else {
                           Navigator.of(context).pop();
-                          showToast(context,
+                          showToast(_scaffoldKey.currentContext,
                               'Something went wrong. Failed to send mail. Try again...',
                               isError: true);
                         }
                       } else {
-                        showToast(context, 'Looks like email is not correct.',
+                        showToast(_scaffoldKey.currentContext, 'Looks like email is not correct.',
                             isError: true);
                         await emailDialog(context);
                       }

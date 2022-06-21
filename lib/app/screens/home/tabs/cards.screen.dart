@@ -1,10 +1,9 @@
 // 🐦 Flutter imports:
 
-// 🐦 Flutter imports:
-import 'package:flutter/material.dart';
-
-// 📦 Package imports:
+// � Package imports:
 import 'package:at_base2e15/at_base2e15.dart';
+// � Flutter imports:
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 // 🌎 Project imports:
@@ -15,8 +14,8 @@ import '../../../../meta/notifiers/user_data.notifier.dart';
 import '../../../provider/listeners/user_data.listener.dart';
 
 class CardsPage extends StatefulWidget {
-  const CardsPage({Key? key}) : super(key: key);
-
+  const CardsPage(this.context, {Key? key}) : super(key: key);
+  final BuildContext context;
   @override
   State<CardsPage> createState() => _CardsPageState();
 }
@@ -47,6 +46,7 @@ class _CardsPageState extends State<CardsPage> {
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
                           child: CreditCard(
+                            widget.context,
                             cardName: userData.cards[index].nameOnCard,
                             cardNum: userData.cards[index].cardNumber,
                             imageData:

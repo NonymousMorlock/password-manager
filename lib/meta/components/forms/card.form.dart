@@ -24,8 +24,8 @@ import '../glassmorphic.dart';
 import '../toast.dart';
 
 class CardsForm extends StatefulWidget {
-  const CardsForm({Key? key}) : super(key: key);
-
+  const CardsForm(this.context, {Key? key}) : super(key: key);
+  final BuildContext context;
   @override
   State<CardsForm> createState() => _CardsFormState();
 }
@@ -113,7 +113,7 @@ class _CardsFormState extends State<CardsForm> {
                       _cardExpYController.text.length != 4 ||
                       _cardNumController.text.length < 16)
                   ? () async {
-                      showToast(context, 'Some fields are empty or invalid',
+                      showToast(widget.context, 'Some fields are empty or invalid',
                           isError: true);
                       setState(() {});
                     }
@@ -138,7 +138,7 @@ class _CardsFormState extends State<CardsForm> {
                         ..value?.value = _card.toJson();
                       bool _isPut = await AppServices.sdkServices.put(_key);
                       showToast(
-                          context,
+                          widget.context,
                           _isPut
                               ? 'Card saved successfully'
                               : 'Failed save card',

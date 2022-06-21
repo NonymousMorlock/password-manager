@@ -28,10 +28,10 @@ import '../adaptive_loading.dart';
 import '../toast.dart';
 
 class ReportForm extends StatefulWidget {
-  const ReportForm({
+  const ReportForm(this.context,{
     Key? key,
   }) : super(key: key);
-
+  final BuildContext context;
   @override
   State<ReportForm> createState() => _ReportFormState();
 }
@@ -398,7 +398,7 @@ class _ReportFormState extends State<ReportForm> {
                         if (_reported) {
                           _reportController.clear();
                           Navigator.pop(context);
-                          showToast(context, 'Reported successfully');
+                          showToast(widget.context, 'Reported successfully');
                         }
                       },
                     ),

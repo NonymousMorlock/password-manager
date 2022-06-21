@@ -17,7 +17,8 @@ import '../../../constants/theme.dart';
 import '../../../provider/listeners/user_data.listener.dart';
 
 class PasswordsPage extends StatefulWidget {
-  const PasswordsPage({Key? key}) : super(key: key);
+  final BuildContext context;
+  const PasswordsPage(this.context, {Key? key}) : super(key: key);
   @override
   State<PasswordsPage> createState() => _PasswordsPageState();
 }
@@ -64,7 +65,7 @@ class _PasswordsPageState extends State<PasswordsPage> {
                                 await HapticFeedback.heavyImpact();
                                 await AppServices.getPasswords();
                                 showToast(
-                                    context, 'Password deleted successfully');
+                                    widget.context, 'Password deleted successfully');
                               }
                             }
                           },
@@ -128,7 +129,7 @@ class _PasswordsPageState extends State<PasswordsPage> {
                                                     text: userData
                                                         .passwords[i].password))
                                                 .then(
-                                          (_) => showToast(context, 'Copied',
+                                          (_) => showToast(widget.context, 'Copied',
                                               width: 100),
                                         ),
                                         icon: Icon(

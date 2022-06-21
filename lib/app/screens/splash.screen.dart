@@ -1,15 +1,15 @@
 // 🎯 Dart imports:
 
-// 🐦 Flutter imports:
-import 'package:flutter/material.dart';
-
-// 📦 Package imports:
+//  Package imports:
 import 'package:at_client_mobile/at_client_mobile.dart';
 import 'package:at_onboarding_flutter/services/onboarding_service.dart';
+// 🐦 Flutter imports:
+import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 
 // 🌎 Project imports:
+import '../../core/services/app.service.dart';
 import '../../meta/components/toast.dart';
 import '../../meta/extensions/logger.ext.dart';
 import '../../meta/notifiers/user_data.notifier.dart';
@@ -28,6 +28,7 @@ class _SplashScreenState extends State<SplashScreen> {
   final AppLogger _logger = AppLogger('SplashScreen');
   final OnboardingService _os = OnboardingService.getInstance();
   String? msg;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   Future<void> _init({Function? onFailure}) async {
     try {
       String? _currentAtSign;
@@ -41,8 +42,8 @@ class _SplashScreenState extends State<SplashScreen> {
             orElse: () => throw 'No AtSigns found');
         setState(() => msg = 'Authenticating...');
         context.read<UserData>().currentAtSign = _currentAtSign;
-        _preference = context.read<UserData>().atOnboardingPreference;
-        _preference = context.read<UserData>().atOnboardingPreference
+        _preference = await AppServices.sdkServices.getAtClientPreferences();
+        context.read<UserData>().atOnboardingPreference = _preference
           ..privateKey = await KeyChainManager.getInstance()
               .getEncryptionPrivateKey(_currentAtSign);
         _os.setAtClientPreference = _preference;
@@ -50,8 +51,8 @@ class _SplashScreenState extends State<SplashScreen> {
         context.read<UserData>().authenticated = onboarded;
         if (!onboarded) {
           setState(() => msg = null);
-          showToast(
-              context, 'Auto login failed. Please onboard with at sign again.',
+          showToast(_scaffoldKey.currentContext,
+              'Auto login failed. Please onboard with at sign again.',
               isError: true);
         }
       } else {
@@ -69,7 +70,6 @@ class _SplashScreenState extends State<SplashScreen> {
       }
     } catch (e, s) {
       _logger.severe(e.toString(), e, s);
-      print(s);
       if (onFailure != null) {
         onFailure();
       }
@@ -80,11 +80,11 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     Future<void>.delayed(Duration.zero, () async {
-      if (mounted && MediaQuery.of(context).size.width >= 500) {
-        await Navigator.pushReplacementNamed(
-            context, PageRouteNames.mobileDeviceScreen);
-        return;
-      }
+      // if (mounted && MediaQuery.of(context).size.width >= 500) {
+      //   await Navigator.pushReplacementNamed(
+      //       context, PageRouteNames.mobileDeviceScreen);
+      //   return;
+      // }
       await _init(onFailure: _init);
     });
     super.initState();
@@ -98,6 +98,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[

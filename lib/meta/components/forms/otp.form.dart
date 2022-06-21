@@ -16,6 +16,7 @@ import '../toast.dart';
 class OtpForm extends StatefulWidget {
   const OtpForm(
       {Key? key,
+      required this.context,
       required this.resend,
       required this.onResend,
       required this.onSubmit})
@@ -23,7 +24,7 @@ class OtpForm extends StatefulWidget {
   final bool resend;
   final GestureTapCallback onResend;
   final VoidCallback onSubmit;
-
+  final BuildContext context;
   @override
   State<OtpForm> createState() => _OtpFormState();
 }
@@ -153,7 +154,7 @@ class _OtpFormState extends State<OtpForm> {
                                           pin4.text)
                                       .length <
                                   4) {
-                                showToast(context, 'Please enter valid OTP',
+                                showToast(widget.context, 'Please enter valid OTP',
                                     isError: true);
                                 return;
                               }

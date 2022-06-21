@@ -4,12 +4,11 @@
 import 'dart:developer';
 import 'dart:typed_data';
 
-// 🐦 Flutter imports:
-import 'package:flutter/material.dart';
-
-// 📦 Package imports:
+//  Package imports:
 import 'package:at_base2e15/at_base2e15.dart';
 import 'package:file_picker/file_picker.dart';
+// 🐦 Flutter imports:
+import 'package:flutter/material.dart';
 import 'package:image/image.dart' as imglib;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -58,6 +57,7 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
         Permission.photos,
         Permission.manageExternalStorage
       ]);
+
       setState(() => _canPop =
           ModalRoute.of(context)!.settings.arguments as bool? ?? false);
       if (!await AppServices.sdkServices.atClientManager.syncService
@@ -68,21 +68,24 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
     super.initState();
   }
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       body: Stack(
         children: <Widget>[
           Center(
-            child: _file == null && _imgBytes == null
-                ? _isLoading
-                    ? const AdaptiveLoading()
-                    : FileUploadSpace(
+            child: _isLoading
+                ? const AdaptiveLoading()
+                : _file == null && _imgBytes == null && !_isLoading
+                    ? FileUploadSpace(
                         fileType: FileType.image,
                         onTap: (_) async {
                           setState(() => _isLoading = true);
                           if (_.isEmpty) {
-                            showToast(context, 'Image not picked',
+                            showToast(_scaffoldKey.currentContext, 'Image not picked',
                                 isError: true);
                             setState(() => _isLoading = false);
                             return;
@@ -95,6 +98,7 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                             _isLoading = false;
                           });
                         },
+                        isUploading: _isLoading,
                         child: Icon(
                           TablerIcons.upload,
                           color: Theme.of(context).primaryColor,
@@ -103,130 +107,133 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                         uploadMessage:
                             'Select a image to\nset as master password',
                       )
-                : Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      GestureDetector(
-                        onPanDown: (DragDownDetails details) {
-                          double clickX =
-                              details.localPosition.dx.floorToDouble();
-                          double clickY =
-                              details.localPosition.dy.floorToDouble();
-                          log('(${(clickX / binSize).floorToDouble()}, ${(clickY / binSize).floorToDouble()})');
-                          _plots!.add(
-                            Plots(
-                              x: (clickX / binSize).floorToDouble(),
-                              y: (clickY / binSize).floorToDouble(),
-                            ),
-                          );
-                          setState(() {
-                            _plots!.length;
-                          });
-                        },
-                        child: Stack(
-                          children: <Widget>[
-                            Container(
-                              height: 300,
-                              width: 300,
-                              decoration: BoxDecoration(
-                                image: _isLoading
-                                    ? null
-                                    : DecorationImage(
-                                        image: MemoryImage(_imgBytes!),
-                                        fit: BoxFit.cover,
-                                      ),
-                                borderRadius: BorderRadius.circular(10),
-                                border: _imgSaved
-                                    ? null
-                                    : Border.all(
-                                        color: Theme.of(context).primaryColor,
-                                        width: 3,
-                                      ),
-                              ),
-                              child: _isLoading
-                                  ? Center(
-                                      child: squareWidget(
-                                        20,
-                                        child: const CircularProgressIndicator
-                                            .adaptive(),
-                                      ),
-                                    )
-                                  : null,
-                            ),
-                            for (Plots pass in _plots!)
-                              Marker(
-                                dx: pass.x * binSize,
-                                dy: pass.y * binSize,
-                              ),
-                          ],
-                        ),
-                      ),
-                      vSpacer(50),
-                      if (_imgSaved)
-                        const Text(
-                          'Image saved successfully.\nHold tight we get back you to the login screen',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: Colors.black, fontSize: 20),
-                        ),
-                      if (!_imgSaved)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: <Widget>[
-                            _plots!.isNotEmpty
-                                ? GestureDetector(
-                                    onLongPress: () {
-                                      setState(() {
-                                        _plots!.clear();
-                                      });
-                                    },
-                                    onTap: _plots!.isEmpty
-                                        ? null
-                                        : () {
-                                            _plots!.removeLast();
-                                            // _plots!.removeRange(0, _plots!.length);
-                                            setState(() => _plots!.length);
-                                          },
-                                    child:
-                                        const Icon(TablerIcons.arrow_back_up),
-                                  )
-                                : square(24),
-                            InkWell(
-                              mouseCursor: SystemMouseCursors.click,
-                              child: Text(
-                                'Change Image',
-                                style: TextStyle(
-                                  color: Theme.of(context).primaryColor,
-                                  fontWeight: FontWeight.w700,
+                    : Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          GestureDetector(
+                            onPanDown: (DragDownDetails details) {
+                              double clickX =
+                                  details.localPosition.dx.floorToDouble();
+                              double clickY =
+                                  details.localPosition.dy.floorToDouble();
+                              log('(${(clickX / binSize).floorToDouble()}, ${(clickY / binSize).floorToDouble()})');
+                              _plots!.add(
+                                Plots(
+                                  x: (clickX / binSize).floorToDouble(),
+                                  y: (clickY / binSize).floorToDouble(),
                                 ),
-                              ),
-                              onTap: () async {
-                                setState(() {
-                                  _isLoading = true;
-                                });
-                                Set<PlatformFile> _anotherFile =
-                                    await AppServices.uploadFile(
-                                        FileType.image);
-                                if (_anotherFile.isEmpty) {
-                                  showToast(context, 'Image not picked',
-                                      isError: true);
-                                  setState(() => _isLoading = false);
-                                  return;
-                                }
-                                Uint8List _bytes =
-                                    await AppServices.readFilesAsBytes(
-                                        _anotherFile.first.path!);
-                                setState(() {
-                                  _imgBytes = _bytes;
-                                  _file = _anotherFile.first;
-                                  _isLoading = false;
-                                });
-                              },
+                              );
+                              setState(() {
+                                _plots!.length;
+                              });
+                            },
+                            child: Stack(
+                              children: <Widget>[
+                                Container(
+                                  height: 300,
+                                  width: 300,
+                                  decoration: BoxDecoration(
+                                    image: _isLoading
+                                        ? null
+                                        : DecorationImage(
+                                            image: MemoryImage(_imgBytes!),
+                                            fit: BoxFit.cover,
+                                          ),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: _imgSaved
+                                        ? null
+                                        : Border.all(
+                                            color:
+                                                Theme.of(context).primaryColor,
+                                            width: 3,
+                                          ),
+                                  ),
+                                  child: _isLoading
+                                      ? Center(
+                                          child: squareWidget(
+                                            20,
+                                            child:
+                                                const CircularProgressIndicator
+                                                    .adaptive(),
+                                          ),
+                                        )
+                                      : null,
+                                ),
+                                for (Plots pass in _plots!)
+                                  Marker(
+                                    dx: pass.x * binSize,
+                                    dy: pass.y * binSize,
+                                  ),
+                              ],
                             ),
-                            square(24),
-                          ],
-                        ),
-                    ],
-                  ),
+                          ),
+                          vSpacer(50),
+                          if (_imgSaved)
+                            const Text(
+                              'Image saved successfully.\nHold tight we get back you to the login screen',
+                              textAlign: TextAlign.center,
+                              style:
+                                  TextStyle(color: Colors.black, fontSize: 20),
+                            ),
+                          if (!_imgSaved)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: <Widget>[
+                                _plots!.isNotEmpty
+                                    ? GestureDetector(
+                                        onLongPress: () {
+                                          setState(() {
+                                            _plots!.clear();
+                                          });
+                                        },
+                                        onTap: _plots!.isEmpty
+                                            ? null
+                                            : () {
+                                                _plots!.removeLast();
+                                                // _plots!.removeRange(0, _plots!.length);
+                                                setState(() => _plots!.length);
+                                              },
+                                        child: const Icon(
+                                            TablerIcons.arrow_back_up),
+                                      )
+                                    : square(24),
+                                InkWell(
+                                  mouseCursor: SystemMouseCursors.click,
+                                  child: Text(
+                                    'Change Image',
+                                    style: TextStyle(
+                                      color: Theme.of(context).primaryColor,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  onTap: () async {
+                                    setState(() {
+                                      _isLoading = true;
+                                    });
+                                    Set<PlatformFile> _anotherFile =
+                                        await AppServices.uploadFile(
+                                            FileType.image);
+                                    if (_anotherFile.isEmpty) {
+                                      showToast(_scaffoldKey.currentContext, 'Image not picked',
+                                          isError: true);
+                                      setState(() => _isLoading = false);
+                                      return;
+                                    }
+                                    Uint8List _bytes =
+                                        await AppServices.readFilesAsBytes(
+                                            _anotherFile.first.path!);
+                                    setState(() {
+                                      _imgBytes = _bytes;
+                                      _file = _anotherFile.first;
+                                      _isLoading = false;
+                                    });
+                                  },
+                                ),
+                                square(24),
+                              ],
+                            ),
+                        ],
+                      ),
           ),
           Positioned(
             top: 60,
@@ -341,7 +348,7 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                                   _saving = false;
                                   _imgSaved = true;
                                 });
-                                showToast(context, 'Image saved successfully');
+                                showToast(_scaffoldKey.currentContext, 'Image saved successfully');
                                 _file = null;
                                 context.read<UserData>().masterImage =
                                     encryptedData;
@@ -351,14 +358,14 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                                     : await Navigator.pushReplacementNamed(
                                         context, PageRouteNames.masterPassword);
                               } else {
-                                showToast(context,
+                                showToast(_scaffoldKey.currentContext,
                                     'Error occured while saving image to secondary',
                                     isError: true);
                                 setState(() => _saving = true);
                                 return;
                               }
                             } else {
-                              showToast(context, 'Error while reading image',
+                              showToast(_scaffoldKey.currentContext, 'Error while reading image',
                                   isError: true);
                               setState(() => _saving = true);
                               return;
@@ -368,7 +375,7 @@ class _SetMasterPasswordScreenState extends State<SetMasterPasswordScreen> {
                                 'Error occured while encoding data into image',
                                 e,
                                 s);
-                            showToast(context, 'Error while encoding data',
+                            showToast(_scaffoldKey.currentContext, 'Error while encoding data',
                                 isError: true);
                             setState(() => _saving = true);
                             return;

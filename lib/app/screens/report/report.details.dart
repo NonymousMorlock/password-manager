@@ -1,16 +1,15 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
-
 import 'package:at_base2e15/at_base2e15.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-
 import 'package:share_plus/share_plus.dart';
 import 'package:tabler_icons/tabler_icons.dart';
+
 import '../../../meta/components/adaptive_loading.dart';
 import '../../../meta/components/sync_indicator.dart';
 import '../../../meta/components/toast.dart';
@@ -38,9 +37,12 @@ class _ReportDetailsState extends State<ReportDetails> {
     super.initState();
   }
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         title: Text(
           'Report Details',
@@ -214,64 +216,68 @@ class _ReportDetailsState extends State<ReportDetails> {
                       vSpacer(20),
                       _DeviceInfo(report!.deviceInfo),
                       vSpacer(20),
-                      Text(
-                        'Logs file',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleLarge
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      vSpacer(20),
-                      _saving
-                          ? squareWidget(48, child: const AdaptiveLoading())
-                          : Tooltip(
-                              message: '${report?.from ?? 'Unknown'} Logs',
-                              child: TextButton(
-                                onPressed: () async {
-                                  setState(() => _saving = true);
-                                  String _logsPath = p.join(
-                                      (await getApplicationSupportDirectory())
-                                          .path,
-                                      'logs',
-                                      'report_${report!.from}_${DateFormat().add_yMd().format(report!.createdAt).replaceAll('/', '-')}.log');
-                                  Uint8List _bytes =
-                                      Base2e15.decode(report!.logFileData!);
-                                  File _file = File(_logsPath);
-                                  await _file.writeAsBytes(_bytes);
-                                  ShareResult shareResult =
-                                      await Share.shareFilesWithResult(
-                                          <String>[_logsPath],
-                                          sharePositionOrigin: Rect.fromLTWH(
-                                              0,
-                                              0,
-                                              MediaQuery.of(context).size.width,
-                                              MediaQuery.of(context)
-                                                      .size
-                                                      .height /
-                                                  2));
-                                  bool _saved = shareResult.status ==
-                                      ShareResultStatus.success;
-                                  setState(() => _saving = false);
-                                  AppLogger('ReportDetails').finer(
-                                      'Log file ${_saved ? 'saved' : 'not saved'}');
-                                  showToast(context,
-                                      'Log file ${_saved ? 'saved' : 'not saved'}',
-                                      isError: !_saved);
-                                },
-                                child: const Text('Download Logs'),
-                                style: Theme.of(context)
-                                    .textButtonTheme
-                                    .style
-                                    ?.copyWith(
-                                      backgroundColor:
-                                          MaterialStateProperty.all<Color>(
-                                        context
-                                            .read<AppThemeNotifier>()
-                                            .primary,
+                      if (report!.logFileData != null)
+                        Text(
+                          'Logs file',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      if (report!.logFileData != null) vSpacer(20),
+                      if (report!.logFileData != null)
+                        _saving
+                            ? squareWidget(48, child: const AdaptiveLoading())
+                            : Tooltip(
+                                message: '${report?.from ?? 'Unknown'} Logs',
+                                child: TextButton(
+                                  onPressed: () async {
+                                    setState(() => _saving = true);
+                                    String _logsPath = p.join(
+                                        (await getApplicationSupportDirectory())
+                                            .path,
+                                        'logs',
+                                        'report_${report!.from}_${DateFormat().add_yMd().format(report!.createdAt).replaceAll('/', '-')}.log');
+                                    Uint8List _bytes =
+                                        Base2e15.decode(report!.logFileData!);
+                                    File _file = File(_logsPath);
+                                    await _file.writeAsBytes(_bytes);
+                                    ShareResult shareResult =
+                                        await Share.shareFilesWithResult(
+                                            <String>[_logsPath],
+                                            sharePositionOrigin: Rect.fromLTWH(
+                                                0,
+                                                0,
+                                                MediaQuery.of(context)
+                                                    .size
+                                                    .width,
+                                                MediaQuery.of(context)
+                                                        .size
+                                                        .height /
+                                                    2));
+                                    bool _saved = shareResult.status ==
+                                        ShareResultStatus.success;
+                                    setState(() => _saving = false);
+                                    AppLogger('ReportDetails').finer(
+                                        'Log file ${_saved ? 'saved' : 'not saved'}');
+                                    showToast(_scaffoldKey.currentContext,
+                                        'Log file ${_saved ? 'saved' : 'not saved'}',
+                                        isError: !_saved);
+                                  },
+                                  child: const Text('Download Logs'),
+                                  style: Theme.of(context)
+                                      .textButtonTheme
+                                      .style
+                                      ?.copyWith(
+                                        backgroundColor:
+                                            MaterialStateProperty.all<Color>(
+                                          context
+                                              .read<AppThemeNotifier>()
+                                              .primary,
+                                        ),
                                       ),
-                                    ),
+                                ),
                               ),
-                            ),
                       vSpacer(40),
                     ],
                   ),

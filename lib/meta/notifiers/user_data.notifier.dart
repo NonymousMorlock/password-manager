@@ -1,15 +1,15 @@
 // 🎯 Dart imports:
 import 'dart:typed_data';
 
-// 🐦 Flutter imports:
-import 'package:flutter/material.dart';
-
-// 📦 Package imports:
+// � Package imports:
 import 'package:at_client_mobile/at_client_mobile.dart';
+// � Flutter imports:
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 // 🌎 Project imports:
 import '../../app/constants/theme.dart';
+import '../../core/services/passman.env.dart';
 import '../extensions/logger.ext.dart';
 import '../models/freezed/admin.model.dart';
 import '../models/freezed/card.model.dart';
@@ -28,6 +28,19 @@ class UserData extends ChangeNotifier {
   set isAdmin(bool value) {
     _logger.finer('isAdmin: $value');
     _isAdmin = value;
+    notifyListeners();
+  }
+
+  bool get isSuperAdmin =>
+      _currentAtSign!.replaceAll('@', '') == PassmanEnv.reportAtsign;
+
+  bool _isInitialSync = false;
+
+  bool get isInitialSync => _isInitialSync;
+
+  set isInitialSync(bool _isInitSync) {
+    _logger.finer('Setting isInitialSync: $_isInitSync');
+    _isInitialSync = _isInitSync;
     notifyListeners();
   }
 
@@ -62,10 +75,10 @@ class UserData extends ChangeNotifier {
   }
 
   /// Onboarding preferences
-  AtClientPreference _atOnboardingPreference = AtClientPreference();
+  AtClientPreference? _atOnboardingPreference;
 
   /// Get onboarding preferences
-  AtClientPreference get atOnboardingPreference => _atOnboardingPreference;
+  AtClientPreference get atOnboardingPreference => _atOnboardingPreference!;
 
   /// Set onboarding preferences
   set atOnboardingPreference(AtClientPreference value) {

@@ -1,8 +1,7 @@
 // 🐦 Flutter imports:
-import 'package:flutter/material.dart';
-
 // 📦 Package imports:
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_qr_reader/flutter_qr_reader.dart';
 import 'package:provider/provider.dart';
 import 'package:tabler_icons/icon_data.dart';
@@ -89,10 +88,12 @@ class _QRScreenState extends State<QRScreen> {
   //     controller!.resumeCamera();
   //   }
   // }
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       body: Stack(
         children: <Widget>[
           Center(
@@ -132,12 +133,12 @@ class _QRScreenState extends State<QRScreen> {
               ),
               onPressed: () async {
                 try {
-                  await controller!.stopCamera();
+                  // await controller!.stopCamera();
                   Set<PlatformFile> _file =
                       await AppServices.uploadFile(FileType.image);
                   if (_file.isNotEmpty) {
                     bool _gotData = await AppServices.getQRData(
-                      context,
+                      _scaffoldKey.currentContext!,
                       _file.first.path,
                     );
                     if (_gotData) {
@@ -146,12 +147,14 @@ class _QRScreenState extends State<QRScreen> {
                     }
                   } else {
                     await controller!.startCamera(onScan);
-                    showToast(context, 'No image picked', isError: true);
+                    showToast(_scaffoldKey.currentContext, 'No image picked',
+                        isError: true);
                   }
                 } on Exception catch (e) {
                   await controller!.stopCamera();
                   qrLog.severe(e);
-                  showToast(context, 'Failed to pick image', isError: true);
+                  showToast(_scaffoldKey.currentContext, 'Failed to pick image',
+                      isError: true);
                 }
               },
             ),

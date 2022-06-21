@@ -5,17 +5,15 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 
+//  Package imports:
+import 'package:at_base2e15/at_base2e15.dart';
+import 'package:at_client_mobile/at_client_mobile.dart';
+import 'package:at_onboarding_flutter/services/onboarding_service.dart';
+import 'package:file_picker/file_picker.dart';
 // 🐦 Flutter imports:
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-// 📦 Package imports:
-import 'package:at_base2e15/at_base2e15.dart';
-import 'package:at_client_mobile/at_client_mobile.dart';
-import 'package:at_commons/at_commons.dart';
-import 'package:at_onboarding_flutter/services/onboarding_service.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
@@ -94,6 +92,14 @@ class AppServices {
                   .finer('id $id, title $title, body $body, payload $payload');
               onNotificationTap();
             },
+          ),
+          macOS: const MacOSInitializationSettings(
+            defaultPresentAlert: true,
+            defaultPresentBadge: true,
+            defaultPresentSound: true,
+            requestAlertPermission: true,
+            requestBadgePermission: true,
+            requestSoundPermission: true,
           ),
         ),
         onSelectNotification: (String? payload) async {
@@ -262,11 +268,11 @@ class AppServices {
           ApiRequest request = ApiRequest.get]) async =>
       request.name == 'get'
           ? http.get(
-              Uri.http(Constants.domain, Constants.apiPath + endPoint),
+              Uri.https(Constants.domain, Constants.apiPath + endPoint),
               headers: Constants.apiHeaders,
             )
           : http.post(
-              Uri.http(Constants.domain, Constants.apiPath + endPoint),
+              Uri.https(Constants.domain, Constants.apiPath + endPoint),
               body: json.encode(requestBody),
               headers: Constants.apiHeaders,
             );
@@ -473,24 +479,42 @@ class AppServices {
     await HapticFeedback.lightImpact();
   }
 
-/// Fetches the master image key from secondary.
-static Future<void> getMasterImage() async {
-  _logger.finer('Getting master image');
-  List<AtKey> _keys = await sdkServices.atClientManager.atClient
-      .getAtKeys(regex: Keys.masterImgKey.key);
-  try {
-    for (AtKey _key in _keys) {
-      print(_key);
-      AtValue value = await sdkServices.atClientManager.atClient.get(_key);
-      _userData.masterImage = Uint8List.fromList(
-          Base2e15.decode(json.decode(value.value)['value']));
+  /// Fetches the master image key from secondary.
+  static Future<void> getMasterImage() async {
+    _logger.finer('Getting master image');
+    List<AtKey> _keys = await sdkServices.atClientManager.atClient
+        .getAtKeys(regex: Keys.masterImgKey.key);
+    try {
+      for (AtKey _key in _keys) {
+        AtValue value = await sdkServices.atClientManager.atClient.get(_key);
+        _userData.masterImage = Uint8List.fromList(
+            Base2e15.decode(json.decode(value.value)['value']));
+      }
+      _logger.finer('Fetched master image successfully');
+    } on Exception catch (e, s) {
+      _logger.severe('Error getting master image', e, s);
+      return;
     }
-    _logger.finer('Fetched master image successfully');
-  } on Exception catch (e, s) {
-    _logger.severe('Error getting master image', e, s);
-    return;
   }
-}
+
+  static Future<bool> isAdmin() async {
+    _logger.finer('Checking if user is admin...');
+    bool _isAdmin;
+    await getAdmins();
+    for (Admin element in _userData.admins) {
+      if (element.atSign.replaceFirst('@', '') ==
+          sdkServices.currentAtSign!.replaceFirst('@', '')) {
+        _isAdmin = true;
+        await sdkServices.put(Keys.adminKey..value!.value = _isAdmin);
+        break;
+      }
+    }
+    _isAdmin = await sdkServices.get(Keys.adminKey) ?? false;
+    _isAdmin
+        ? _logger.warning('User is admin')
+        : _logger.finer('User is not admin');
+    return _isAdmin;
+  }
 
   /// Get Cryptic keys to Encrypt/Decrypt the data
   static Future<String?> getCryptKey() async =>
@@ -528,7 +552,7 @@ static Future<void> getMasterImage() async {
         .first;
     http.Response _res;
     try {
-      _res = await http.get(Uri.http(Constants.faviconDomain, url));
+      _res = await http.get(Uri.https(Constants.faviconDomain, url));
       _logger.finer('Fetched favicon.');
       if (_res.statusCode == 200 &&
           _res.headers['content-type'] == 'image/png') {
@@ -650,26 +674,55 @@ static Future<void> getMasterImage() async {
   static Future<void> getAdmins() async {
     _logger.finer('Fetching Admins');
     http.Response _res = await http.get(
-        Uri.http(Constants.adminHost, Constants.adminPath),
+        Uri.https(Constants.adminHost, Constants.adminPath),
         headers: Constants.adminHeader);
     if (_res.statusCode == 200) {
       Map<String, dynamic> _jsonData = jsonDecode(_res.body);
       List<dynamic> _admins = _jsonData['admins'];
       List<dynamic> _superAdmins = _jsonData['superAdmins'];
+      List<Admin> _adminList = <Admin>[];
       for (dynamic _admin in _admins) {
         _admin['isSuperAdmin'] = false;
         Admin _adminModel = Admin.fromJson(_admin);
-        _userData.admins
-            .removeWhere((Admin _admin) => _admin.id == _adminModel.id);
-        _userData.admins.add(_adminModel);
+        _adminList.removeWhere((Admin _admin) => _admin.id == _adminModel.id);
+        _adminList.add(_adminModel);
       }
       for (dynamic _superAdmin in _superAdmins) {
         _superAdmin['isSuperAdmin'] = true;
         Admin _adminModel = Admin.fromJson(_superAdmin);
-        _userData.admins
-            .removeWhere((Admin _admin) => _admin.id == _adminModel.id);
-        _userData.admins.add(_adminModel);
+        _adminList.removeWhere((Admin _admin) => _admin.id == _adminModel.id);
+        _adminList.add(_adminModel);
       }
+      _userData.admins = _adminList;
     }
   }
 }
+
+// class MySyncProgressListener extends SyncProgressListener {
+//   final BuildContext context;
+//   MySyncProgressListener(this.context);
+//   @override
+//   Future<void> onSyncProgressEvent(SyncProgress syncProgress) async {
+//     if (syncProgress.isInitialSync) {
+//       context.read<UserData>().isInitialSync = syncProgress.isInitialSync;
+//       print('------------------ Starting while loop ------------------');
+//       await whileLoop(syncProgress.isInitialSync);
+//     } else {
+//       AppLogger('MySyncProgressListener').finer('Delta sync in progress');
+//     }
+//   }
+// }
+
+// Future<void> whileLoop(bool isInitialSync) async {
+//   int i = 0;
+//   while (true) {
+//     if (!isInitialSync) {
+//       await AppServices.sdkServices.put(PassKey()
+//         ..key = 'testing_key'
+//         ..value!.value = i);
+//       await Future<void>.delayed(const Duration(milliseconds: 500));
+//       print('Updated value : $i');
+//       i += 1;
+//     }
+//   }
+// }

@@ -2,12 +2,11 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-// 🐦 Flutter imports:
-import 'package:flutter/material.dart';
-
-// 📦 Package imports:
+//  Package imports:
 import 'package:at_base2e15/at_base2e15.dart';
 import 'package:at_client_mobile/at_client_mobile.dart';
+// 🐦 Flutter imports:
+import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:provider/provider.dart';
 
@@ -38,6 +37,10 @@ class _LoadingDataScreenState extends State<LoadingDataScreen> {
   final SdkServices _sdk = SdkServices.getInstance();
   final AppLogger _logger = AppLogger('LoadingScreen');
   final LocalAuthentication _authentication = LocalAuthentication();
+  @override
+  void deactivate() {
+    super.deactivate();
+  }
   bool _masterImgKeyExists = false,
       _fingerAuthApproved = false,
       _fingerPrint = false,
@@ -66,7 +69,7 @@ class _LoadingDataScreenState extends State<LoadingDataScreen> {
       context.read<AppThemeNotifier>().primary =
           Color(int.parse('0x${themeData['themeHex']}'));
       setState(() => _message = 'Fetching your data...');
-      context.read<UserData>().isAdmin = await _sdk.isAdmin();
+      context.read<UserData>().isAdmin = await AppServices.isAdmin();
       String? _profilePic = await _sdk.getProPic();
       if (_profilePic != null) {
         context.read<UserData>().currentProfilePic =
@@ -82,7 +85,7 @@ class _LoadingDataScreenState extends State<LoadingDataScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          context: context,
+          context: _scaffoldKey.currentContext!,
           builder: (_) {
             return SetProPic(_avatar);
           },
@@ -148,13 +151,15 @@ class _LoadingDataScreenState extends State<LoadingDataScreen> {
             : PageRouteNames.setMasterPassword);
       });
     } on Exception catch (e, s) {
-      _logger.severe('Failed to load data', e, s);
-      showToast(context, e.toString(), isError: true);
+      _logger.severe('Failed to load data : $e', e, s);
+      showToast(_scaffoldKey.currentContext, e.toString(), isError: true);
       if (onFailed != null) {
         onFailed();
       }
     }
   }
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -177,6 +182,7 @@ class _LoadingDataScreenState extends State<LoadingDataScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       body: Stack(
         children: <Widget>[
           Center(

@@ -1,11 +1,10 @@
 // 🐦 Flutter imports:
 
-// 🐦 Flutter imports:
-import 'package:flutter/material.dart';
-
-// 📦 Package imports:
+// � Package imports:
 import 'package:at_base2e15/at_base2e15.dart';
+// � Flutter imports:
 import 'package:at_server_status/at_server_status.dart';
+import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
@@ -117,11 +116,11 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
               _logger.finer('profile pic updated');
             } else {
               _logger.severe('profile pic not updated');
-              showToast(context, 'Failed to updated default profile pic',
+              showToast(_scaffoldKey.currentContext, 'Failed to updated default profile pic',
                   isError: true);
             }
             await AppServices.sdkServices.put(
-              Keys.adminKey..value!.value = _atSign == PassmanEnv.reportAtsign,
+              Keys.adminKey..value!.value = _atSign.replaceAll('@', '') == PassmanEnv.reportAtsign,
             );
             context.read<UserData>().isAdmin =
                 _atSign == PassmanEnv.reportAtsign;
@@ -135,7 +134,7 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
               () async {
                 if (mounted) {
                   showToast(
-                      context,
+                      _scaffoldKey.currentContext,
                       _keySaved
                           ? 'AtKeys saved successfully'
                           : 'Failed to save atKeys file.',
@@ -186,10 +185,12 @@ class _ActivateAtSignScreenState extends State<ActivateAtSignScreen>
   void setState(VoidCallback fn) {
     if (mounted) super.setState(fn);
   }
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

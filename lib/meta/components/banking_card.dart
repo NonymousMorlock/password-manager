@@ -16,7 +16,8 @@ import '../../app/constants/theme.dart';
 import 'toast.dart';
 
 class CreditCard extends StatefulWidget {
-  const CreditCard({
+  const CreditCard(
+    this.context,{
     required this.cardNum,
     required this.cardName,
     required this.cvv,
@@ -26,6 +27,7 @@ class CreditCard extends StatefulWidget {
   }) : super(key: key);
   final String cardNum, cardName, cvv, expiry;
   final Uint8List imageData;
+  final BuildContext context;
   @override
   _CreditCardState createState() => _CreditCardState();
 }
@@ -97,7 +99,7 @@ class _CreditCardState extends State<CreditCard> {
                 onTap: () async => Clipboard.setData(
                   ClipboardData(text: widget.cardName),
                 ).then(
-                  (_) => showToast(context, 'Copied', width: 100),
+                  (_) => showToast(widget.context, 'Copied', width: 100),
                 ),
                 child: Text(
                   widget.cardName,
@@ -129,7 +131,7 @@ class _CreditCardState extends State<CreditCard> {
           GestureDetector(
             onTap: () async => Clipboard.setData(
               ClipboardData(text: widget.cardNum),
-            ).then((_) => showToast(context, 'Copied', width: 100)),
+            ).then((_) => showToast(widget.context, 'Copied', width: 100)),
             child: Text(
               '**** **** **** ' + widget.cardNum.substring(15, 19),
               style: TextStyle(
@@ -166,7 +168,7 @@ class _CreditCardState extends State<CreditCard> {
             onTap: () async => Clipboard.setData(
               ClipboardData(text: widget.cvv),
             ).then(
-              (_) => showToast(context, 'Copied', width: 100),
+              (_) => showToast(widget.context, 'Copied', width: 100),
             ),
             child: Container(
               width: 100,
